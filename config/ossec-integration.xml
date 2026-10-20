@@ -1,0 +1,14 @@
+<!--
+  Wazuh -> Shuffle integration block.
+  Goes inside <ossec_config> in /var/ossec/etc/ossec.conf on the MANAGER.
+
+  Forwarding is filtered by rule GROUP (not a broad level) so only meaningful
+  attack alerts reach the SOAR layer — this prevents the Suricata alert flood
+  that otherwise exhausts the Shuffle SaaS execution quota.
+-->
+<integration>
+  <name>shuffle</name>
+  <hook_url>https://shuffler.io/api/v1/hooks/webhook_REDACTED</hook_url>
+  <group>authentication_failed,authentication_failures,phishing</group>
+  <alert_format>json</alert_format>
+</integration>

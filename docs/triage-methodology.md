@@ -1,0 +1,70 @@
+# Triage Methodology
+
+How each alert in this lab is triaged — what to check, how to separate malicious
+from benign, and when to escalate. This is the analyst-reasoning layer that sits
+on top of the detections.
+
+---
+
+## The questions asked on every alert
+
+1. **Who is the source?** Internal/known host, or unexpected/external? One source
+   or many?
+2. **What is the target?** A real account/host, or a non-existent one (attacks on
+   non-existent users look different from a real user's mistake)?
+3. **What is the volume and rate?** Human-speed, or automated-tooling-speed?
+4. **Did it correlate?** Did a correlation rule (e.g. brute-force) fire, or is this
+   a single isolated event?
+5. **What happened next?** Was a failure followed by a *success*? Was recon
+   followed by an *exploit*? The follow-on event usually decides severity.
+6. **Is it spoofable?** Can the source IP be trusted for a blocking decision?
+
+---
+
+## Per-scenario triage logic
+
+### SSH brute force (Scenario 01)
+- **Malicious indicators:** single source, non-existent username, many attempts/sec,
+  rule 5712 correlation fires.
+- **Benign look-alike:** a real user mistyping a few times (low volume, real
+  account, ends in success) — would *not* trip 5712 and would not come as a burst.
+- **Escalate when:** correlation fires, or any success follows the failures.
+
+### RDP brute force → compromise (Scenario 02)
+- **Malicious indicators:** consistent source IP across all 4625s, lockout (60115),
+  and — critically — a successful 4624 (rule 92657) from the attacking IP.
+- **Benign look-alike:** a stale cached credential (a mapped drive or scheduled
+  task with an old password) can generate repeated 4625s from a *known internal*
+  host and end benignly. The source IP and whether it ends in a legitimate success
+  are what separate them.
+- **Escalate immediately when:** rule 92657 fires — attempt has become compromise.
+
+### Nmap recon (Scenario 03)
+- **Malicious indicators:** one source probing many ports/services; ICMP sweeps.
+- **Severity:** low on its own — recon is pre-attack, not intrusion.
+- **Do not auto-block:** scan source IPs are spoofable; blocking on them can be
+  weaponized.
+- **Escalate when:** the same source later escalates (brute force, exploit) — the
+  correlation is the value.
+
+### Phishing IOC (Scenario 04)
+- **Malicious indicators:** any connection whose destination matches the IOC
+  watchlist (rule 100100). By definition the destination is known-bad.
+- **Enrichment:** VirusTotal detection count / hosting / country adds context for
+  the analyst before they promote to a case.
+- **Escalate when:** the IOC match fires at all — it means an endpoint reached
+  known-bad infrastructure.
+
+---
+
+## Malicious vs. benign — the general principle
+
+A detection rule matches a *pattern*; it cannot know *intent*. Triage is the step
+that supplies intent by asking: is there a legitimate explanation that fits all the
+evidence (source, target, volume, outcome)? If a benign explanation fits, it is a
+candidate false positive to tune (see Future Work — false-positive scenario). If
+not, escalate.
+
+The goal of tuning is to **reduce false positives without creating false
+negatives** — e.g. whitelisting a known management host is fine, but whitelisting
+"all internal IPs" would blind the SOC to an attacker who already has a foothold.

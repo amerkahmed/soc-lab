@@ -1,0 +1,2 @@
+<!-- Add inside the <ruleset> block in ossec.conf to register the CDB list -->
+<list>etc/lists/phishing-iocs</list>

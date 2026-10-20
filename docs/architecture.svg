@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="760" viewBox="0 0 1040 760" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#5b6472"/>
+    </marker>
+    <marker id="arrowAttack" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#b4453a"/>
+    </marker>
+    <style>
+      .title   { font-size: 26px; font-weight: 700; fill: #1b1f24; }
+      .sub     { font-size: 14px; fill: #5b6472; }
+      .zone    { font-size: 12px; font-weight: 700; letter-spacing: 1px; fill: #8a93a0; }
+      .boxttl  { font-size: 16px; font-weight: 700; fill: #1b1f24; }
+      .boxtxt  { font-size: 12.5px; fill: #49505b; }
+      .ip      { font-size: 11.5px; font-weight: 600; fill: #6b7280; font-family: 'Consolas','Menlo',monospace; }
+      .elabel  { font-size: 11px; fill: #5b6472; }
+      .elabelA { font-size: 11px; font-weight: 600; fill: #b4453a; }
+    </style>
+  </defs>
+
+  <!-- background -->
+  <rect width="1040" height="760" fill="#ffffff"/>
+
+  <!-- header -->
+  <text x="40" y="48" class="title">SOC Home Lab — Detection, Enrichment &amp; Response</text>
+  <text x="40" y="72" class="sub">Attack → host &amp; network detection → SOAR enrichment → analyst case</text>
+
+  <!-- ===================== ZONE: internal network ===================== -->
+  <rect x="40" y="96" width="520" height="470" rx="14" fill="#f4f6f8" stroke="#dfe3e8" stroke-width="1.5"/>
+  <text x="60" y="122" class="zone">INTERNAL NETWORK · 192.168.56.0/24 (isolated)</text>
+
+  <!-- Kali -->
+  <rect x="70" y="150" width="200" height="104" rx="10" fill="#fbeceb" stroke="#d98a82" stroke-width="1.5"/>
+  <text x="86" y="178" class="boxttl">Kali — Attacker</text>
+  <text x="86" y="200" class="boxtxt">Hydra · ncrack · xfreerdp</text>
+  <text x="86" y="218" class="boxtxt">Nmap · emlAnalyzer</text>
+  <text x="86" y="242" class="ip">192.168.56.10</text>
+
+  <!-- Ubuntu -->
+  <rect x="330" y="150" width="200" height="104" rx="10" fill="#eaf1ec" stroke="#8fb79b" stroke-width="1.5"/>
+  <text x="346" y="178" class="boxttl">Ubuntu — Target</text>
+  <text x="346" y="200" class="boxtxt">Wazuh agent (HIDS)</text>
+  <text x="346" y="218" class="boxtxt">Suricata (NIDS) · enp0s3</text>
+  <text x="346" y="242" class="ip">192.168.56.20</text>
+
+  <!-- Windows -->
+  <rect x="330" y="300" width="200" height="104" rx="10" fill="#eaf1ec" stroke="#8fb79b" stroke-width="1.5"/>
+  <text x="346" y="328" class="boxttl">Windows 10 — Target</text>
+  <text x="346" y="350" class="boxtxt">Wazuh agent (HIDS)</text>
+  <text x="346" y="368" class="boxtxt">Sysmon · Security log</text>
+  <text x="346" y="392" class="ip">192.168.56.30</text>
+
+  <!-- attack arrows Kali -> Ubuntu -->
+  <line x1="270" y1="190" x2="326" y2="190" stroke="#b4453a" stroke-width="2" marker-end="url(#arrowAttack)"/>
+  <!-- attack arrows Kali -> Windows (elbow) -->
+  <path d="M170,254 L170,352 L326,352" fill="none" stroke="#b4453a" stroke-width="2" marker-end="url(#arrowAttack)"/>
+  <text x="196" y="300" class="elabelA">SSH / RDP brute force,</text>
+  <text x="196" y="316" class="elabelA">nmap, IOC connection</text>
+
+  <!-- detection note -->
+  <rect x="70" y="440" width="460" height="104" rx="10" fill="#ffffff" stroke="#dfe3e8" stroke-width="1.3"/>
+  <text x="86" y="466" class="boxttl" font-size="14">Detection coverage (defense-in-depth)</text>
+  <text x="86" y="488" class="boxtxt">• HIDS (Wazuh): SSH 5710/5712 · RDP 60122/60115/92657 · Sysmon</text>
+  <text x="86" y="508" class="boxtxt">• NIDS (Suricata): recon that leaves no host log · IOC flow match 100100</text>
+  <text x="86" y="528" class="boxtxt">• Threat intel: phishing IOCs → CDB watchlist → custom rule (T1566)</text>
+
+  <!-- ===================== ZONE: cloud backend ===================== -->
+  <rect x="610" y="96" width="390" height="620" rx="14" fill="#f4f6f8" stroke="#dfe3e8" stroke-width="1.5"/>
+  <text x="630" y="122" class="zone">CLOUD BACKEND + SOAR</text>
+
+  <!-- Wazuh Manager -->
+  <rect x="640" y="150" width="330" height="120" rx="10" fill="#e9eef6" stroke="#8ea7c8" stroke-width="1.5"/>
+  <text x="658" y="178" class="boxttl">Wazuh Manager (SIEM)</text>
+  <text x="658" y="200" class="boxtxt">Detection rules · correlation · alerting</text>
+  <text x="658" y="218" class="boxtxt">CDB threat-intel list · custom rule 100100</text>
+  <text x="658" y="238" class="boxtxt">Forwards curated alerts (group-filtered)</text>
+  <text x="658" y="258" class="ip">&lt;MANAGER_IP&gt;</text>
+
+  <!-- Shuffle -->
+  <rect x="640" y="326" width="330" height="110" rx="10" fill="#efe9f6" stroke="#a78fc8" stroke-width="1.5"/>
+  <text x="658" y="354" class="boxttl">Shuffle (SOAR)</text>
+  <text x="658" y="376" class="boxtxt">Webhook trigger → workflow</text>
+  <text x="658" y="396" class="boxtxt">VirusTotal enrichment (malicious, country, owner)</text>
+  <text x="658" y="416" class="boxtxt">HTTP node → TheHive API (201)</text>
+
+  <!-- VirusTotal side -->
+  <rect x="640" y="462" width="155" height="72" rx="10" fill="#fdf6e9" stroke="#d9c07a" stroke-width="1.5"/>
+  <text x="656" y="488" class="boxttl" font-size="14">VirusTotal</text>
+  <text x="656" y="508" class="boxtxt">IP reputation</text>
+  <text x="656" y="524" class="boxtxt">enrichment API</text>
+
+  <!-- TheHive -->
+  <rect x="815" y="462" width="155" height="72" rx="10" fill="#e9f3f4" stroke="#7fb3bb" stroke-width="1.5"/>
+  <text x="831" y="488" class="boxttl" font-size="14">TheHive</text>
+  <text x="831" y="508" class="boxtxt">Alert / case</text>
+  <text x="831" y="524" class="boxtxt">for the analyst</text>
+
+  <!-- analyst -->
+  <rect x="640" y="586" width="330" height="96" rx="10" fill="#ffffff" stroke="#dfe3e8" stroke-width="1.3"/>
+  <text x="658" y="614" class="boxttl" font-size="15">Analyst triage</text>
+  <text x="658" y="636" class="boxtxt">Detect → correlate → decide. Tiered response:</text>
+  <text x="658" y="656" class="boxtxt">alert-only (recon) · auto-block (brute force) ·</text>
+  <text x="658" y="672" class="boxtxt">human-in-the-loop (confirmed compromise)</text>
+
+  <!-- ===================== cross-zone flow arrows ===================== -->
+  <!-- agents (internal) -> manager (cloud), via NAT -->
+  <path d="M530,202 C580,202 590,210 636,210" fill="none" stroke="#5b6472" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="545" y="150" class="elabel">agents → manager</text>
+  <text x="545" y="165" class="elabel">(NAT adapter)</text>
+
+  <!-- manager -> shuffle -->
+  <line x1="805" y1="270" x2="805" y2="322" stroke="#5b6472" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="815" y="300" class="elabel">curated alerts</text>
+
+  <!-- shuffle -> virustotal -->
+  <path d="M720,436 L718,458" fill="none" stroke="#5b6472" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- virustotal -> shuffle (return) implied; shuffle -> thehive -->
+  <path d="M880,436 L892,458" fill="none" stroke="#5b6472" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="700" y="452" class="elabel">enrich</text>
+  <text x="900" y="452" class="elabel">create</text>
+
+  <!-- thehive -> analyst -->
+  <line x1="892" y1="534" x2="892" y2="582" stroke="#5b6472" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- footer legend -->
+  <text x="40" y="600" class="zone">LEGEND</text>
+  <g font-size="12" fill="#49505b">
+    <rect x="40" y="612" width="14" height="14" rx="3" fill="#fbeceb" stroke="#d98a82"/>
+    <text x="60" y="623">Attacker</text>
+    <rect x="140" y="612" width="14" height="14" rx="3" fill="#eaf1ec" stroke="#8fb79b"/>
+    <text x="160" y="623">Endpoints (HIDS/NIDS)</text>
+    <rect x="320" y="612" width="14" height="14" rx="3" fill="#e9eef6" stroke="#8ea7c8"/>
+    <text x="340" y="623">SIEM</text>
+    <rect x="410" y="612" width="14" height="14" rx="3" fill="#efe9f6" stroke="#a78fc8"/>
+    <text x="430" y="623">SOAR</text>
+  </g>
+  <g font-size="12" fill="#49505b">
+    <line x1="40" y1="648" x2="66" y2="648" stroke="#b4453a" stroke-width="2"/>
+    <text x="74" y="652">attack traffic</text>
+    <line x1="180" y1="648" x2="206" y2="648" stroke="#5b6472" stroke-width="2"/>
+    <text x="214" y="652">telemetry / automation flow</text>
+  </g>
+</svg>
