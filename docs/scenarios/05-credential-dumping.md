@@ -18,7 +18,7 @@ custom Mimikatz rule and exercises the Credential Access tactic end-to-end.
 
 ## 1. Attack
 
-This scenario assumes the foothold from **Scenario 02**: the `testuser` account on
+This scenario assumes the foothold from **Scenario 02**: the `Client` account on
 the Windows host has been compromised via RDP brute force, giving a hands-on
 session on `192.168.56.30`. From there the attacker performs two actions.
 
@@ -152,7 +152,7 @@ rotation, not perimeter blocking.
 ## 5. The chain (how it threads the scenarios together)
 
 ```
-RDP brute force (Scenario 02, T1110)  →  testuser compromised
+RDP brute force (Scenario 02, T1110)  →  Client compromised
    →  certutil pulls Mimikatz onto the host            (T1105, Ingress Tool Transfer)
    →  Mimikatz dumps credentials from LSASS memory     (T1003.001, LSASS Memory)
 ```

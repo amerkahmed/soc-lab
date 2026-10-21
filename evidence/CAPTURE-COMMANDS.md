@@ -44,7 +44,7 @@ sudo grep '"id":"5710"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
 mkdir -p evidence/scenario-02-rdp
 for pass in $(cat ~/winpass.txt); do
   echo "=== Trying: $pass ==="
-  xfreerdp3 /u:testuser /p:"$pass" /v:192.168.56.30 /cert:ignore +auth-only
+  xfreerdp3 /u:Client /p:"$pass" /v:192.168.56.30 /cert:ignore +auth-only
 done 2>&1 | tee evidence/scenario-02-rdp/attack-output.txt
 ```
 
@@ -64,8 +64,8 @@ sudo grep '"id":"60122"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
 **Screenshot:** the three rules firing in sequence →
 `evidence/scenario-02-rdp/wazuh-alerts.png`
 
-> Tip: if `testuser` is locked from a previous run, reset it on Windows:
-> `net user testuser Password123 /active:yes`
+> Tip: if `Client` is locked from a previous run, reset it on Windows:
+> `net user Client <<new-password>> /active:yes`
 
 ---
 
