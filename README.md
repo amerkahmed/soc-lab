@@ -6,7 +6,7 @@
 
 # SOC Home Lab — Detection, Enrichment & Automated Response
 
-> At 22:01 UTC, a brute-force run from the lab's Kali host locked out the Windows
+> At 22:17 UTC, a brute-force run from the lab's Kali host locked out the Windows
 > target's `Client` account after a burst of failed RDP logons — then one
 > attempt succeeded. Wazuh fired rule **60115** (account lockout) and **92657**
 > (successful remote logon, flagged as possible pass-the-hash). I confirmed the
