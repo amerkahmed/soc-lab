@@ -1,4 +1,4 @@
-# Scenario 02 — RDP Brute Force → Lockout → Compromise
+# Scenario 02 — [High] RDP Brute Force → Lockout → Compromise
 
 The richest scenario in the lab: it runs the full arc from first failed logon to
 confirmed compromise of a local **administrator** account, and is written as an

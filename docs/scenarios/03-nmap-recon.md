@@ -1,4 +1,4 @@
-# Scenario 03 — Nmap Reconnaissance
+# Scenario 03 — [Low] Nmap Reconnaissance
 
 | | |
 |---|---|

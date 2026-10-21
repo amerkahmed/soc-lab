@@ -1,4 +1,4 @@
-# Scenario 04 — Phishing Analysis → IOC Detection → SOAR Enrichment
+# Scenario 04 — [High] Phishing Analysis → IOC Detection → SOAR Enrichment
 
 The flagship scenario: it ties email analysis, threat-intel-driven detection, and
 full SOAR automation into one end-to-end story.
@@ -123,7 +123,56 @@ real watchlists work.
 
 ---
 
-## 6. The complete kill-chain narrative
+## 6. Triage
+
+The enriched alert lands in TheHive (via the SOAR pipeline above) for analyst
+review:
+
+- **IOC match** — rule 100100 (level 12) fired because a host's connection matched
+  the `phishing-infrastructure` entry on the CDB watchlist. A watchlist hit is
+  deterministic, high-signal evidence: an internal host contacted infrastructure
+  the team had already flagged as malicious.
+- **Direction & context** — the connection is *outbound*, from an internal victim
+  host to known-bad infrastructure over HTTP. In the phishing kill chain this is
+  the post-click callback — the T1204.001 "user clicked the link" stage — not
+  inbound background noise.
+- **Enrichment** — unlike the RDP scenario (an internal/private source VirusTotal
+  cannot resolve), here the IOC is an external IP, so VT enrichment is meaningful
+  and the SOAR pipeline attaches it automatically. *(Caveat, per §5: the lab IOC
+  `203.0.113.17` is a synthetic RFC 5737 address, so live VT output is
+  demonstrated against a genuinely malicious abuse.ch IP.)*
+
+**Verdict:** True positive — confirmed contact with known-bad infrastructure. The
+watchlist match proves the connection occurred; what it does **not** yet prove is
+whether credentials were submitted, which is the first thing to establish on the
+host. Confidence: **High** (a CDB match is exact, not heuristic).
+
+---
+
+## 7. Response
+
+This alert sits between the two response tiers:
+
+- **Automatable — block egress to the IOC.** Blocking the *destination* (the
+  watchlisted phishing IP) is low-risk and a strong auto-response candidate: it
+  stops any further callback, and unlike a spoofable scan source (Scenario 03),
+  the block target is the known-bad infrastructure itself, not a claimed source
+  that could be forged.
+- **Human-in-the-loop — investigate the host and user.** Determine whether the
+  link was clicked and whether credentials were entered on the harvesting URL. If
+  submission is suspected, force-reset the user's credentials and treat the
+  account as compromised.
+- **Close the loop.** Any new indicators surfaced by the VirusTotal enrichment
+  (related IPs/domains) are added back to the CDB watchlist — turning this
+  investigation's output into new automated detection, which is the whole point of
+  the pipeline (see the kill-chain narrative below).
+
+See the tiered response model in [architecture.md](../architecture.md) and the
+response table in the [README](../../README.md).
+
+---
+
+## 8. The complete kill-chain narrative
 
 ```
 Phishing email analyzed  →  IOCs extracted  →  IP added to Wazuh CDB watchlist
@@ -140,7 +189,7 @@ into automated detection content.
 
 ---
 
-## 7. Lessons Learned
+## 9. Lessons Learned
 
 - **Threat intel is only useful once operationalized.** Extracting IOCs is step
   one; the value is loading them into a watchlist that fires automatically.

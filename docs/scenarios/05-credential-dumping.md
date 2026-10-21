@@ -1,4 +1,4 @@
-# Scenario 05 — Credential Dumping (Mimikatz / LSASS)
+# Scenario 05 — [Critical] Credential Dumping (Mimikatz / LSASS)
 
 The post-compromise chain: it continues directly from Scenario 02, taking the
 RDP foothold and showing what an attacker does *next* — pull a tool onto the host

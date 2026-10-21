@@ -106,12 +106,13 @@ a **NAT** adapter (lets agents reach the cloud backend). See
 
 ## Detection Scenarios
 
-| # | Scenario | MITRE | Detection | Source | Status |
-|---|---|---|---|---|---|
-| 01 | [SSH Brute Force](docs/scenarios/01-ssh-brute-force.md) | T1110 | Wazuh 5710 / 5712 | Ubuntu agent (journald) | ✅ Validated |
-| 02 | [RDP Brute Force → Lockout → Compromise](docs/scenarios/02-rdp-brute-force.md) | T1110 | Wazuh 60122 / 60115 / 92657 | Windows agent (Security log) | ✅ Validated |
-| 03 | [Nmap Recon](docs/scenarios/03-nmap-recon.md) | T1046 / T1595 | Suricata (ET ruleset) | Ubuntu Suricata | ✅ Validated |
-| 04 | [Phishing IOC → SOAR Enrichment](docs/scenarios/04-phishing-ioc.md) | T1566 | Wazuh 100100 (custom, CDB match) | Suricata → Wazuh → Shuffle → TheHive | ✅ Validated |
+| # | Scenario | Severity | MITRE | Detection | Source | Status |
+|---|---|---|---|---|---|---|
+| 01 | [SSH Brute Force](docs/scenarios/01-ssh-brute-force.md) | Medium | T1110 | Wazuh 5710 / 5712 | Ubuntu agent (journald) | ✅ Validated |
+| 02 | [RDP Brute Force → Lockout → Compromise](docs/scenarios/02-rdp-brute-force.md) | High | T1110 | Wazuh 60122 / 60115 / 92657 | Windows agent (Security log) | ✅ Validated |
+| 03 | [Nmap Recon](docs/scenarios/03-nmap-recon.md) | Low | T1046 / T1595 | Suricata (ET ruleset) | Ubuntu Suricata | ✅ Validated |
+| 04 | [Phishing IOC → SOAR Enrichment](docs/scenarios/04-phishing-ioc.md) | High | T1566 | Wazuh 100100 (custom, CDB match) | Suricata → Wazuh → Shuffle → TheHive | ✅ Validated |
+| 05 | [Credential Dumping (Mimikatz / LSASS)](docs/scenarios/05-credential-dumping.md) | Critical | T1003.001 | Wazuh 100002 (custom) | Windows agent (Sysmon) | ⏳ Rule built |
 
 > **Detection latency note:** <<fill in — e.g. agent-based host alerts fired in
 > ~X s; Suricata flow-based detection took ~60–90 s due to flow-record flush
@@ -151,6 +152,7 @@ docs/
     02-rdp-brute-force.md
     03-nmap-recon.md
     04-phishing-ioc.md
+    05-credential-dumping.md
   triage-methodology.md            ← analyst triage logic
   challenges-and-resolutions.md    ← engineering problems solved (standout section)
   mitre-coverage.md                ← ATT&CK mapping
@@ -158,7 +160,6 @@ config/                            ← reproducible configs (sanitized)
   local_rules.xml                  ← custom Wazuh rules
   phishing-iocs                    ← CDB threat-intel list
   ossec-integration.xml            ← Shuffle integration block
-  shuffle-workflow.json            ← exported SOAR workflow
 evidence/                          ← screenshots + raw alert JSON per scenario
 ```
 
@@ -181,4 +182,4 @@ evidence/                          ← screenshots + raw alert JSON per scenario
 - Automated response (auto-block brute-force source IPs via `firewall-drop`).
 - Human-in-the-loop response (Shuffle → analyst approval → action).
 - False-positive tuning scenario (benign stale-credential retries).
-- Additional detections (web attack, credential dumping).
+- Additional detections (web attack, persistence).

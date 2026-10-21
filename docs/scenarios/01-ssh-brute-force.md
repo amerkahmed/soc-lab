@@ -1,4 +1,4 @@
-# Scenario 01 — SSH Brute Force
+# Scenario 01 — [Medium] SSH Brute Force
 
 | | |
 |---|---|
