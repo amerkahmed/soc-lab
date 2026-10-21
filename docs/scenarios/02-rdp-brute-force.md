@@ -80,8 +80,8 @@ sensors. See [challenges-and-resolutions.md](../challenges-and-resolutions.md), 
 **Alert summary**
 Successful RDP logon (rule 92657, possible pass-the-hash) to the local
 administrator account `Client` on DESKTOP-T0LOHB5, preceded by a burst of failed
-logons and an account lockout — all from a single source. Timeline: failures and
-lockout at 22:17 UTC, successful logon at 22:19 UTC.
+logons and an account lockout — all from a single source. Timeline: failed logons
+began 22:15 UTC, account lockout 22:17, successful logon 22:19 UTC.
 
 **Observations**
 - **Source** — `192.168.56.10` (workstation name `kali`), consistent across every
