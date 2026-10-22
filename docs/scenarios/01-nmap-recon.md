@@ -1,4 +1,4 @@
-# Scenario 03 — [Low] Nmap Reconnaissance
+# Scenario 01 — [Low] Nmap Reconnaissance
 
 | | |
 |---|---|
@@ -25,7 +25,7 @@ The aggressive scan (`-A`) sends real service probes, OS-fingerprinting packets,
 and script traffic — far noisier than a bare SYN scan and far more likely to trip
 network signatures.
 
-> _Evidence: `evidence/scenario-03-nmap/attack-output.txt`_
+> _Evidence: `evidence/scenario-01-nmap/attack-output.txt`_
 
 ---
 
@@ -43,8 +43,8 @@ packets on the wire, is not:
   manager by the agent, where Wazuh's built-in Suricata decoders surface them
   (base rule 86601 for Suricata alerts).
 
-> _Evidence: `evidence/scenario-03-nmap/suricata-fast-log.txt`,
-> `evidence/scenario-03-nmap/wazuh-suricata-alert.json`_
+> _Evidence: `evidence/scenario-01-nmap/suricata-fast-log.txt`,
+> `evidence/scenario-01-nmap/wazuh-suricata-alert.json`_
 
 ---
 

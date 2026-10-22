@@ -1,6 +1,6 @@
 # Scenario 05 — [Critical] Credential Dumping (Mimikatz / LSASS)
 
-The post-compromise chain: it continues directly from Scenario 02, taking the
+The post-compromise chain: it continues directly from Scenario 04, taking the
 RDP foothold and showing what an attacker does *next* — pull a tool onto the host
 and steal credentials out of memory. This is the scenario that exercises the
 Credential Access tactic end-to-end and contrasts behavior-based with name-based
@@ -8,7 +8,7 @@ detection.
 
 | | |
 |---|---|
-| **MITRE ATT&CK** | T1003.001 (OS Credential Dumping: LSASS Memory) — chained from T1110 (Scenario 02) via T1105 (Ingress Tool Transfer) |
+| **MITRE ATT&CK** | T1003.001 (OS Credential Dumping: LSASS Memory) — chained from T1110 (Scenario 04) via T1105 (Ingress Tool Transfer) |
 | **Attacker** | Kali — 192.168.56.10 |
 | **Target** | Windows 10 — DESKTOP-T0LOHB5 (192.168.56.30) |
 | **Detection source** | Wazuh agent → Sysmon (Event ID 10, process access to LSASS; Event ID 1 for the custom rule) |
@@ -19,18 +19,18 @@ detection.
 
 ## 1. Attack
 
-This scenario assumes the foothold from **Scenario 02**: the `Client` account on
+This scenario assumes the foothold from **Scenario 04**: the `Client` account on
 the Windows host has been compromised via RDP brute force, giving a hands-on
 session on `192.168.56.30`. From there the attacker performs two actions.
 
 > _Note on chronology: the scenarios were exercised independently. This
 > credential-dumping run was performed on the same host under the same `Client`
-> account, logically continuing the Scenario 02 compromise rather than as one
+> account, logically continuing the Scenario 04 compromise rather than as one
 > unbroken session._
 
 **Step 1 — Pull the tool onto the host (T1105).** Mimikatz is served from Kali
 (the same simple HTTP-server pattern used to detonate the phishing IOC in
-Scenario 04) and fetched with `certutil`, a signed, built-in Windows binary
+Scenario 02) and fetched with `certutil`, a signed, built-in Windows binary
 (a "LOLBin") — a common way to download tooling without introducing a new
 executable downloader:
 
@@ -161,9 +161,9 @@ line shows the full `http://192.168.56.10/...` URL — the Ingress Tool Transfer
   embedded `mimikatz.exe` identity. Either way, a benign-looking filename hiding a
   known-bad binary accessing LSASS is itself a strong malicious signal.
 - **Correlation across scenarios** — this fired on the same host
-  (`192.168.56.30`) and user (`Client`) compromised in Scenario 02. Failed RDP
+  (`192.168.56.30`) and user (`Client`) compromised in Scenario 04. Failed RDP
   logons → lockout → successful logon → **now credential dumping** is a coherent
-  attacker progression, not an isolated event. Tying 92900 back to the Scenario 02
+  attacker progression, not an isolated event. Tying 92900 back to the Scenario 04
   alerts is the analytic core.
 
 **Verdict:** True positive, **Critical**. Confirmed credential-dumping attempt on
@@ -194,7 +194,7 @@ rotation, not perimeter blocking.
 ## 5. The chain (how it threads the scenarios together)
 
 ```
-RDP brute force (Scenario 02, T1110)  →  Client compromised
+RDP brute force (Scenario 04, T1110)  →  Client compromised
    →  certutil pulls Mimikatz onto the host            (T1105, Ingress Tool Transfer)
    →  Mimikatz dumps credentials from LSASS memory     (T1003.001, LSASS Memory)
 ```

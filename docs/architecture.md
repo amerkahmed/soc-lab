@@ -108,7 +108,7 @@ coverage.
 A crafted phishing email is analyzed, its IOCs extracted, and the attacker IP
 loaded into a Wazuh **CDB list** referenced by **custom rule 100100** (level 12,
 T1566). A connection to the IOC is detected on the wire and matched against the
-list. Full walkthrough: [scenarios/04-phishing-ioc.md](scenarios/04-phishing-ioc.md).
+list. Full walkthrough: [scenarios/02-phishing-ioc.md](scenarios/02-phishing-ioc.md).
 
 The lab IOC is a reserved documentation IP (`203.0.113.17`, RFC 5737);
 "known-bad" means known-bad *within this lab's threat list*, exactly how real

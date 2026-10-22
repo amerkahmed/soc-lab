@@ -108,10 +108,10 @@ a **NAT** adapter (lets agents reach the cloud backend). See
 
 | # | Scenario | Severity | MITRE | Detection | Source | Status |
 |---|---|---|---|---|---|---|
-| 01 | [SSH Brute Force](docs/scenarios/01-ssh-brute-force.md) | Medium | T1110 | Wazuh 5710 / 5712 | Ubuntu agent (journald) | ✅ Validated |
-| 02 | [RDP Brute Force → Lockout → Compromise](docs/scenarios/02-rdp-brute-force.md) | High | T1110 | Wazuh 60122 / 60115 / 92657 | Windows agent (Security log) | ✅ Validated |
-| 03 | [Nmap Recon](docs/scenarios/03-nmap-recon.md) | Low | T1046 / T1595 | Suricata (ET ruleset) | Ubuntu Suricata | ✅ Validated |
-| 04 | [Phishing IOC → SOAR Enrichment](docs/scenarios/04-phishing-ioc.md) | High | T1566 | Wazuh 100100 (custom, CDB match) | Suricata → Wazuh → Shuffle → TheHive | ✅ Validated |
+| 01 | [Nmap Recon](docs/scenarios/01-nmap-recon.md) | Low | T1046 / T1595 | Suricata (ET ruleset) | Ubuntu Suricata | ✅ Validated |
+| 02 | [Phishing IOC → SOAR Enrichment](docs/scenarios/02-phishing-ioc.md) | High | T1566 | Wazuh 100100 (custom, CDB match) | Suricata → Wazuh → Shuffle → TheHive | ✅ Validated |
+| 03 | [SSH Brute Force](docs/scenarios/03-ssh-brute-force.md) | Medium | T1110 | Wazuh 5710 / 5712 | Ubuntu agent (journald) | ✅ Validated |
+| 04 | [RDP Brute Force → Lockout → Compromise](docs/scenarios/04-rdp-brute-force.md) | High | T1110 | Wazuh 60122 / 60115 / 92657 | Windows agent (Security log) | ✅ Validated |
 | 05 | [Credential Dumping (Mimikatz / LSASS)](docs/scenarios/05-credential-dumping.md) | Critical | T1003.001 | Wazuh 92900 (+ custom 100002) | Windows agent (Sysmon EID 10) | ✅ Validated |
 
 > **Detection latency note:** <<fill in — e.g. agent-based host alerts fired in
@@ -124,7 +124,7 @@ escalate.
 
 ---
 
-## The SOAR Pipeline (Scenario 04 highlight)
+## The SOAR Pipeline (Scenario 02 highlight)
 
 The most complete automation path, end to end:
 
@@ -137,7 +137,13 @@ The most complete automation path, end to end:
 5. Shuffle enriches the IOC via **VirusTotal** (detection count, hosting, country).
 6. Shuffle creates an enriched **alert in TheHive** for analyst triage.
 
-Full walkthrough: [docs/scenarios/04-phishing-ioc.md](docs/scenarios/04-phishing-ioc.md).
+> **Phishing isn't the only scenario that reaches TheHive.** The SSH (03) and RDP
+> (04) brute-force alerts are forwarded and raised as cases too — only the Nmap
+> recon alerts (01) are held back as network-sensor noise. Phishing is simply where
+> **VirusTotal enrichment** is showcased: its IOC is a real external IP, while the
+> brute-force sources are private IPs VT can't resolve.
+
+Full walkthrough: [docs/scenarios/02-phishing-ioc.md](docs/scenarios/02-phishing-ioc.md).
 
 ---
 
@@ -148,10 +154,10 @@ README.md                          ← you are here
 docs/
   architecture.md                  ← full architecture + networking design
   scenarios/                       ← per-attack IR reports (detect→triage→respond)
-    01-ssh-brute-force.md
-    02-rdp-brute-force.md
-    03-nmap-recon.md
-    04-phishing-ioc.md
+    01-nmap-recon.md
+    02-phishing-ioc.md
+    03-ssh-brute-force.md
+    04-rdp-brute-force.md
     05-credential-dumping.md
   triage-methodology.md            ← analyst triage logic
   challenges-and-resolutions.md    ← engineering problems solved

@@ -1,4 +1,4 @@
-# Scenario 04 — [High] Phishing Analysis → IOC Detection → SOAR Enrichment
+# Scenario 02 — [High] Phishing Analysis → IOC Detection → SOAR Enrichment
 
 Ties email analysis, threat-intel-driven detection, and full SOAR automation into
 one end-to-end flow.
@@ -48,7 +48,7 @@ raw-IP HTTP harvesting URL.
 - URL: `hxxp://203[.]0[.]113[.]17/paypal/login/verify[.]php`
 - IP: `203[.]0[.]113[.]17`
 
-> _Evidence: `evidence/scenario-04-phishing/emlanalyzer-output.txt`_
+> _Evidence: `evidence/scenario-02-phishing/emlanalyzer-output.txt`_
 
 ---
 
@@ -100,7 +100,7 @@ Rule: 100100 (level 12) -> 'Connection to known phishing infrastructure (IOC mat
   firedtimes: 4   mail: true
 ```
 
-> _Evidence: `evidence/scenario-04-phishing/wazuh-100100-alert.json`_
+> _Evidence: `evidence/scenario-02-phishing/wazuh-100100-alert.json`_
 
 ---
 
@@ -115,8 +115,8 @@ workflow:
    `/api/v1/alert`, embedding selected VT fields (malicious count, country,
    owner) in the description. Returns **HTTP 201 Created**.
 
-> _Evidence: `evidence/scenario-04-phishing/shuffle-run-201.png`,
-> `evidence/scenario-04-phishing/thehive-alert.png`_
+> _Evidence: `evidence/scenario-02-phishing/shuffle-run-201.png`,
+> `evidence/scenario-02-phishing/thehive-alert.png`_
 
 **Honesty note (keep this in the writeup):** the lab IOC `203.0.113.17` is a
 reserved documentation address, so VirusTotal legitimately returns "clean" for
@@ -160,7 +160,7 @@ This alert sits between the two response tiers:
 
 - **Automatable — block egress to the IOC.** Blocking the *destination* (the
   watchlisted phishing IP) is low-risk and a strong auto-response candidate: it
-  stops any further callback, and unlike a spoofable scan source (Scenario 03),
+  stops any further callback, and unlike a spoofable scan source (Scenario 01),
   the block target is the known-bad infrastructure itself, not a claimed source
   that could be forged.
 - **Human-in-the-loop — investigate the host and user.** Determine whether the

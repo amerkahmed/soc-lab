@@ -1,4 +1,4 @@
-# Scenario 01 — [Medium] SSH Brute Force
+# Scenario 03 — [Medium] SSH Brute Force
 
 | | |
 |---|---|
@@ -26,7 +26,7 @@ hydra -l fakeuser -P ~/passwords.txt ssh://192.168.56.20 -t 4
 Using a non-existent user means every attempt is a clean failure — exactly the
 signal wanted for triggering detection.
 
-> _Evidence: `evidence/scenario-01-ssh/attack-output.txt`_
+> _Evidence: `evidence/scenario-03-ssh/attack-output.txt`_
 
 ---
 
@@ -42,8 +42,8 @@ and matched on the manager:
 
 Both map to MITRE **T1110**.
 
-> _Evidence: `evidence/scenario-01-ssh/wazuh-alerts.png`,
-> `evidence/scenario-01-ssh/alert-5712.json`_
+> _Evidence: `evidence/scenario-03-ssh/wazuh-alerts.png`,
+> `evidence/scenario-03-ssh/alert-5712.json`_
 
 ---
 
@@ -80,6 +80,6 @@ tiered response model this is the case that justifies an automated
 - The distinction between the per-attempt rule (5710) and the correlation rule
   (5712) is the core of brute-force detection — a single failure is noise; the
   *pattern* is the alert.
-- Contrast with Scenario 02 (Windows RDP): the same technique (T1110) surfaces
+- Contrast with Scenario 04 (Windows RDP): the same technique (T1110) surfaces
   through a completely different log source (journald vs. the Windows Security
   channel), which is why host coverage must include both platforms.

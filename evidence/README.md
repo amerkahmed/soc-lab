@@ -10,24 +10,24 @@ Create one folder per scenario and drop in the artifacts below.
 
 ```
 evidence/
-  scenario-01-ssh/
-    attack-output.txt        # Hydra output from Kali
-    wazuh-alerts.png         # rules 5710 / 5712 firing (manager or dashboard)
-    alert-5712.json          # raw JSON of the brute-force correlation alert
-  scenario-02-rdp/
-    attack-output.txt        # xfreerdp3 loop output (LOGON_FAILURE → LOCKED_OUT)
-    wazuh-alerts.png         # rules 60122 / 60115 / 92657
-    alert-60115.json         # raw lockout alert JSON
-    alert-92657.json         # raw successful-logon alert JSON (the escalation)
-  scenario-03-nmap/
+  scenario-01-nmap/
     attack-output.txt        # nmap -A output
     suricata-fast-log.txt    # /var/log/suricata/fast.log excerpt
     wazuh-suricata-alert.json
-  scenario-04-phishing/
+  scenario-02-phishing/
     emlanalyzer-output.txt   # emlAnalyzer analysis of the sample
     wazuh-100100-alert.json  # the IOC-match alert (level 12, T1566)
     shuffle-run-201.png      # Shuffle workflow run, HTTP node 201
     thehive-alert.png        # the enriched alert in TheHive
+  scenario-03-ssh/
+    attack-output.txt        # Hydra output from Kali
+    wazuh-alerts.png         # rules 5710 / 5712 firing (manager or dashboard)
+    alert-5712.json          # raw JSON of the brute-force correlation alert
+  scenario-04-rdp/
+    attack-output.txt        # xfreerdp3 loop output (LOGON_FAILURE → LOCKED_OUT)
+    wazuh-alerts.png         # rules 60122 / 60115 / 92657
+    alert-60115.json         # raw lockout alert JSON
+    alert-92657.json         # raw successful-logon alert JSON (the escalation)
 ```
 
 ## Tips for good evidence

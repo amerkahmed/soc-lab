@@ -1,4 +1,4 @@
-# Scenario 02 — [High] RDP Brute Force → Lockout → Compromise
+# Scenario 04 — [High] RDP Brute Force → Lockout → Compromise
 
 Runs the full arc from first failed logon to confirmed compromise of a local
 **administrator** account, written as an analyst would hand it off — in ticket
@@ -42,7 +42,7 @@ account-lockout policy. Because lockout interrupts the attack, the successful
 compromise was performed as a separate logon after the account was unlocked —
 exactly how a real intrusion plays out when lockout defenses are in place.
 
-> _Evidence: `evidence/scenario-02-rdp/attack-output.txt` (password redacted)_
+> _Evidence: `evidence/scenario-04-rdp/attack-output.txt` (password redacted)_
 
 ---
 
@@ -62,7 +62,7 @@ by the Wazuh agent and matched on the manager:
   The event records `Workstation Name: kali`, `Source Network Address:
   192.168.56.10`, `Logon Type: 3`, `Authentication Package: NTLM`.
 
-> _Evidence: `evidence/scenario-02-rdp/alert-60122.json`,
+> _Evidence: `evidence/scenario-04-rdp/alert-60122.json`,
 > `alert-60115.json`, `alert-92657.json`_
 
 **Configuration note:** these detections did not work until a `<localfile>` block
@@ -102,7 +102,7 @@ VirusTotal is not meaningful here — the source is an internal/private IP (RFC
 1918) that VT cannot resolve. The relevant enrichment is host/identity context:
 `Client` is a local admin, the source is the known attacker host, and the logon
 used NTLM (not Kerberos), which is consistent with pass-the-hash or direct
-credential use over RDP. (Contrast Scenario 04, where the IOC is a real external
+credential use over RDP. (Contrast Scenario 02, where the IOC is a real external
 IP and VT enrichment applies.)
 
 **Verdict** — **True Positive — confirmed compromise.** Not a benign look-alike:

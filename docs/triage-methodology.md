@@ -23,23 +23,7 @@ on top of the detections.
 
 ## Per-scenario triage logic
 
-### SSH brute force (Scenario 01)
-- **Malicious indicators:** single source, non-existent username, many attempts/sec,
-  rule 5712 correlation fires.
-- **Benign look-alike:** a real user mistyping a few times (low volume, real
-  account, ends in success) — would *not* trip 5712 and would not come as a burst.
-- **Escalate when:** correlation fires, or any success follows the failures.
-
-### RDP brute force → compromise (Scenario 02)
-- **Malicious indicators:** consistent source IP across all 4625s, lockout (60115),
-  and — critically — a successful 4624 (rule 92657) from the attacking IP.
-- **Benign look-alike:** a stale cached credential (a mapped drive or scheduled
-  task with an old password) can generate repeated 4625s from a *known internal*
-  host and end benignly. The source IP and whether it ends in a legitimate success
-  are what separate them.
-- **Escalate immediately when:** rule 92657 fires — attempt has become compromise.
-
-### Nmap recon (Scenario 03)
+### Nmap recon (Scenario 01)
 - **Malicious indicators:** one source probing many ports/services; ICMP sweeps.
 - **Severity:** low on its own — recon is pre-attack, not intrusion.
 - **Do not auto-block:** scan source IPs are spoofable; blocking on them can be
@@ -47,13 +31,29 @@ on top of the detections.
 - **Escalate when:** the same source later escalates (brute force, exploit) — the
   correlation is the value.
 
-### Phishing IOC (Scenario 04)
+### Phishing IOC (Scenario 02)
 - **Malicious indicators:** any connection whose destination matches the IOC
   watchlist (rule 100100). By definition the destination is known-bad.
 - **Enrichment:** VirusTotal detection count / hosting / country adds context for
   the analyst before they promote to a case.
 - **Escalate when:** the IOC match fires at all — it means an endpoint reached
   known-bad infrastructure.
+
+### SSH brute force (Scenario 03)
+- **Malicious indicators:** single source, non-existent username, many attempts/sec,
+  rule 5712 correlation fires.
+- **Benign look-alike:** a real user mistyping a few times (low volume, real
+  account, ends in success) — would *not* trip 5712 and would not come as a burst.
+- **Escalate when:** correlation fires, or any success follows the failures.
+
+### RDP brute force → compromise (Scenario 04)
+- **Malicious indicators:** consistent source IP across all 4625s, lockout (60115),
+  and — critically — a successful 4624 (rule 92657) from the attacking IP.
+- **Benign look-alike:** a stale cached credential (a mapped drive or scheduled
+  task with an old password) can generate repeated 4625s from a *known internal*
+  host and end benignly. The source IP and whether it ends in a legitimate success
+  are what separate them.
+- **Escalate immediately when:** rule 92657 fires — attempt has become compromise.
 
 ---
 
