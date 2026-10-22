@@ -154,7 +154,7 @@ docs/
     04-phishing-ioc.md
     05-credential-dumping.md
   triage-methodology.md            ← analyst triage logic
-  challenges-and-resolutions.md    ← engineering problems solved (standout section)
+  challenges-and-resolutions.md    ← engineering problems solved
   mitre-coverage.md                ← ATT&CK mapping
 config/                            ← reproducible configs (sanitized)
   local_rules.xml                  ← custom Wazuh rules
@@ -174,12 +174,3 @@ evidence/                          ← screenshots + raw alert JSON per scenario
   lab IOC documented as synthetic.
 - All attack traffic targets the author's own lab VMs only.
 - Cloud backend IPs and credentials are redacted in this public repo.
-
----
-
-## Future Work
-
-- Automated response (auto-block brute-force source IPs via `firewall-drop`).
-- Human-in-the-loop response (Shuffle → analyst approval → action).
-- False-positive tuning scenario (benign stale-credential retries).
-- Additional detections (web attack, persistence).

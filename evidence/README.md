@@ -1,9 +1,8 @@
 # Evidence
 
 Captured proof that each scenario actually fired — screenshots and raw alert JSON.
-This is the single most important section for credibility: it shows the lab is real,
-not just described. Reviewers trust evidence with timestamps, rule IDs, and source
-IPs far more than a generic dashboard screenshot.
+Reviewers trust evidence with timestamps, rule IDs, and source IPs far more than a
+generic dashboard screenshot.
 
 ## What to capture (per scenario)
 

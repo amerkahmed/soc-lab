@@ -1,8 +1,8 @@
 # Scenario 02 — [High] RDP Brute Force → Lockout → Compromise
 
-The richest scenario in the lab: it runs the full arc from first failed logon to
-confirmed compromise of a local **administrator** account, and is written as an
-analyst would hand it off — in ticket form. The successful-logon alert (rule
+Runs the full arc from first failed logon to confirmed compromise of a local
+**administrator** account, written as an analyst would hand it off — in ticket
+form. The successful-logon alert (rule
 92657) is the escalation trigger: the moment an attempt becomes a compromise.
 
 | | |

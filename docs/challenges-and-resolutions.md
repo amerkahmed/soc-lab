@@ -1,9 +1,8 @@
 # Challenges & Resolutions
 
-Real engineering problems solved while building this lab. Each is an actual issue
-that broke the pipeline, with the diagnosis and fix. This is the section that
-shows hands-on depth a clean happy-path writeup can't — most of SOC engineering is
-exactly this kind of troubleshooting.
+Real engineering problems solved while building this lab — each an actual issue
+that broke the pipeline, with the diagnosis and fix. This kind of troubleshooting
+is most of SOC engineering.
 
 ---
 

@@ -1,7 +1,7 @@
 # Scenario 04 — [High] Phishing Analysis → IOC Detection → SOAR Enrichment
 
-The flagship scenario: it ties email analysis, threat-intel-driven detection, and
-full SOAR automation into one end-to-end story.
+Ties email analysis, threat-intel-driven detection, and full SOAR automation into
+one end-to-end flow.
 
 | | |
 |---|---|
@@ -79,6 +79,11 @@ Registered in `ossec.conf` under `<ruleset>` as
 
 The rule fires when any Suricata event's **`dest_ip`** matches an entry on the CDB
 list — i.e. any connection to known phishing infrastructure.
+
+Plain-English, line by line:
+- `if_sid 86600` — only fires on events already matched by Suricata's base rule 86600 (it builds on Suricata alerts, not raw logs).
+- `list field="dest_ip" lookup="match_key"` — checks the event's `dest_ip` against the CDB watchlist; fires when the destination is a key on the list.
+- `level 12` — high-importance, above the forwarding threshold, so the match is sent on to the SOAR pipeline.
 
 ---
 
@@ -183,9 +188,8 @@ Phishing email analyzed  →  IOCs extracted  →  IP added to Wazuh CDB watchli
    →  enriched alert created in TheHive for the analyst
 ```
 
-This is the full detect → enrich → escalate loop, and it demonstrates the thing
-most home labs never reach: turning the output of an investigation (IOCs) back
-into automated detection content.
+This is the full detect → enrich → escalate loop: turning the output of an
+investigation (IOCs) back into automated detection content.
 
 ---
 
