@@ -26,7 +26,8 @@ hydra -l fakeuser -P ~/passwords.txt ssh://192.168.56.20 -t 4
 `-t 4` limits parallel connections so the burst looks like realistic tooling
 rather than a flood. Hydra reports `0 valid password found` — the attack
 completes without a successful login, which fixes the expected verdict up front:
-*attempted access, no compromise*.
+*attempted access, no compromise*. The brute force was launched several times
+while tuning the detection; the captured output is one representative run.
 
 > _Evidence: `evidence/scenario-03-ssh/attack-output.txt`_
 
@@ -46,25 +47,30 @@ agent, and matched on the manager. Two rules do the work:
   from per-attempt noise to a single pattern alert is the whole point of
   brute-force detection.
 
-Each run of the attack tripped 5712 exactly once, so three separate runs show up
-as three correlation hits:
+Because the attack was run several times, 5712 shows up once per run. The rest of
+this scenario follows **one** correlation event end to end —
+`1792618938.71318` — so the raw alert, the SOAR run, and the case all refer to
+the same event.
 
 ![Wazuh Discover filtered on rule.id:5712 — three brute-force runs, each collapsed into one correlation alert](../../evidence/scenario-03-ssh/wazuh-5712-alerts.png)
-*Three attack runs, three 5712 hits. Each hit represents a full burst of failed
-logins collapsed into one alert — the per-attempt 5710 events never reach the
-analyst as individual noise.*
+*Three attack runs, three 5712 hits — each hit is a full burst of failed logins
+collapsed into one alert, so the per-attempt 5710 events never reach the analyst
+as individual noise. The run followed below is the top hit (`16:42`).*
 
-Expanding one 5712 alert shows the fields triage actually uses — `data.srcip`,
+Expanding that alert shows the fields triage actually uses — `data.srcip`,
 `data.srcuser`, `rule.frequency`, and the MITRE mapping:
 
-![Expanded 5712 alert showing srcip 192.168.56.10, srcuser fakeuser, frequency 8, MITRE T1110 Credential Access / Brute Force](../../evidence/scenario-03-ssh/wazuh-5712-detail.png)
-*One 5712 alert expanded: `frequency: 8`, `data.srcip: 192.168.56.10`,
+![Expanded 5712 alert, event 1792618938.71318 — srcip 192.168.56.10, srcuser fakeuser, frequency 8, MITRE T1110 Credential Access / Brute Force](../../evidence/scenario-03-ssh/wazuh-5712-detail.png)
+*Event `1792618938.71318` expanded: `frequency: 8`, `data.srcip: 192.168.56.10`,
 `data.srcuser: fakeuser`, mapped to T1110 (Credential Access → Brute Force).*
 
-> _Evidence: `evidence/scenario-03-ssh/alert-5712.json` (level 10 correlation),
-> `evidence/scenario-03-ssh/alert-5710.json` (per-attempt). Authoritative event
-> times are the UTC timestamps inside the JSON; dashboard wall-clock rendering
-> depends on the viewer's timezone._
+> _Evidence: `evidence/scenario-03-ssh/alert-5712.json` (event `…71318`, level 10
+> correlation), `evidence/scenario-03-ssh/alert-5710.json` (per-attempt sample)._
+>
+> _Match artifacts by **event ID**, not wall-clock. The authoritative time is the
+> UTC timestamp in the JSON (`21:42:18.711Z`); the Kali attacker renders UTC‑4 and
+> the Wazuh/Shuffle/TheHive stack renders UTC‑5, so the same event shows different
+> clock values across screenshots._
 
 ---
 
@@ -80,7 +86,7 @@ Expanding one 5712 alert shows the fields triage actually uses — `data.srcip`,
   → tooling.
 - **Correlation** — rule 5712 confirms the volume/time threshold was crossed.
 
-**Verdict:** Confirmed brute-force attempt. No successful login in this run
+**Verdict:** Confirmed brute-force attempt. No successful login
 (`0 valid password found`), so the outcome is *attempted access, no
 compromise* — but the source is a clear candidate for blocking.
 
@@ -92,20 +98,20 @@ The 5712 alert is forwarded to Shuffle by webhook. The key behavior here is
 **aggregation**: Wazuh's correlation has already collapsed the burst, so Shuffle
 receives **one** event for the whole run rather than one per failed login.
 
-![Shuffle workflow run — a single webhook carrying rule_id 5712, severity 3, for the whole brute-force burst](../../evidence/scenario-03-ssh/shuffle-aggregated.png)
-*One Shuffle run per correlation alert. The `$exec` payload carries `rule_id:
-5712`, the sshd title, and the source log line — a single actionable event, not
-eight.*
+![Shuffle workflow run for event 1792618938.71318 — a single webhook carrying rule_id 5712, severity 3, for the whole brute-force burst](../../evidence/scenario-03-ssh/shuffle-aggregated.png)
+*The Shuffle run for event `1792618938.71318`: the `$exec` payload carries
+`rule_id: 5712`, the sshd title, and `id: 1792618938.71318` — one actionable
+event, not eight.*
 
 Shuffle then opens a case in TheHive. This is the same path phishing (Scenario
 02) takes — **SSH brute force reaches case creation too**; phishing is simply the
 scenario where VirusTotal enrichment is showcased.
 
-![TheHive alert for the SSH brute force — SEVERITY:MEDIUM, tags brute-force/ssh/wazuh, description with source, target user, attempt count, MITRE and rule](../../evidence/scenario-03-ssh/thehive-alert.png)
+![TheHive case for event 1792618938.71318 — SEVERITY:MEDIUM, tags brute-force/ssh/wazuh, description with source, target user, attempt count, MITRE and rule](../../evidence/scenario-03-ssh/thehive-alert.png)
 *TheHive case: `SEVERITY:MEDIUM`, tagged brute-force / ssh / wazuh, description
 `SSH brute force | Source: 192.168.56.10 | Target user: fakeuser | Correlated
-failed attempts: 8 | MITRE T1110 | Rule 5712`. The `Reference` ties the case
-back to the exact Wazuh event that created it.*
+failed attempts: 8 | MITRE T1110 | Rule 5712`. The `Reference` is
+`1792618938.71318` — the same event as the alert and Shuffle run above.*
 
 A brute force in progress is a strong auto-block candidate: high confidence,
 time-sensitive (every minute is more guesses), reversible, and backed by a
@@ -123,6 +129,8 @@ justifies an automated `firewall-drop` rather than waiting for an analyst.
   *pattern* is the alert, and only the pattern should reach the analyst.
 - Correlation also does the SOAR a favor: because 5712 collapses the burst, the
   case queue sees one case per campaign, not one per guess.
+- Timestamps are only trustworthy end-to-end when matched by **event ID** —
+  hosts in a lab rarely share a timezone, so wall-clock alone will mislead.
 - Contrast with Scenario 04 (Windows RDP): the same technique (T1110) surfaces
   through a completely different log source (journald vs. the Windows Security
   channel), which is why host coverage must span both platforms.
