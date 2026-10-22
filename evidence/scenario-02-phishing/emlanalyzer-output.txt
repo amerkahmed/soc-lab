@@ -1,0 +1,42 @@
+ ==============
+ ||  Header  ||
+ ==============
+Authentication-Results.....mx.yourlab.local;
+                           spf=fail (sender IP is 203.0.113.17) smtp.mailfrom=paypa1-secure.com;
+                           dkim=none;
+                           dmarc=fail (p=reject) header.from=paypa1-secure.com
+Received...................from paypa1-secure.com (unknown [203.0.113.17])
+                           by mx.yourlab.local with ESMTP id abc123def456;
+                           Fri, 09 Oct 2026 14:22:00 -0400
+From......................."PayPal Service" <service@paypa1-secure.com>
+Reply-To...................<collect@mail.ru>
+To.........................victim@yourlab.local
+Subject....................Your account has been limited - Action Required within 24 hours
+Date.......................Fri, 09 Oct 2026 14:22:01 -0400
+Message-ID.................<a9f8c7b2e1@paypa1-secure.com>
+MIME-Version...............1.0
+Content-Type...............text/html; charset="UTF-8"
+
+ ==================================
+ ||  URLs in HTML and text part  ||
+ ==================================
+ - http://203.0.113.17/paypal/login/verify.php
+
+ =================
+ ||  Plaintext  ||
+ =================
+[+] Email contains no plaintext
+
+ ============
+ ||  HTML  ||
+ ============
+<html><body>
+<p>Dear Customer,</p>
+<p>We have detected unusual activity on your account. For your protection,
+your account access has been <b>limited</b>.</p>
+<p>You must verify your information within <b>24 hours</b> or your account
+will be <b>permanently suspended</b>.</p>
+<p><a href="http://203.0.113.17/paypal/login/verify.php">Verify My Account Now</a></p>
+<p>Thank you,<br>PayPal Security Team</p>
+<p style="font-size:9px;color:#999">This is an automated message. Please do not reply.</p>
+</body></html>

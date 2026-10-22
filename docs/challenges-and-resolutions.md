@@ -89,6 +89,18 @@ The Shuffle HTTP node's connection-timeout field was accidentally set to a
 VirusTotal variable that resolved to `0` (`timeout cannot be ≤ 0`).
 **Fix:** set it to a plain `30`.
 
+### 14. Phishing rule over-matched on ICMP (false positive → tuning)
+Custom rule 100100 matched any event whose `dest_ip` was on the phishing CDB list,
+regardless of protocol. Because the Nmap attacker host (`192.168.56.10`) is also the
+lab's IOC trigger, Nmap's ICMP probes to it fired the phishing rule (level 12) on
+scan traffic — a false positive.
+**Fix:** add `<field name="proto">TCP</field>` so the rule only matches TCP
+connections, not pings/scans.
+**Lesson:** a rule can fire on the right indicator and still be too broad — scope it
+to the right protocol/port. Evidence:
+`evidence/scenario-02-phishing/wazuh-100100-FALSE-POSITIVE-icmp.json` (before) vs
+`wazuh-100100-alert.json` (after).
+
 ---
 
 ## What this log demonstrates

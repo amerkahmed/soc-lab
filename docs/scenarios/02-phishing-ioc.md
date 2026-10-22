@@ -9,7 +9,7 @@ one end-to-end flow.
 | **Attacker infra (lab IOC)** | 203.0.113.17 (reserved documentation IP, RFC 5737) |
 | **Detection source** | Suricata flow → Wazuh custom rule 100100 (CDB match) |
 | **Automation** | Wazuh → Shuffle → VirusTotal → TheHive |
-| **Status** | ✅ Validated (detection + SOAR pipeline); enrichment display finalizing |
+| **Status** | ✅ Validated (detection → SOAR enrichment → TheHive case) |
 
 ---
 
@@ -50,6 +50,12 @@ raw-IP HTTP harvesting URL.
 
 > _Evidence: `evidence/scenario-02-phishing/emlanalyzer-output.txt`_
 
+![emlAnalyzer output — every planted indicator surfaced](../../evidence/scenario-02-phishing/eml-analysis.png)
+
+*`emlAnalyzer` on the sample: typosquatted sender `paypa1-secure.com`, Reply-To
+`collect@mail.ru`, `spf=fail / dkim=none / dmarc=fail`, and the raw-IP harvest URL
+`http://203.0.113.17/paypal/login/verify.php`.*
+
 ---
 
 ## 3. Operationalizing the IOC in Wazuh (threat intel → detection)
@@ -68,6 +74,7 @@ Registered in `ossec.conf` under `<ruleset>` as
 <group name="phishing,ioc,">
   <rule id="100100" level="12">
     <if_sid>86600</if_sid>
+    <field name="proto">TCP</field>
     <list field="dest_ip" lookup="match_key">etc/lists/phishing-iocs</list>
     <description>Connection to known phishing infrastructure (IOC match)</description>
     <mitre>
@@ -82,8 +89,33 @@ list — i.e. any connection to known phishing infrastructure.
 
 Plain-English, line by line:
 - `if_sid 86600` — only fires on events already matched by Suricata's base rule 86600 (it builds on Suricata alerts, not raw logs).
+- **`proto` = TCP** — restricts the match to TCP connections, so pings/scans to a watchlisted IP don't trip the phishing rule (added during tuning — see below).
 - `list field="dest_ip" lookup="match_key"` — checks the event's `dest_ip` against the CDB watchlist; fires when the destination is a key on the list.
 - `level 12` — high-importance, above the forwarding threshold, so the match is sent on to the SOAR pipeline.
+
+### Tuning out a false positive
+
+The `proto=TCP` line wasn't in the first version of the rule — it was added after a
+real false positive. As first written, the rule matched **any** event whose
+`dest_ip` was on the watchlist, regardless of protocol. The Nmap attacker host
+`192.168.56.10` is also the lab's IOC trigger, so Nmap's **ICMP** probes to that IP
+matched the list and fired the phishing rule (level 12) on traffic that wasn't
+phishing at all:
+
+- **False positive** (`wazuh-100100-FALSE-POSITIVE-icmp.json`): rule 100100 fired on
+  `proto: ICMP`, signature `SURICATA ICMPv4 unknown code` — a scan ping, not an HTTP
+  callback.
+- **Fix:** add `<field name="proto">TCP</field>` so the rule only matches TCP
+  connections.
+- **After** (`wazuh-100100-alert.json`): the rule fires only on the real
+  `proto: TCP`, `dest_port: 80`, `app_proto: http` flow to the IOC.
+
+This is the false-positive-vs-tuning distinction in practice: the rule was *working*
+(it matched the IOC), but it was too broad — scoping it to the right protocol
+removed the noise without blinding the detection.
+
+> _Evidence: `evidence/scenario-02-phishing/wazuh-100100-FALSE-POSITIVE-icmp.json`
+> (before) vs `evidence/scenario-02-phishing/wazuh-100100-alert.json` (after)_
 
 ---
 
@@ -116,7 +148,18 @@ workflow:
    owner) in the description. Returns **HTTP 201 Created**.
 
 > _Evidence: `evidence/scenario-02-phishing/shuffle-run-201.png`,
-> `evidence/scenario-02-phishing/thehive-alert.png`_
+> `evidence/scenario-02-phishing/thehive-alert.png`,
+> `evidence/scenario-02-phishing/shuffle-workflow.png`_
+
+![Shuffle workflow — Wazuh webhook branches to VirusTotal and TheHive](../../evidence/scenario-02-phishing/shuffle-workflow.png)
+
+*The SOAR workflow: the Wazuh-alert webhook branches to a VirusTotal lookup and the
+TheHive POST nodes.*
+
+![Shuffle HTTP node — status 201, success true, POST to TheHive](../../evidence/scenario-02-phishing/shuffle-run-201.png)
+
+*The enriching POST to TheHive succeeds — `status: 201`, `success: true` (the host is
+already redacted to `<THEHIVE_IP>` in the workflow).*
 
 **Honesty note (keep this in the writeup):** the lab IOC `203.0.113.17` is a
 reserved documentation address, so VirusTotal legitimately returns "clean" for
@@ -151,6 +194,17 @@ review:
 watchlist match proves the connection occurred; what it does **not** yet prove is
 whether credentials were submitted, which is the first thing to establish on the
 host. Confidence: **High** (a CDB match is exact, not heuristic).
+
+![VirusTotal — enrichment demonstrated against a real malicious IP](../../evidence/scenario-02-phishing/virustotal-enrichment.png)
+
+*VirusTotal enrichment shown against a genuinely malicious IP from a public feed —
+`1.92.135.168`, flagged by **20/92** vendors and tagged a Cobalt Strike C2. (The lab
+IOC itself is synthetic, so VT returns clean for it — see §5.)*
+
+![TheHive — the enriched alert created by the SOAR pipeline](../../evidence/scenario-02-phishing/thehive-alert.png)
+
+*The case the pipeline creates in TheHive: rule 100100, tags `phishing / vt-enriched
+/ wazuh`, VirusTotal fields folded into the description.*
 
 ---
 
