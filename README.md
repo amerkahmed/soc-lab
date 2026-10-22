@@ -112,7 +112,7 @@ a **NAT** adapter (lets agents reach the cloud backend). See
 | 02 | [RDP Brute Force → Lockout → Compromise](docs/scenarios/02-rdp-brute-force.md) | High | T1110 | Wazuh 60122 / 60115 / 92657 | Windows agent (Security log) | ✅ Validated |
 | 03 | [Nmap Recon](docs/scenarios/03-nmap-recon.md) | Low | T1046 / T1595 | Suricata (ET ruleset) | Ubuntu Suricata | ✅ Validated |
 | 04 | [Phishing IOC → SOAR Enrichment](docs/scenarios/04-phishing-ioc.md) | High | T1566 | Wazuh 100100 (custom, CDB match) | Suricata → Wazuh → Shuffle → TheHive | ✅ Validated |
-| 05 | [Credential Dumping (Mimikatz / LSASS)](docs/scenarios/05-credential-dumping.md) | Critical | T1003.001 | Wazuh 100002 (custom) | Windows agent (Sysmon) | ⏳ Rule built |
+| 05 | [Credential Dumping (Mimikatz / LSASS)](docs/scenarios/05-credential-dumping.md) | Critical | T1003.001 | Wazuh 92900 (+ custom 100002) | Windows agent (Sysmon EID 10) | ✅ Validated |
 
 > **Detection latency note:** <<fill in — e.g. agent-based host alerts fired in
 > ~X s; Suricata flow-based detection took ~60–90 s due to flow-record flush

