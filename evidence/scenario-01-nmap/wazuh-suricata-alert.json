@@ -1,0 +1,59 @@
+{
+  "timestamp": "2026-10-22T21:55:54.669+0000",
+  "rule": {
+    "level": 3,
+    "description": "Suricata: Alert - SURICATA ICMPv4 unknown code",
+    "id": "86601",
+    "firedtimes": 34,
+    "mail": false,
+    "groups": [
+      "ids",
+      "suricata"
+    ]
+  },
+  "agent": {
+    "id": "002",
+    "name": "target",
+    "ip": "10.0.3.15"
+  },
+  "manager": {
+    "name": "Wazuh"
+  },
+  "id": "1792706154.326187",
+  "decoder": {
+    "name": "json"
+  },
+  "data": {
+    "timestamp": "2026-10-22T21:55:53.324842+0000",
+    "flow_id": "1521329082449210.000000",
+    "in_iface": "enp0s3",
+    "event_type": "alert",
+    "src_ip": "192.168.56.20",
+    "dest_ip": "192.168.56.10",
+    "proto": "ICMP",
+    "ip_v": "4",
+    "icmp_type": "0",
+    "icmp_code": "9",
+    "pkt_src": "wire/pcap",
+    "alert": {
+      "action": "allowed",
+      "gid": "1",
+      "signature_id": "2200025",
+      "rev": "2",
+      "signature": "SURICATA ICMPv4 unknown code",
+      "category": "Generic Protocol Command Decode",
+      "severity": "3"
+    },
+    "direction": "to_client",
+    "flow": {
+      "pkts_toserver": "33",
+      "pkts_toclient": "33",
+      "bytes_toserver": "5826",
+      "bytes_toclient": "5826",
+      "start": "2026-10-22T21:55:41.485284+0000",
+      "src_ip": "192.168.56.10",
+      "dest_ip": "192.168.56.20"
+    }
+  },
+  "location": "/var/log/suricata/eve.json"
+}

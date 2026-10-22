@@ -44,7 +44,14 @@ packets on the wire, is not:
   (base rule 86601 for Suricata alerts).
 
 > _Evidence: `evidence/scenario-01-nmap/suricata-fast-log.txt`,
-> `evidence/scenario-01-nmap/wazuh-suricata-alert.json`_
+> `evidence/scenario-01-nmap/wazuh-suricata-alert.json`,
+> `evidence/scenario-01-nmap/wazuh-suricata.png`_
+
+![Wazuh dashboard — Suricata alert 86601 (ids/suricata) raised by the nmap scan](../../evidence/scenario-01-nmap/wazuh-suricata.png)
+
+*Rule **86601** on the Wazuh manager: the scan's flow originates from the attacker
+`192.168.56.10` on the monitored interface `enp0s3`, and fired **34 times** across
+the scan — the network sensor catches what the host log never records.*
 
 ---
 
