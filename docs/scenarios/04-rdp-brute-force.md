@@ -7,7 +7,7 @@ moment an attempt becomes a compromise.
 
 | | |
 |---|---|
-| **MITRE ATT&CK** | T1110.001 (Brute Force: Password Guessing) → T1021.001 (Remote Services: RDP) / T1078.002 (Valid Accounts) — the successful-logon stage also flags T1550.002 (Pass the Hash) |
+| **MITRE ATT&CK** | T1110.001 (Brute Force: Password Guessing) → T1021.001 (Remote Services: RDP) / T1078.003 (Valid Accounts: Local Accounts) — the successful-logon stage also flags T1550.002 (Pass the Hash) |
 | **Attacker** | Kali — 192.168.56.10 (workstation `kali`) |
 | **Target** | Windows 10 — DESKTOP-T0LOHB5 (192.168.56.30) |
 | **Target account** | `Client` — a **local administrator** account |
@@ -95,6 +95,12 @@ attacking host, which is why Wazuh flags *possible pass-the-hash*.*
 for the **Security** event channel was added to the Windows agent's `ossec.conf`.
 By default the agent collected Sysmon but not the Security log — two different
 sensors. See [challenges-and-resolutions.md](../challenges-and-resolutions.md), item 5.
+
+**ATT&CK mapping note:** the built-in rule 92657 tags Valid Accounts as
+**T1078.002 (Domain Accounts)** — visible in its alert JSON — but `Client` is a
+**local** account on a WORKGROUP host, so the accurate sub-technique is
+**T1078.003 (Local Accounts)**. Built-in rule mappings are a useful starting point,
+not always exact for the environment they fire in.
 
 ---
 

@@ -106,24 +106,22 @@ a **NAT** adapter (lets agents reach the cloud backend). See
 
 ## Detection Scenarios
 
-| # | Scenario | Severity | MITRE | Detection | Source | Status |
-|---|---|---|---|---|---|---|
-| 01 | [Nmap Recon](docs/scenarios/01-nmap-recon.md) | Low | T1046 / T1595 | Suricata (ET ruleset) | Ubuntu Suricata | ✅ Validated |
-| 02 | [Phishing IOC → SOAR Enrichment](docs/scenarios/02-phishing-ioc.md) | High | T1566 | Wazuh 100100 (custom, CDB match) | Suricata → Wazuh → Shuffle → TheHive | ✅ Validated |
-| 03 | [SSH Brute Force](docs/scenarios/03-ssh-brute-force.md) | Medium | T1110 | Wazuh 5710 / 5712 | Ubuntu agent (journald) | ✅ Validated |
-| 04 | [RDP Brute Force → Lockout → Compromise](docs/scenarios/04-rdp-brute-force.md) | High | T1110 | Wazuh 60122 / 60115 / 92657 | Windows agent (Security log) | ✅ Validated |
-| 05 | [Credential Dumping (Mimikatz / LSASS)](docs/scenarios/05-credential-dumping.md) | Critical | T1003.001 | Wazuh 92900 (+ custom 100002) | Windows agent (Sysmon EID 10) | ✅ Validated |
+| # | Scenario | Severity | MITRE | Detection rule | Log source | Time to alert¹ | Status |
+|---|---|---|---|---|---|---|---|
+| 01 | [Nmap Recon](docs/scenarios/01-nmap-recon.md) | Low | T1046 / T1595 | Suricata 86601 (ET ruleset) | Suricata NIDS | ~1.3 s | ✅ Validated |
+| 02 | [Phishing IOC → SOAR Enrichment](docs/scenarios/02-phishing-ioc.md) | High | T1566 | Wazuh 100100 (custom CDB/IOC match) | Suricata NIDS → Wazuh | ~20 ms | ✅ Validated |
+| 03 | [SSH Brute Force](docs/scenarios/03-ssh-brute-force.md) | Medium | T1110 | Wazuh 5710 / 5712 | journald (Ubuntu agent) | ~1–2 s¹ | ✅ Validated |
+| 04 | [RDP Brute Force → Lockout → Compromise](docs/scenarios/04-rdp-brute-force.md) | High | T1110 | Wazuh 60122 / 60115 / 92657 | Windows Security (agent) | ~1.1–1.3 s | ✅ Validated |
+| 05 | [Credential Dumping (Mimikatz / LSASS)](docs/scenarios/05-credential-dumping.md) | Critical | T1003.001 | Wazuh 92900 (+ custom 100002) | Sysmon EID 10 (agent) | ~1.3 s | ✅ Validated |
 
-> **Detection latency (measured from the captured evidence).** Each alert's event
-> time vs. its Wazuh alert time: host and network **signature** alerts fire in
-> **~1–1.3 s** — Suricata Nmap (86601) ~1.3 s, RDP lockout (60115) ~1.1 s, RDP
-> compromise (92657) ~1.3 s, LSASS access (92900) ~1.3 s. The SSH correlation
-> (5712) fires in **~1–2 s** (approximate — the source log is second-resolution),
-> and the phishing IOC match (100100) in **~20 ms** (it matches the Suricata event
-> already on the manager). End to end through the SOAR path, a host event reaches a
-> **TheHive case in ~5–7 s** (e.g. LSASS dump → alert → Shuffle → case). Note:
-> Suricata's **signature alerts** fire in near-real-time; only its *flow* records
-> wait on flow-timeout — so there is no minute-scale NIDS delay in these scenarios.
+¹ **Time to alert** = event time → Wazuh alert, measured from the captured evidence (see each scenario doc). The SSH figure is approximate: 5712 is a correlation rule and journald is second-resolution.
+
+> **SOAR → case creation.** Phishing (02), SSH (03), RDP (04) and credential
+> dumping (05) are forwarded to Shuffle and raised as cases in TheHive — end to end,
+> a host event reaches an analyst-ready case in **~5–7 s**. Nmap (01) is
+> detection-only, deliberately held back from the SOAR layer as network-sensor
+> noise. (Suricata's **signature** alerts fire in near-real-time; only its *flow*
+> records wait on flow-timeout, so there's no minute-scale NIDS delay here.)
 
 See [docs/triage-methodology.md](docs/triage-methodology.md) for how each alert
 is triaged — what I check next, malicious vs. benign reasoning, and when to
