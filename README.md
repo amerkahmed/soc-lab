@@ -180,3 +180,7 @@ evidence/                          ← screenshots + raw alert JSON per scenario
   lab IOC documented as synthetic.
 - All attack traffic targets the author's own lab VMs only.
 - Cloud backend IPs and credentials are redacted in this public repo.
+- **Timestamps:** lab hosts run different local timezones, so wall-clock values
+  differ between attacker and analyst screenshots. Correlate all evidence by
+  Wazuh **event ID** and the **UTC timestamp** in each alert — never by local
+  clock.

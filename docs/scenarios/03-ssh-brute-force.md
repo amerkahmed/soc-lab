@@ -69,12 +69,11 @@ Expanding that alert shows the fields triage actually uses — `data.srcip`,
 > correlation), `evidence/scenario-03-ssh/alert-5710.json` (per-attempt sample
 > from the same burst)._
 >
-> _Match artifacts by **event ID** and the **UTC timestamp in the JSON**
-> (`19:51:39.676Z`), not by wall-clock. The Kali attacker renders UTC‑4 (hydra
-> shows `15:51`) and the analyst's Wazuh/Shuffle/TheHive browser renders UTC‑5
-> (shows `14:51`); both are the same `19:51` UTC moment. The hydra run window
-> (`19:51:35–41 UTC`) contains this 5712 event, confirming the attacker log and
-> the detection are the same run._
+> _All artifacts here share event ID `1792785099.20359` and UTC timestamp
+> `19:51:39.676Z`, and the hydra run window (`19:51:35–41 UTC`) contains this
+> 5712 event — confirming the attacker log and the detection are the same run.
+> On reading timestamps across hosts, see the correlation note in the
+> [README](../../README.md#honesty--scope-notes)._
 
 ---
 
