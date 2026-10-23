@@ -1,9 +1,3 @@
-<!--
-  README for the SOC home lab portfolio.
-  Placeholders are marked with <<...>> — fill these in with your real values.
-  Before publishing: redact cloud IPs, remove any credentials, add screenshots.
--->
-
 # SOC Home Lab — Detection, Enrichment & Automated Response
 
 > At 22:17 UTC, a brute-force run from the lab's Kali host locked out the Windows

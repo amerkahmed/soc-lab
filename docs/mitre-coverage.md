@@ -10,8 +10,7 @@ scenario that exercises it and the detection source that catches it.
 | Credential Access | Brute Force | T1110 | Wazuh 5710 / 5712 (SSH) | [03](scenarios/03-ssh-brute-force.md) |
 | Credential Access | Brute Force | T1110 | Wazuh 60122 / 60115 / 92657 (RDP) | [04](scenarios/04-rdp-brute-force.md) |
 | Initial Access | Phishing | T1566 | Wazuh 100100 (custom, CDB IOC match) | [02](scenarios/02-phishing-ioc.md) |
-| Reconnaissance | Phishing for Information | T1598 | Email analysis (emlAnalyzer) | [02](scenarios/02-phishing-ioc.md) |
-| Execution | User Execution: Malicious Link | T1204.001 | IOC detonation → Suricata/Wazuh | [02](scenarios/02-phishing-ioc.md) |
+| Execution | User Execution: Malicious Link | T1204.001 | IOC detonation (curl — simulated click) → Suricata/Wazuh | [02](scenarios/02-phishing-ioc.md) · simulated |
 | Discovery | Account Discovery | T1087 | Sysmon (net.exe) | — (observed on Windows) |
 | Discovery | Remote System Discovery | T1018 | Sysmon | — (observed on Windows) |
 | Execution | Scheduled Task/Job | T1053 | Sysmon (taskschd.dll load) | — (observed on Windows) |
@@ -39,8 +38,9 @@ scenario that exercises it and the detection source that catches it.
   layer. Phishing is simply the scenario where **VirusTotal enrichment** is
   showcased, because its IOC is a real external IP — the brute-force sources are
   private RFC 1918 addresses VirusTotal can't resolve (see the selective-enrichment
-  note in [architecture.md](architecture.md) §6). Phishing also chains three
-  techniques: T1598 → T1566 → T1204.001.
+  note in [architecture.md](architecture.md) §6). Phishing's validated technique is
+  T1566 (the detected IOC callback); the user-click stage (T1204.001) is simulated
+  via the curl detonation, not an observed user action.
 - The Sysmon-observed techniques (T1087, T1018, T1053) surfaced incidentally during
   Windows testing and show the depth of process-level telemetry available for
   future detection work.

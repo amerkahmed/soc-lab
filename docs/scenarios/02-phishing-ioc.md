@@ -5,7 +5,7 @@ one end-to-end flow.
 
 | | |
 |---|---|
-| **MITRE ATT&CK** | T1566 (Phishing) — with T1598 (info gathering), T1204.001 (user clicks link) |
+| **MITRE ATT&CK** | T1566 (Phishing) — the detected IOC callback. The user-execution stage (T1204.001, "clicks the link") is **simulated** via the curl detonation, not an observed user action. |
 | **Attacker infra (lab IOC)** | 203.0.113.17 (reserved documentation IP, RFC 5737) |
 | **Detection source** | Suricata flow → Wazuh custom rule 100100 (CDB match) |
 | **Automation** | Wazuh → Shuffle → VirusTotal → TheHive |
@@ -65,9 +65,18 @@ The extracted IP was turned into a live detection — the analyst-to-engineer st
 **CDB list** (`config/phishing-iocs`, deployed to `/var/ossec/etc/lists/`):
 ```
 203.0.113.17:phishing_infrastructure
+192.168.56.10:lab_detection_trigger
 ```
 Registered in `ossec.conf` under `<ruleset>` as
 `<list>etc/lists/phishing-iocs</list>`.
+
+The first entry is the IOC extracted from the email (`203.0.113.17`). That address
+is a reserved **RFC 5737 documentation IP** — deliberately non-routable, so nothing
+can actually connect to it. So the live detection is triggered against a
+**reachable lab stand-in** (`192.168.56.10`, the Kali host) using the *same* rule
+logic — which is why the validated alert in §4 fires on `dest_ip 192.168.56.10`. The
+rule, the CDB-match mechanism, and the T1566 mapping are identical to what a real
+`203.0.113.17` callback would produce.
 
 **Custom rule 100100** (`config/local_rules.xml`):
 ```xml
@@ -121,15 +130,16 @@ removed the noise without blinding the detection.
 
 ## 4. Detonation & detection (validated)
 
-Connecting to the IOC from the victim produced a Suricata flow record, which
-Wazuh matched against the list. Confirmed live on the manager:
+Connecting to the IOC stand-in (`192.168.56.10`) from the victim produced a Suricata
+flow record, which Wazuh matched against the list. Confirmed live on the manager
+(matches `wazuh-100100-alert.json`):
 
 ```
-** Alert 1791847443.16785448:
+** Alert 1792535075.328599:
 Rule: 100100 (level 12) -> 'Connection to known phishing infrastructure (IOC match)'
   mitre.id: ["T1566"]  mitre.tactic: ["Initial Access"]  mitre.technique: ["Phishing"]
   event_type: flow   src_ip: 192.168.56.20   dest_ip: 192.168.56.10   dest_port: 80
-  firedtimes: 4   mail: true
+  proto: TCP   app_proto: http   firedtimes: 1   mail: true
 ```
 
 > _Evidence: `evidence/scenario-02-phishing/wazuh-100100-alert.json`_
@@ -167,7 +177,9 @@ it. To demonstrate real enrichment output, the VT lookup is shown against a
 genuinely malicious IP sourced from a public threat feed (abuse.ch), verified on
 VirusTotal, and the lab IOC is documented as synthetic. "Known-bad" in the CDB
 list means known-bad *within this lab's own threat intel* — which is exactly how
-real watchlists work.
+real watchlists work. For the same non-routability reason, the **live rule fire is
+triggered against a reachable stand-in** (`192.168.56.10`) rather than the
+documentation IP: identical rule logic, just a connectable destination (see §3).
 
 ---
 
@@ -182,8 +194,8 @@ review:
   the team had already flagged as malicious.
 - **Direction & context** — the connection is *outbound*, from an internal victim
   host to known-bad infrastructure over HTTP. In the phishing kill chain this is
-  the post-click callback — the T1204.001 "user clicked the link" stage — not
-  inbound background noise.
+  the post-click callback — the T1204.001 "user clicked the link" stage (simulated
+  in the lab by the curl detonation) — not inbound background noise.
 - **Enrichment** — unlike the RDP scenario (an internal/private source VirusTotal
   cannot resolve), here the IOC is an external IP, so VT enrichment is meaningful
   and the SOAR pipeline attaches it automatically. *(Caveat, per §5: the lab IOC
