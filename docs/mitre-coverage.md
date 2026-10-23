@@ -30,11 +30,11 @@ scenario that exercises it and the detection source that catches it.
 - **SOAR / case creation is not phishing-only.** Forwarding to Shuffle is filtered
   to the actionable alerts — by rule group (`phishing`, `sysmon_eid10_detections`)
   and by rule ID (`5712` SSH correlation, `60115` RDP lockout, `92657` RDP
-  compromise). Phishing (02), SSH (03), and RDP (04) are forwarded and raised as
-  cases in TheHive (RDP raises two: the lockout and the compromise). The
-  credential-dump detection (05, rule 92900) carries the forwarded
-  `sysmon_eid10_detections` group — case creation for it is validated in its own
-  scenario. The Nmap/Suricata recon alerts (01) and the per-attempt brute-force
+  compromise). Phishing (02), SSH (03), RDP (04), and credential dumping (05) are
+  all forwarded and raised as cases in TheHive — RDP raises two (the lockout and
+  the compromise), and the cred-dump (rule 92900) forwards via the
+  `sysmon_eid10_detections` group. The Nmap/Suricata recon alerts (01) and the
+  per-attempt brute-force
   rules (`5710`, `60122`) are deliberately held back to keep noise off the SOAR
   layer. Phishing is simply the scenario where **VirusTotal enrichment** is
   showcased, because its IOC is a real external IP — the brute-force sources are

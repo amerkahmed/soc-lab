@@ -11,9 +11,11 @@ detection.
 | **MITRE ATT&CK** | T1003.001 (OS Credential Dumping: LSASS Memory) — chained from T1110 (Scenario 04) via T1105 (Ingress Tool Transfer) |
 | **Attacker** | Kali — 192.168.56.10 |
 | **Target** | Windows 10 — DESKTOP-T0LOHB5 (192.168.56.30) |
+| **Target account** | `Client` — the local admin compromised in Scenario 04 |
 | **Detection source** | Wazuh agent → Sysmon (Event ID 10, process access to LSASS; Event ID 1 for the custom rule) |
 | **Rules fired** | 92900 (built-in, level 12 — LSASS access, possible credential dump) · 100002 (custom, level 15 — Mimikatz by original filename, logtest-validated) |
-| **Status** | ✅ Validated (rule 92900 fired live — 6 LSASS-access events; see §2 & §7) |
+| **Reaches** | Detection → SOAR → TheHive case |
+| **Status** | ✅ Validated (92900 fired live and raised a TheHive case; see §2–§3) |
 
 ---
 
@@ -57,7 +59,10 @@ C:\Users\Public\m.exe "privilege::debug" "sekurlsa::logonpasswords" exit
 memory; `sekurlsa::logonpasswords` is the module that reads LSASS. (Run from an
 elevated/SYSTEM context, which the foothold provides.)
 
-> _Evidence: `evidence/scenario-05-creddump/attack-output.txt`_
+> _Evidence: `evidence/scenario-05-creddump/attack-output.txt` — the certutil
+> transfer and the Mimikatz command. **The dumped credential material is
+> deliberately redacted**: it is stolen secrets, and the detection below is the
+> proof the dump occurred, not the loot._
 
 ---
 
@@ -88,10 +93,21 @@ sourceUser         DESKTOP-T0LOHB5\Client
 
 This is **behavior-based**: it keys on *the act of reading LSASS memory*, not on
 any filename, so the rename to `m.exe` is irrelevant — the access itself is the
-signal. It fired **6 times** live during the run.
+signal.
+
+![Wazuh Discover rule.id:92900 scoped to the run — one LSASS-access hit, m.exe accessing lsass.exe, grantedAccess 0x1010, SourceUser Client](../../evidence/scenario-05-creddump/wazuh-92900-alerts.png)
+*The LSASS-access alert for this run (event `1792790035.929684`): `m.exe`
+accessing `lsass.exe`, `grantedAccess 0x1010`, `SourceUser DESKTOP-T0LOHB5\Client`.*
+
+![Expanded 92900 event — id 1792790035.929684, eventID 10, grantedAccess 0x1010, MITRE T1003.001, rule.groups include sysmon_eid10_detections](../../evidence/scenario-05-creddump/wazuh-92900-detail.png)
+*Event `1792790035.929684` expanded: rule 92900 level 12, MITRE T1003.001, and
+`rule.groups` includes `sysmon_eid10_detections` — the group that routes it to the
+SOAR layer (§3).*
 
 > _Evidence: `evidence/scenario-05-creddump/wazuh-92900-alert.json`,
-> `wazuh-92900-alerts.png`, `wazuh-92900-detail.png`_
+> `wazuh-92900-alerts.png`, `wazuh-92900-detail.png`. Authoritative time is the UTC
+> `systemTime 21:13:54.557Z`; on cross-host clocks see the
+> [README](../../README.md#honesty--scope-notes) convention._
 
 ### 2b. Name-based custom rule — rule 100002 (detection-engineering exercise)
 
@@ -121,9 +137,11 @@ Plain-English, line by line:
 - `level 15` — Wazuh's top severity.
 
 **Status of 100002:** confirmed with `wazuh-logtest` (Phase 3 → rule 100002, level
-15, T1003), but **not captured firing live** — this run was validated on the
-behavioral rule 92900. Treat 100002 as a working, logtest-validated custom
-detection whose live capture is an optional follow-up (§7).
+15, T1003), but **not captured firing live** — including on this re-run, where a
+query for `rule.id 100002` returned nothing while 92900 fired and raised a case.
+Treat 100002 as a working, logtest-validated custom detection whose live capture
+is an optional follow-up (§8). That the behavioral rule caught the run and the
+name-based one did not is itself the lesson (§7).
 
 **Why field-matching instead of a Sysmon rule group.** 100002 originally depended
 on `<if_group>sysmon_event1</if_group>`, but it never matched. The events decode
@@ -142,20 +160,45 @@ line shows the full `http://192.168.56.10/...` URL — the Ingress Tool Transfer
 (T1105) half of the chain, visible in telemetry. A custom rule on `certutil.exe` +
 `urlcache`/`-f` is an easy add if you want it alerted rather than just observed.
 
-> _Evidence: `evidence/scenario-05-creddump/wazuh-92900-alert.json`,
-> `wazuh-92900-alerts.png`, `wazuh-92900-detail.png`_
+> _Evidence: the `certutil` command line in
+> `evidence/scenario-05-creddump/attack-output.txt`._
 
 ---
 
-## 3. Triage
+## 3. SOAR → case creation
 
-- **Detection & severity** — the behavioral rule **92900 (level 12)** fired **6
-  times**, each recording `m.exe` opening `lsass.exe` with `grantedAccess 0x1010`
-  (read). Reading LSASS memory from a user-writable path (`C:\Users\Public\`) has
-  essentially **no benign explanation** on an endpoint. *Note the two scales:
-  92900 is level 12 on Wazuh's detection scale, but the incident severity is
-  **Critical** — severity is impact-based (a confirmed credential dump on a
-  compromised admin host), not the detecting rule's number.*
+Because rule 92900 carries the **`sysmon_eid10_detections`** group, the manager's
+Shuffle integration forwards it (the group-based block in
+[`config/ossec-integration.xml`](../../config/ossec-integration.xml)). The alert
+becomes a Shuffle run and a TheHive case — so a credential-dump detection lands in
+front of an analyst automatically, the same path phishing (02), SSH (03) and RDP
+(04) take.
+
+![Shuffle run for the cred-dump — $exec with rule_id 92900, id 1792790035.929684, the LSASS-access title](../../evidence/scenario-05-creddump/shuffle-creddump.png)
+*Shuffle run: `rule_id 92900`, `id 1792790035.929684`.*
+
+![TheHive cred-dump case — SEVERITY MEDIUM, tags host-based/wazuh, Reference 1792790035.929684, description naming rule 92900 and the LSASS access](../../evidence/scenario-05-creddump/thehive-creddump.png)
+*TheHive case: `SEVERITY:MEDIUM`, tagged host-based / wazuh, description `Rule
+92900 | Agent: Project-Windows | Lsass process was accessed by C:\Users\Public\m.exe
+…`. `Reference 1792790035.929684` ties the case to the exact Wazuh event.*
+
+No VirusTotal enrichment applies — this is a host/behavior detection with no
+external IP to resolve. (Contrast Scenario 02, where the IOC is a real external IP
+and VT enrichment is the point.)
+
+> _Evidence: `shuffle-creddump.png`, `thehive-creddump.png`._
+
+---
+
+## 4. Triage
+
+- **Detection & severity** — the behavioral rule **92900 (level 12)** fired on
+  `m.exe` opening `lsass.exe` with `grantedAccess 0x1010` (read). Reading LSASS
+  memory from a user-writable path (`C:\Users\Public\`) has essentially **no benign
+  explanation** on an endpoint. *Note the two scales: 92900 is level 12 on Wazuh's
+  detection scale, but the incident severity is **Critical** — severity is
+  impact-based (a confirmed credential dump on a compromised admin host), not the
+  detecting rule's number.*
 - **The rename tell** — the on-disk name was `m.exe`. The behavioral rule caught
   it regardless; the custom name-based rule (100002) would catch it on the PE's
   embedded `mimikatz.exe` identity. Either way, a benign-looking filename hiding a
@@ -171,7 +214,7 @@ an already-compromised host.
 
 ---
 
-## 4. Response
+## 5. Response
 
 Because LSASS was accessed, assume every credential cached in memory on that host
 is now stolen (the signed-in user's hash/password, any service credentials, cached
@@ -191,7 +234,7 @@ rotation, not perimeter blocking.
 
 ---
 
-## 5. The chain (how it threads the scenarios together)
+## 6. The chain (how it threads the scenarios together)
 
 ```
 RDP brute force (Scenario 04, T1110)  →  Client compromised
@@ -210,16 +253,16 @@ noted as a possible extension rather than a gap.
 
 ---
 
-## 6. Lessons Learned
+## 7. Lessons Learned
 
 - **Behavior-based detection beats name-based — and here it's the one that fired.**
   The custom name-based rule (100002, OriginalFileName) defeats a simple rename,
   but an attacker who recompiles or strips that PE metadata slips past it. The
   behavioral rule (92900, Sysmon Event ID 10 — process access to `lsass.exe`) keys
   on the *act* of reading LSASS memory, so it caught this run live regardless of
-  filename. Name-based rules catch the lazy case; behavior-based rules catch the
-  capable one — which is why 92900 is the primary detection and 100002 the
-  complementary one.
+  filename — and on this re-run 92900 fired while 100002 did not. Name-based rules
+  catch the lazy case; behavior-based rules catch the capable one — which is why
+  92900 is the primary detection and 100002 the complementary one.
 - **Why LSASS?** The Local Security Authority Subsystem Service holds credential
   material for signed-in users in memory — password hashes, Kerberos tickets, and
   in some configurations plaintext. "Dumping LSASS" means reading that process's
@@ -234,36 +277,40 @@ noted as a possible extension rather than a gap.
 - **`logtest` success ≠ live detection** (the recurring lab meta-lesson): confirm
   the rule fires on a real Sysmon event with the agent Active, then capture the
   evidence — don't rely on `wazuh-logtest` alone. This is exactly the gap between
-  100002 (logtest-passed) and 92900 (caught live).
+  100002 (logtest-passed) and 92900 (caught live and raised a case).
 
 ---
 
-## 7. Validation & evidence capture
+## 8. Validation & evidence capture
 
-The scenario was **validated live on rule 92900** — 6 LSASS-access events captured
-during the run. To reproduce and capture:
+Validated live on **rule 92900**: the dump was re-run on the compromised host, the
+LSASS-access alert fired (event `1792790035.929684`, `21:13:54 UTC`), it forwarded
+to Shuffle, and it raised a TheHive case (`Reference 1792790035.929684`) — the full
+detection → SOAR → case path. Every artifact in `evidence/scenario-05-creddump/`
+carries that event ID.
+
+To reproduce and capture on the manager:
 
 ```bash
 mkdir -p evidence/scenario-05-creddump
 
-# the behavioral LSASS-access alert (92900) — the validated detection
-sudo grep '"id":"92900"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
+# the behavioral LSASS-access alert (92900) — copy its id, then pull the full record
+sudo jq -c 'select(.rule.id=="92900")' /var/ossec/logs/alerts/alerts.json | tail -1
+sudo jq 'select(.id=="<THAT_ID>")' /var/ossec/logs/alerts/alerts.json \
   > evidence/scenario-05-creddump/wazuh-92900-alert.json
 ```
 
-**Screenshots (captured):** the 92900 alert list, and the alert detail showing
-`sourceImage: m.exe → targetImage: lsass.exe`, `grantedAccess: 0x1010`, and MITRE
-T1003.001 → `evidence/scenario-05-creddump/wazuh-92900-alerts.png`,
-`wazuh-92900-detail.png`.
+**Screenshots (captured):** the 92900 alert list, the alert detail
+(`sourceImage m.exe → targetImage lsass.exe`, `grantedAccess 0x1010`, T1003.001),
+the Shuffle run, and the TheHive case — in `evidence/scenario-05-creddump/`.
 
 **Optional follow-up — capture 100002 live.** The custom name-based rule is
-logtest-validated but not yet caught firing on a real event. To capture it, run the
-attack with the agent Active and grep for the alert:
+logtest-validated but has not been caught firing on a real event (it did not fire
+on this re-run). To capture it, confirm the agent collects Sysmon Event ID 1 with
+`originalFileName` populated, then:
 
 ```bash
-sudo grep '"id":"100002"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
-  > evidence/scenario-05-creddump/wazuh-100002-alert.json
+sudo jq -c 'select(.rule.id=="100002")' /var/ossec/logs/alerts/alerts.json | tail -1
 ```
 
-> The header Status is ✅ Validated on the strength of 92900.
 > `docs/mitre-coverage.md` lists T1003.001 as validated, citing this scenario.

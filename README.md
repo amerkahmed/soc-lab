@@ -139,10 +139,10 @@ The most complete automation path, end to end:
 
 > **Phishing isn't the only scenario that reaches TheHive.** Forwarding is filtered
 > to the headline alerts — by rule group (`phishing`, `sysmon_eid10_detections`) and
-> by rule ID (`5712`, `60115`, `92657`) — so SSH (03) and RDP (04) are raised as
-> cases too (RDP raises two: the lockout and the compromise), and the cred-dump
-> detection (05, rule 92900) carries the forwarded `sysmon_eid10_detections` group.
-> The Nmap recon alerts (01) and per-attempt brute-force noise (`5710`, `60122`) are
+> by rule ID (`5712`, `60115`, `92657`) — so SSH (03), RDP (04) and the credential
+> dump (05) are all raised as cases too (RDP raises two: the lockout and the
+> compromise; the cred-dump forwards via the `sysmon_eid10_detections` group). The
+> Nmap recon alerts (01) and per-attempt brute-force noise (`5710`, `60122`) are
 > held back. Phishing is simply where **VirusTotal enrichment** is showcased: its
 > IOC is a real external IP, while the brute-force sources are private IPs VT can't
 > resolve.
