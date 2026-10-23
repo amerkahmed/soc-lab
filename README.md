@@ -114,9 +114,16 @@ a **NAT** adapter (lets agents reach the cloud backend). See
 | 04 | [RDP Brute Force → Lockout → Compromise](docs/scenarios/04-rdp-brute-force.md) | High | T1110 | Wazuh 60122 / 60115 / 92657 | Windows agent (Security log) | ✅ Validated |
 | 05 | [Credential Dumping (Mimikatz / LSASS)](docs/scenarios/05-credential-dumping.md) | Critical | T1003.001 | Wazuh 92900 (+ custom 100002) | Windows agent (Sysmon EID 10) | ✅ Validated |
 
-> **Detection latency note:** <<fill in — e.g. agent-based host alerts fired in
-> ~X s; Suricata flow-based detection took ~60–90 s due to flow-record flush
-> timing. Document the gap and why it exists.>>
+> **Detection latency (measured from the captured evidence).** Each alert's event
+> time vs. its Wazuh alert time: host and network **signature** alerts fire in
+> **~1–1.3 s** — Suricata Nmap (86601) ~1.3 s, RDP lockout (60115) ~1.1 s, RDP
+> compromise (92657) ~1.3 s, LSASS access (92900) ~1.3 s. The SSH correlation
+> (5712) fires in **~1–2 s** (approximate — the source log is second-resolution),
+> and the phishing IOC match (100100) in **~20 ms** (it matches the Suricata event
+> already on the manager). End to end through the SOAR path, a host event reaches a
+> **TheHive case in ~5–7 s** (e.g. LSASS dump → alert → Shuffle → case). Note:
+> Suricata's **signature alerts** fire in near-real-time; only its *flow* records
+> wait on flow-timeout — so there is no minute-scale NIDS delay in these scenarios.
 
 See [docs/triage-methodology.md](docs/triage-methodology.md) for how each alert
 is triaged — what I check next, malicious vs. benign reasoning, and when to
