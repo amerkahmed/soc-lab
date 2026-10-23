@@ -1,0 +1,96 @@
+{
+  "timestamp": "2026-10-21T22:17:44.098+0000",
+  "rule": {
+    "level": 9,
+    "description": "User account locked out (multiple login errors)",
+    "id": "60115",
+    "mitre": {
+      "id": [
+        "T1110",
+        "T1531"
+      ],
+      "tactic": [
+        "Credential Access",
+        "Impact"
+      ],
+      "technique": [
+        "Brute Force",
+        "Account Access Removal"
+      ]
+    },
+    "firedtimes": 1,
+    "mail": false,
+    "groups": [
+      "windows",
+      "windows_security",
+      "authentication_failures"
+    ],
+    "pci_dss": [
+      "8.1.6",
+      "11.4"
+    ],
+    "gpg13": [
+      "7.5"
+    ],
+    "gdpr": [
+      "IV_35.7.d"
+    ],
+    "hipaa": [
+      "164.312.a.1"
+    ],
+    "nist_800_53": [
+      "AC.7",
+      "SI.4"
+    ],
+    "tsc": [
+      "CC6.1",
+      "CC6.8",
+      "CC7.2",
+      "CC7.3"
+    ]
+  },
+  "agent": {
+    "id": "001",
+    "name": "Project-Windows",
+    "ip": "10.0.3.15"
+  },
+  "manager": {
+    "name": "Wazuh"
+  },
+  "id": "1792621064.895940",
+  "decoder": {
+    "name": "windows_eventchannel"
+  },
+  "data": {
+    "win": {
+      "system": {
+        "providerName": "Microsoft-Windows-Security-Auditing",
+        "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+        "eventID": "4740",
+        "version": "0",
+        "level": "0",
+        "task": "13824",
+        "opcode": "0",
+        "keywords": "0x8020000000000000",
+        "systemTime": "2026-10-21T22:17:43.0111332Z",
+        "eventRecordID": "16699",
+        "processID": "740",
+        "threadID": "1560",
+        "channel": "Security",
+        "computer": "DESKTOP-T0LOHB5",
+        "severityValue": "AUDIT_SUCCESS",
+        "message": "\"A user account was locked out.\r\n\r\nSubject:\r\n\tSecurity ID:\t\tS-1-5-18\r\n\tAccount Name:\t\tDESKTOP-T0LOHB5$\r\n\tAccount Domain:\t\tWORKGROUP\r\n\tLogon ID:\t\t0x3E7\r\n\r\nAccount That Was Locked Out:\r\n\tSecurity ID:\t\tS-1-5-21-2661131266-3240031718-58152211-1001\r\n\tAccount Name:\t\tClient\r\n\r\nAdditional Information:\r\n\tCaller Computer Name:\tkali\""
+      },
+      "eventdata": {
+        "targetUserName": "Client",
+        "targetDomainName": "kali",
+        "targetSid": "S-1-5-21-2661131266-3240031718-58152211-1001",
+        "subjectUserSid": "S-1-5-18",
+        "subjectUserName": "DESKTOP-T0LOHB5$",
+        "subjectDomainName": "WORKGROUP",
+        "subjectLogonId": "0x3e7"
+      }
+    }
+  },
+  "location": "EventChannel"
+}

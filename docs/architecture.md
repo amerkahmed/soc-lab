@@ -119,9 +119,11 @@ genuinely malicious IP from abuse.ch, with the lab IOC documented as synthetic.
 
 ## 6. SOAR automation (Wazuh → Shuffle → TheHive)
 
-The manager forwards curated alerts (filtered by rule **group** —
-`authentication_failed,authentication_failures,phishing` — not a broad level) to a
-Shuffle webhook. The Shuffle workflow is **Webhook → VirusTotal lookup → HTTP
+The manager forwards curated alerts to a Shuffle webhook — filtered to the
+actionable alerts, never a broad level: by rule **group** (`phishing`,
+`sysmon_eid10_detections`) and by rule **ID** (`5712` SSH correlation, `60115` RDP
+lockout, `92657` RDP compromise). Per-attempt rules (`5710`, `60122`) and the
+Suricata flood are deliberately excluded. The Shuffle workflow is **Webhook → VirusTotal lookup → HTTP
 request node** that POSTs a hand-built JSON body to TheHive's `/api/v1/alert`
 (HTTP 201). Selected scalar VT fields (malicious count, country, owner) are
 embedded in the alert description.

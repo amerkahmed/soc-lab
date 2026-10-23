@@ -1,0 +1,108 @@
+=== Trying: wrong1 ===
+[18:17:42:859] [47417:0000b939] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]: Using /p is insecure
+[18:17:42:859] [47417:0000b939] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]: Passing credentials or secrets via command line might expose these in the process list
+[18:17:42:859] [47417:0000b939] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]: Consider using one of the following (more secure) alternatives:
+[18:17:42:859] [47417:0000b939] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]:   - /args-from: pipe in arguments from stdin, file, file descriptor or environment variable
+[18:17:42:859] [47417:0000b939] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]:   - /from-stdin pass the credential via stdin
+[18:17:42:859] [47417:0000b939] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]:   - set environment variable FREERDP_ASKPASS to have a gui tool query for credentials
+[18:17:42:874] [47417:0000b93b] [WARN][com.freerdp.crypto] - [tls_verify_certificate]: [DANGER] Certificate not checked, /cert:ignore in use.
+[18:17:42:874] [47417:0000b93b] [WARN][com.freerdp.crypto] - [tls_verify_certificate]: [DANGER] This prevents MITM attacks from being detected!
+[18:17:42:874] [47417:0000b93b] [WARN][com.freerdp.crypto] - [tls_verify_certificate]: [DANGER] Avoid using this unless in a secure LAN (=no internet) environment
+[18:17:42:874] [47417:0000b93b] [ERROR][com.winpr.sspi.Kerberos] - [kerberos_AcquireCredentialsHandleA]: krb5_parse_name (Configuration file does not specify default realm [-1765328160])
+[18:17:42:874] [47417:0000b93b] [ERROR][com.winpr.sspi.Kerberos] - [kerberos_AcquireCredentialsHandleA]: krb5_parse_name (Configuration file does not specify default realm [-1765328160])
+[18:17:42:875] [47417:0000b93b] [ERROR][com.freerdp.core] - [nla_recv_pdu]: ERRCONNECT_LOGON_FAILURE [0x00020014]
+[18:17:42:875] [47417:0000b93b] [ERROR][com.freerdp.core.rdp] - [rdp_recv_callback_int][0x55911f64a450]: CONNECTION_STATE_NLA - nla_recv_pdu() fail
+[18:17:42:875] [47417:0000b93b] [ERROR][com.freerdp.core.rdp] - [rdp_recv_callback_int][0x55911f64a450]: CONNECTION_STATE_NLA status STATE_RUN_FAILED [-1]
+[18:17:42:875] [47417:0000b93b] [ERROR][com.freerdp.core.transport] - [transport_check_fds]: transport_check_fds: transport->ReceiveCallback() - STATE_RUN_FAILED [-1]
+[18:17:42:875] [47417:0000b93b] [ERROR][com.freerdp.core] - [freerdp_connect_begin]: Authentication only, exit status 0
+[18:17:42:859] [47417:0000b93b] [INFO][com.freerdp.client.x11] - [xf_pre_connect]: Authentication only. Don't connect to X.
+=== Trying: wrong2 ===
+[18:17:42:908] [47421:0000b93d] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]: Using /p is insecure
+[18:17:42:908] [47421:0000b93d] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]: Passing credentials or secrets via command line might expose these in the process list
+[18:17:42:908] [47421:0000b93d] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]: Consider using one of the following (more secure) alternatives:
+[18:17:42:908] [47421:0000b93d] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]:   - /args-from: pipe in arguments from stdin, file, file descriptor or environment variable
+[18:17:42:908] [47421:0000b93d] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]:   - /from-stdin pass the credential via stdin
+[18:17:42:908] [47421:0000b93d] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]:   - set environment variable FREERDP_ASKPASS to have a gui tool query for credentials
+[18:17:42:922] [47421:0000b93f] [WARN][com.freerdp.crypto] - [tls_verify_certificate]: [DANGER] Certificate not checked, /cert:ignore in use.
+[18:17:42:922] [47421:0000b93f] [WARN][com.freerdp.crypto] - [tls_verify_certificate]: [DANGER] This prevents MITM attacks from being detected!
+[18:17:42:922] [47421:0000b93f] [WARN][com.freerdp.crypto] - [tls_verify_certificate]: [DANGER] Avoid using this unless in a secure LAN (=no internet) environment
+[18:17:42:922] [47421:0000b93f] [ERROR][com.winpr.sspi.Kerberos] - [kerberos_AcquireCredentialsHandleA]: krb5_parse_name (Configuration file does not specify default realm [-1765328160])
+[18:17:42:922] [47421:0000b93f] [ERROR][com.winpr.sspi.Kerberos] - [kerberos_AcquireCredentialsHandleA]: krb5_parse_name (Configuration file does not specify default realm [-1765328160])
+[18:17:42:923] [47421:0000b93f] [ERROR][com.freerdp.core] - [nla_recv_pdu]: ERRCONNECT_LOGON_FAILURE [0x00020014]
+[18:17:42:923] [47421:0000b93f] [ERROR][com.freerdp.core.rdp] - [rdp_recv_callback_int][0x56313bf1a450]: CONNECTION_STATE_NLA - nla_recv_pdu() fail
+[18:17:42:923] [47421:0000b93f] [ERROR][com.freerdp.core.rdp] - [rdp_recv_callback_int][0x56313bf1a450]: CONNECTION_STATE_NLA status STATE_RUN_FAILED [-1]
+[18:17:42:923] [47421:0000b93f] [ERROR][com.freerdp.core.transport] - [transport_check_fds]: transport_check_fds: transport->ReceiveCallback() - STATE_RUN_FAILED [-1]
+[18:17:42:923] [47421:0000b93f] [ERROR][com.freerdp.core] - [freerdp_connect_begin]: Authentication only, exit status 0
+[18:17:42:908] [47421:0000b93f] [INFO][com.freerdp.client.x11] - [xf_pre_connect]: Authentication only. Don't connect to X.
+=== Trying: wrong3 ===
+[18:17:42:960] [47425:0000b941] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]: Using /p is insecure
+[18:17:42:960] [47425:0000b941] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]: Passing credentials or secrets via command line might expose these in the process list
+[18:17:42:960] [47425:0000b941] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]: Consider using one of the following (more secure) alternatives:
+[18:17:42:960] [47425:0000b941] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]:   - /args-from: pipe in arguments from stdin, file, file descriptor or environment variable
+[18:17:42:960] [47425:0000b941] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]:   - /from-stdin pass the credential via stdin
+[18:17:42:960] [47425:0000b941] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]:   - set environment variable FREERDP_ASKPASS to have a gui tool query for credentials
+[18:17:42:974] [47425:0000b943] [WARN][com.freerdp.crypto] - [tls_verify_certificate]: [DANGER] Certificate not checked, /cert:ignore in use.
+[18:17:42:974] [47425:0000b943] [WARN][com.freerdp.crypto] - [tls_verify_certificate]: [DANGER] This prevents MITM attacks from being detected!
+[18:17:42:974] [47425:0000b943] [WARN][com.freerdp.crypto] - [tls_verify_certificate]: [DANGER] Avoid using this unless in a secure LAN (=no internet) environment
+[18:17:42:974] [47425:0000b943] [ERROR][com.winpr.sspi.Kerberos] - [kerberos_AcquireCredentialsHandleA]: krb5_parse_name (Configuration file does not specify default realm [-1765328160])
+[18:17:42:974] [47425:0000b943] [ERROR][com.winpr.sspi.Kerberos] - [kerberos_AcquireCredentialsHandleA]: krb5_parse_name (Configuration file does not specify default realm [-1765328160])
+[18:17:42:976] [47425:0000b943] [ERROR][com.freerdp.core] - [nla_recv_pdu]: ERRCONNECT_LOGON_FAILURE [0x00020014]
+[18:17:42:976] [47425:0000b943] [ERROR][com.freerdp.core.rdp] - [rdp_recv_callback_int][0x559dedf2a450]: CONNECTION_STATE_NLA - nla_recv_pdu() fail
+[18:17:42:976] [47425:0000b943] [ERROR][com.freerdp.core.rdp] - [rdp_recv_callback_int][0x559dedf2a450]: CONNECTION_STATE_NLA status STATE_RUN_FAILED [-1]
+[18:17:42:976] [47425:0000b943] [ERROR][com.freerdp.core.transport] - [transport_check_fds]: transport_check_fds: transport->ReceiveCallback() - STATE_RUN_FAILED [-1]
+[18:17:42:976] [47425:0000b943] [ERROR][com.freerdp.core] - [freerdp_connect_begin]: Authentication only, exit status 0
+[18:17:42:961] [47425:0000b943] [INFO][com.freerdp.client.x11] - [xf_pre_connect]: Authentication only. Don't connect to X.
+=== Trying: wrong4 ===
+[18:17:43:008] [47429:0000b945] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]: Using /p is insecure
+[18:17:43:008] [47429:0000b945] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]: Passing credentials or secrets via command line might expose these in the process list
+[18:17:43:008] [47429:0000b945] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]: Consider using one of the following (more secure) alternatives:
+[18:17:43:008] [47429:0000b945] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]:   - /args-from: pipe in arguments from stdin, file, file descriptor or environment variable
+[18:17:43:008] [47429:0000b945] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]:   - /from-stdin pass the credential via stdin
+[18:17:43:008] [47429:0000b945] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]:   - set environment variable FREERDP_ASKPASS to have a gui tool query for credentials
+[18:17:43:022] [47429:0000b947] [WARN][com.freerdp.crypto] - [tls_verify_certificate]: [DANGER] Certificate not checked, /cert:ignore in use.
+[18:17:43:022] [47429:0000b947] [WARN][com.freerdp.crypto] - [tls_verify_certificate]: [DANGER] This prevents MITM attacks from being detected!
+[18:17:43:022] [47429:0000b947] [WARN][com.freerdp.crypto] - [tls_verify_certificate]: [DANGER] Avoid using this unless in a secure LAN (=no internet) environment
+[18:17:43:022] [47429:0000b947] [ERROR][com.winpr.sspi.Kerberos] - [kerberos_AcquireCredentialsHandleA]: krb5_parse_name (Configuration file does not specify default realm [-1765328160])
+[18:17:43:022] [47429:0000b947] [ERROR][com.winpr.sspi.Kerberos] - [kerberos_AcquireCredentialsHandleA]: krb5_parse_name (Configuration file does not specify default realm [-1765328160])
+[18:17:43:023] [47429:0000b947] [ERROR][com.freerdp.core] - [nla_recv_pdu]: ERRCONNECT_LOGON_FAILURE [0x00020014]
+[18:17:43:023] [47429:0000b947] [ERROR][com.freerdp.core.rdp] - [rdp_recv_callback_int][0x56496c402450]: CONNECTION_STATE_NLA - nla_recv_pdu() fail
+[18:17:43:023] [47429:0000b947] [ERROR][com.freerdp.core.rdp] - [rdp_recv_callback_int][0x56496c402450]: CONNECTION_STATE_NLA status STATE_RUN_FAILED [-1]
+[18:17:43:023] [47429:0000b947] [ERROR][com.freerdp.core.transport] - [transport_check_fds]: transport_check_fds: transport->ReceiveCallback() - STATE_RUN_FAILED [-1]
+[18:17:43:023] [47429:0000b947] [ERROR][com.freerdp.core] - [freerdp_connect_begin]: Authentication only, exit status 0
+[18:17:43:008] [47429:0000b947] [INFO][com.freerdp.client.x11] - [xf_pre_connect]: Authentication only. Don't connect to X.
+=== Trying: wrong5 ===
+[18:17:43:055] [47433:0000b949] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]: Using /p is insecure
+[18:17:43:055] [47433:0000b949] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]: Passing credentials or secrets via command line might expose these in the process list
+[18:17:43:055] [47433:0000b949] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]: Consider using one of the following (more secure) alternatives:
+[18:17:43:055] [47433:0000b949] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]:   - /args-from: pipe in arguments from stdin, file, file descriptor or environment variable
+[18:17:43:055] [47433:0000b949] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]:   - /from-stdin pass the credential via stdin
+[18:17:43:055] [47433:0000b949] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]:   - set environment variable FREERDP_ASKPASS to have a gui tool query for credentials
+[18:17:43:069] [47433:0000b94b] [WARN][com.freerdp.crypto] - [tls_verify_certificate]: [DANGER] Certificate not checked, /cert:ignore in use.
+[18:17:43:069] [47433:0000b94b] [WARN][com.freerdp.crypto] - [tls_verify_certificate]: [DANGER] This prevents MITM attacks from being detected!
+[18:17:43:069] [47433:0000b94b] [WARN][com.freerdp.crypto] - [tls_verify_certificate]: [DANGER] Avoid using this unless in a secure LAN (=no internet) environment
+[18:17:43:069] [47433:0000b94b] [ERROR][com.winpr.sspi.Kerberos] - [kerberos_AcquireCredentialsHandleA]: krb5_parse_name (Configuration file does not specify default realm [-1765328160])
+[18:17:43:069] [47433:0000b94b] [ERROR][com.winpr.sspi.Kerberos] - [kerberos_AcquireCredentialsHandleA]: krb5_parse_name (Configuration file does not specify default realm [-1765328160])
+[18:17:43:070] [47433:0000b94b] [ERROR][com.freerdp.core] - [nla_recv_pdu]: ERRCONNECT_ACCOUNT_LOCKED_OUT [0x00020018]
+[18:17:43:070] [47433:0000b94b] [ERROR][com.freerdp.core.rdp] - [rdp_recv_callback_int][0x55c4e856c450]: CONNECTION_STATE_NLA - nla_recv_pdu() fail
+[18:17:43:070] [47433:0000b94b] [ERROR][com.freerdp.core.rdp] - [rdp_recv_callback_int][0x55c4e856c450]: CONNECTION_STATE_NLA status STATE_RUN_FAILED [-1]
+[18:17:43:070] [47433:0000b94b] [ERROR][com.freerdp.core.transport] - [transport_check_fds]: transport_check_fds: transport->ReceiveCallback() - STATE_RUN_FAILED [-1]
+[18:17:43:070] [47433:0000b94b] [ERROR][com.freerdp.core] - [freerdp_connect_begin]: Authentication only, exit status 0
+[18:17:43:055] [47433:0000b94b] [INFO][com.freerdp.client.x11] - [xf_pre_connect]: Authentication only. Don't connect to X.
+=== Trying: <PASSWORD> ===
+[18:17:43:102] [47414:0000b936] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]: Using /p is insecure
+[18:17:43:102] [47414:0000b936] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]: Passing credentials or secrets via command line might expose these in the process list
+[18:17:43:102] [47414:0000b936] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]: Consider using one of the following (more secure) alternatives:
+[18:17:43:102] [47414:0000b936] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]:   - /args-from: pipe in arguments from stdin, file, file descriptor or environment variable
+[18:17:43:102] [47414:0000b936] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]:   - /from-stdin pass the credential via stdin
+[18:17:43:102] [47414:0000b936] [WARN][com.freerdp.client.common.cmdline] - [warn_credential_args]:   - set environment variable FREERDP_ASKPASS to have a gui tool query for credentials
+[18:17:43:116] [47414:0000b94e] [WARN][com.freerdp.crypto] - [tls_verify_certificate]: [DANGER] Certificate not checked, /cert:ignore in use.
+[18:17:43:116] [47414:0000b94e] [WARN][com.freerdp.crypto] - [tls_verify_certificate]: [DANGER] This prevents MITM attacks from being detected!
+[18:17:43:116] [47414:0000b94e] [WARN][com.freerdp.crypto] - [tls_verify_certificate]: [DANGER] Avoid using this unless in a secure LAN (=no internet) environment
+[18:17:43:116] [47414:0000b94e] [ERROR][com.winpr.sspi.Kerberos] - [kerberos_AcquireCredentialsHandleA]: krb5_parse_name (Configuration file does not specify default realm [-1765328160])
+[18:17:43:116] [47414:0000b94e] [ERROR][com.winpr.sspi.Kerberos] - [kerberos_AcquireCredentialsHandleA]: krb5_parse_name (Configuration file does not specify default realm [-1765328160])
+[18:17:43:117] [47414:0000b94e] [ERROR][com.freerdp.core] - [nla_recv_pdu]: ERRCONNECT_ACCOUNT_LOCKED_OUT [0x00020018]
+[18:17:43:117] [47414:0000b94e] [ERROR][com.freerdp.core.rdp] - [rdp_recv_callback_int][0x55bd507a6450]: CONNECTION_STATE_NLA - nla_recv_pdu() fail
+[18:17:43:117] [47414:0000b94e] [ERROR][com.freerdp.core.rdp] - [rdp_recv_callback_int][0x55bd507a6450]: CONNECTION_STATE_NLA status STATE_RUN_FAILED [-1]
+[18:17:43:117] [47414:0000b94e] [ERROR][com.freerdp.core.transport] - [transport_check_fds]: transport_check_fds: transport->ReceiveCallback() - STATE_RUN_FAILED [-1]
+[18:17:43:117] [47414:0000b94e] [ERROR][com.freerdp.core] - [freerdp_connect_begin]: Authentication only, exit status 0
+[18:17:43:102] [47414:0000b94e] [INFO][com.freerdp.client.x11] - [xf_pre_connect]: Authentication only. Don't connect to X.

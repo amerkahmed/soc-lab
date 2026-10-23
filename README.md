@@ -137,11 +137,15 @@ The most complete automation path, end to end:
 5. Shuffle enriches the IOC via **VirusTotal** (detection count, hosting, country).
 6. Shuffle creates an enriched **alert in TheHive** for analyst triage.
 
-> **Phishing isn't the only scenario that reaches TheHive.** The SSH (03) and RDP
-> (04) brute-force alerts are forwarded and raised as cases too — only the Nmap
-> recon alerts (01) are held back as network-sensor noise. Phishing is simply where
-> **VirusTotal enrichment** is showcased: its IOC is a real external IP, while the
-> brute-force sources are private IPs VT can't resolve.
+> **Phishing isn't the only scenario that reaches TheHive.** Forwarding is filtered
+> to the headline alerts — by rule group (`phishing`, `sysmon_eid10_detections`) and
+> by rule ID (`5712`, `60115`, `92657`) — so SSH (03) and RDP (04) are raised as
+> cases too (RDP raises two: the lockout and the compromise), and the cred-dump
+> detection (05, rule 92900) carries the forwarded `sysmon_eid10_detections` group.
+> The Nmap recon alerts (01) and per-attempt brute-force noise (`5710`, `60122`) are
+> held back. Phishing is simply where **VirusTotal enrichment** is showcased: its
+> IOC is a real external IP, while the brute-force sources are private IPs VT can't
+> resolve.
 
 Full walkthrough: [docs/scenarios/02-phishing-ioc.md](docs/scenarios/02-phishing-ioc.md).
 

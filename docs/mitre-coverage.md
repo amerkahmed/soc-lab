@@ -27,14 +27,20 @@ scenario that exercises it and the detection source that catches it.
   coverage.
 - **Scanning (T1046 / T1595)** is caught only by the **network** sensor (Suricata),
   not the host agents — the clearest argument for NIDS alongside HIDS.
-- **SOAR / case creation is not phishing-only.** The SSH (03), phishing (02), and
-  RDP (04) alerts are all forwarded to Shuffle and raised as cases in TheHive; only
-  the Nmap recon alerts (01) are deliberately held back, to keep network-sensor
-  noise off the SOAR layer. Phishing is simply the scenario where **VirusTotal
-  enrichment** is showcased, because its IOC is a real external IP — the brute-force
-  sources are private RFC 1918 addresses VirusTotal can't resolve (see the
-  selective-enrichment note in [architecture.md](architecture.md) §6). Phishing also
-  chains three techniques: T1598 → T1566 → T1204.001.
+- **SOAR / case creation is not phishing-only.** Forwarding to Shuffle is filtered
+  to the actionable alerts — by rule group (`phishing`, `sysmon_eid10_detections`)
+  and by rule ID (`5712` SSH correlation, `60115` RDP lockout, `92657` RDP
+  compromise). Phishing (02), SSH (03), and RDP (04) are forwarded and raised as
+  cases in TheHive (RDP raises two: the lockout and the compromise). The
+  credential-dump detection (05, rule 92900) carries the forwarded
+  `sysmon_eid10_detections` group — case creation for it is validated in its own
+  scenario. The Nmap/Suricata recon alerts (01) and the per-attempt brute-force
+  rules (`5710`, `60122`) are deliberately held back to keep noise off the SOAR
+  layer. Phishing is simply the scenario where **VirusTotal enrichment** is
+  showcased, because its IOC is a real external IP — the brute-force sources are
+  private RFC 1918 addresses VirusTotal can't resolve (see the selective-enrichment
+  note in [architecture.md](architecture.md) §6). Phishing also chains three
+  techniques: T1598 → T1566 → T1204.001.
 - The Sysmon-observed techniques (T1087, T1018, T1053) surfaced incidentally during
   Windows testing and show the depth of process-level telemetry available for
   future detection work.
