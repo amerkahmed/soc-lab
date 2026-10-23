@@ -23,9 +23,9 @@ VirtualBox VMs with a cloud-hosted backend.
 | Shuffle (SaaS) | SOAR / automation | shuffler.io |
 | VirusTotal | Threat-intel enrichment | External API |
 
-**Versions:** Wazuh 4.14.7 · Suricata 8.0.7 · FreeRDP 3.x (`xfreerdp3`) · Hydra 9.7,
-plus Sysmon (Windows) and Nmap. Lab hosts use static IPs on an isolated
-`192.168.56.0/24` internal network (setup in §2).
+**Versions:** Wazuh 4.14.7 · Suricata 8.0.7 · FreeRDP 3.x (`xfreerdp3`) · Hydra 9.7
+· Nmap 7.991 · Mimikatz 2.2.0, plus Sysmon (Windows). Lab hosts use static IPs on an
+isolated `192.168.56.0/24` internal network (setup in §2).
 
 ### End-to-end flow
 
