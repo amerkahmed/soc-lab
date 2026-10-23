@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-21T21:42:18.711+0000",
+  "timestamp": "2026-10-23T19:51:39.676+0000",
   "rule": {
     "level": 10,
     "description": "sshd: brute force trying to get access to the system. Non existent user.",
@@ -16,7 +16,7 @@
       ]
     },
     "frequency": 8,
-    "firedtimes": 2,
+    "firedtimes": 1,
     "mail": false,
     "groups": [
       "syslog",
@@ -55,12 +55,12 @@
   "manager": {
     "name": "Wazuh"
   },
-  "id": "1792618938.71318",
-  "previous_output": "Oct 21 21:42:17 target sshd-session[12129]: Failed password for invalid user fakeuser from 192.168.56.10 port 35600 ssh2\nOct 21 21:42:15 target sshd-session[12127]: Invalid user fakeuser from 192.168.56.10 port 35592\nOct 21 21:42:15 target sshd-session[12129]: Invalid user fakeuser from 192.168.56.10 port 35600\nOct 21 21:42:15 target sshd-session[12126]: Invalid user fakeuser from 192.168.56.10 port 35576\nOct 21 21:42:15 target sshd-session[12125]: Invalid user fakeuser from 192.168.56.10 port 35578\nOct 21 21:42:15 target sshd-session[12123]: Disconnected from invalid user fakeuser 192.168.56.10 port 35568 [preauth]\nOct 21 21:42:15 target sshd-session[12123]: Invalid user fakeuser from 192.168.56.10 port 35568",
-  "full_log": "Oct 21 21:42:18 target sshd-session[12127]: Failed password for invalid user fakeuser from 192.168.56.10 port 35592 ssh2",
+  "id": "1792785099.20359",
+  "previous_output": "Oct 23 19:51:38 target sshd-session[5235]: Failed password for invalid user fakeuser from 192.168.56.10 port 37502 ssh2\nOct 23 19:51:36 target sshd-session[5232]: Invalid user fakeuser from 192.168.56.10 port 37478\nOct 23 19:51:36 target sshd-session[5233]: Invalid user fakeuser from 192.168.56.10 port 37480\nOct 23 19:51:36 target sshd-session[5235]: Invalid user fakeuser from 192.168.56.10 port 37502\nOct 23 19:51:36 target sshd-session[5231]: Invalid user fakeuser from 192.168.56.10 port 37476\nOct 23 19:51:36 target sshd-session[5229]: Disconnected from invalid user fakeuser 192.168.56.10 port 37474 [preauth]\nOct 23 19:51:36 target sshd-session[5229]: Invalid user fakeuser from 192.168.56.10 port 37474",
+  "full_log": "Oct 23 19:51:38 target sshd-session[5233]: Failed password for invalid user fakeuser from 192.168.56.10 port 37480 ssh2",
   "predecoder": {
     "program_name": "sshd-session",
-    "timestamp": "Oct 21 21:42:18",
+    "timestamp": "Oct 23 19:51:38",
     "hostname": "target"
   },
   "decoder": {
