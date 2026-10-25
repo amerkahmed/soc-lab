@@ -17,7 +17,6 @@ up and which services are exposed. From Kali, Nmap was run against the Ubuntu
 target:
 
 ```bash
-nmap -sS -T4 192.168.56.20      # SYN scan
 nmap -A 192.168.56.20           # aggressive: version + OS + scripts
 ```
 

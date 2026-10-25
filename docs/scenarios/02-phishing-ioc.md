@@ -273,3 +273,11 @@ investigation (IOCs) back into automated detection content.
   fields fixed it. See item 8.
 - **Forward signal, not noise.** An over-broad forwarding threshold flooded the
   SOAR webhook; filtering by rule *group* fixed it. See item 10.
+- **Flow-based IOC matching has inherent latency (possible improvement).** Rule
+  100100 matches Suricata **flow** records, which Suricata emits only at flow
+  timeout — so the alert lands ~60–90 s after the connection (visible in the
+  evidence: the flow ended ~63 s before its record was written). For a watchlist
+  that latency is acceptable, but matching instead on a Suricata **protocol event**
+  (`http` / `dns` / `tls`, logged per transaction) or a signature **alert** (per
+  packet) would detect the callback in near-real-time. Noted as a direction, not
+  yet built and not yet tested.

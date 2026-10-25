@@ -79,8 +79,8 @@ cloud manager, which applies detection rules.
 installed for process/DLL/file telemetry. RDP brute force produces Security
 **Event ID 4625** (rule **60122**), lockout **4740** (rule **60115**), and a
 successful **4624** (rule **92657**, flagged as possible pass-the-hash). Sysmon
-also surfaced account-discovery (T1087), scheduled-task DLL loads (T1053), and a
-CIS benchmark (SCA) compliance scan.
+also surfaced account-discovery (T1087), remote-system discovery (T1018), and
+scheduled-task DLL loads (T1053), plus a CIS benchmark (SCA) compliance scan.
 
 **Key configuration lesson:** the Windows agent did not collect failed logons
 until a `<localfile>` block for the **Security** event channel was added. Sysmon
