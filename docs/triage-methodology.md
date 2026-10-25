@@ -55,6 +55,17 @@ on top of the detections.
   are what separate them.
 - **Escalate immediately when:** rule 92657 fires — attempt has become compromise.
 
+### Credential dumping (Scenario 05)
+- **Malicious indicators:** a process reading **LSASS** memory (`grantedAccess 0x1010`),
+  especially from a user-writable path (`C:\Users\Public\`) — rule 92900 (Sysmon
+  Event ID 10). On an endpoint this has essentially no benign explanation.
+- **Correlation:** fires on the same host/account compromised in Scenario 04 — recon
+  → brute force → compromise → credential theft is one coherent progression.
+- **Severity is impact-based:** the detecting rule is level 12, but the incident is
+  Critical — every credential cached on the host must be treated as stolen.
+- **Escalate immediately:** this is post-compromise, so isolate the host and rotate
+  credentials rather than block a perimeter source (the attacker is already inside).
+
 ---
 
 ## Malicious vs. benign — the general principle
@@ -62,7 +73,7 @@ on top of the detections.
 A detection rule matches a *pattern*; it cannot know *intent*. Triage is the step
 that supplies intent by asking: is there a legitimate explanation that fits all the
 evidence (source, target, volume, outcome)? If a benign explanation fits, it is a
-candidate false positive to tune (see Future Work — false-positive scenario). If
+candidate false positive to tune (as in the Scenario 02 ICMP-vs-TCP tuning example). If
 not, escalate.
 
 The goal of tuning is to **reduce false positives without creating false

@@ -15,6 +15,7 @@ scenario that exercises it and the detection source that catches it.
 | Discovery | Remote System Discovery | T1018 | Sysmon | — (observed on Windows) |
 | Execution | Scheduled Task/Job | T1053 | Sysmon (taskschd.dll load) | — (observed on Windows) |
 | Credential Access | OS Credential Dumping: LSASS Memory | T1003.001 | Wazuh 92900 (LSASS access) + custom 100002 (Mimikatz name) | [05](scenarios/05-credential-dumping.md) ✅ |
+| Command & Control | Ingress Tool Transfer | T1105 | Sysmon EID 1 (certutil command line, observed) | [05](scenarios/05-credential-dumping.md) |
 
 ---
 
