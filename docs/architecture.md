@@ -114,15 +114,18 @@ different things; neither covers everything (see each scenario's blind spots).
 
 ## 5. Threat-intel-driven detection (phishing IOC)
 
-A crafted phishing email is analyzed, its IOCs extracted, and the attacker IP
-loaded into a Wazuh **CDB list** referenced by **custom rule 100100** (level 12,
-T1566). A connection to the IOC is detected on the wire and matched against the
-list. Full walkthrough: [scenarios/02-phishing-ioc.md](scenarios/02-phishing-ioc.md).
+A reported phishing email is analyzed (T1566.002), its IOCs extracted, and the
+phishing-server IP loaded into a Wazuh **CDB list** referenced by **custom rule
+100100** (level 12). When a victim host connects to the server (a simulated click),
+Suricata emits a flow record that rule 100100 matches — the observed outbound
+connection is T1204.001. Full walkthrough:
+[scenarios/02-phishing-ioc.md](scenarios/02-phishing-ioc.md).
 
-The lab IOC is a reserved documentation IP (`203.0.113.17`, RFC 5737);
-"known-bad" means known-bad *within this lab's threat list*, exactly how real
-watchlists work. VirusTotal enrichment is demonstrated separately against a
-genuinely malicious IP from abuse.ch, with the lab IOC documented as synthetic.
+The lab IOC is a **lab-owned phishing server** (`192.168.56.99`) with its own IP, so
+the IOC is real and reachable within the lab. "Known-bad" means known-bad *within
+this lab's threat list*, exactly how real watchlists work. Because the IOC is a
+private IP, VirusTotal returns nothing on the live run; the enrichment *capability*
+is demonstrated with a clearly labeled synthetic test event (Scenario 02 §5b).
 
 ---
 

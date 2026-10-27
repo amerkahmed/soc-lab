@@ -23,13 +23,21 @@
 
 <group name="phishing,ioc,">
 
+  <!--
+    Matches a Suricata *flow* record (not a packet-level field) whose destination
+    IP is on the phishing CDB watchlist. event_type=flow carries the true
+    connection direction, so a reply packet cannot trip the rule; address_match_key
+    is the lookup Wazuh requires for IP-address fields. MITRE T1204.001 (the
+    observed outbound connection that follows a click) — the T1566.002 phishing
+    technique is established by the email analysis, not by this network event.
+  -->
   <rule id="100100" level="12">
     <if_sid>86600</if_sid>
-    <field name="proto">TCP</field>
-    <list field="dest_ip" lookup="match_key">etc/lists/phishing-iocs</list>
+    <field name="event_type">^flow$</field>
+    <list field="dest_ip" lookup="address_match_key">etc/lists/phishing-iocs</list>
     <description>Connection to known phishing infrastructure (IOC match)</description>
     <mitre>
-      <id>T1566</id>
+      <id>T1204.001</id>
     </mitre>
   </rule>
 

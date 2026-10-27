@@ -67,10 +67,16 @@ emlAnalyzer -i ~/paypal_phish.eml --header --html --url --text \
   | tee evidence/scenario-02-phishing/emlanalyzer-output.txt
 ```
 
-**Detonate the IOC (target) + keep the Python server up on Kali:**
+**Serve the fake login page on the lab phishing server (Kali, bound to its own IP):**
 ```bash
-# Kali:  python3 -m http.server 80
-curl -m 5 http://192.168.56.10/        # (lab test traffic across the monitored iface)
+# Add the phishing-server IP to the attack interface (replace eth0 as needed):
+sudo ip address add 192.168.56.99/24 dev eth0
+sudo python3 -m http.server 80 --bind 192.168.56.99
+```
+
+**Simulated click (target) — a victim host follows the phishing link:**
+```bash
+curl -m 5 http://192.168.56.99/paypal/login/verify.php
 ```
 
 **Capture the IOC-match alert (manager) — wait ~60-90s for the flow to flush:**
@@ -79,11 +85,22 @@ sudo grep '"id":"100100"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
   > evidence/scenario-02-phishing/wazuh-100100-alert.json
 ```
 
+**Enrichment capability — labeled synthetic test (target), carries a real known-bad
+IP; no traffic is sent to it:**
+```bash
+TS=$(date -u +%Y-%m-%dT%H:%M:%S.000000+0000)
+echo "{\"timestamp\":\"$TS\",\"in_iface\":\"enp0s3\",\"event_type\":\"flow\",\"src_ip\":\"192.168.56.20\",\"dest_ip\":\"<known-bad-ip>\",\"dest_port\":80,\"proto\":\"TCP\",\"app_proto\":\"http\",\"lab_note\":\"SYNTHETIC TEST EVENT\"}" \
+  | sudo tee -a /var/log/suricata/eve.json
+# (add <known-bad-ip>:phishing_infrastructure to the CDB list + restart manager first)
+```
+
 **Screenshots (the SOAR half can't be captured by CLI):**
 - Shuffle workflow run with the HTTP node returning 201 →
   `evidence/scenario-02-phishing/shuffle-run-201.png`
-- The enriched alert in TheHive (VirusTotal fields visible) →
+- The analyst-ready alert in TheHive, **IOC attached as an observable** →
   `evidence/scenario-02-phishing/thehive-alert.png`
+- Manual VirusTotal web lookup of the known-bad IP (enrichment fields) →
+  `evidence/scenario-02-phishing/virustotal-enrichment.png`
 
 ---
 

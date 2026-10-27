@@ -14,10 +14,10 @@ tie together. Cross-host clocks are reconciled by event ID + UTC (see the
 - `retest-2026-10-27/` — per-scan-type re-test (`-sS`, `-sV`, `-A`, `-sS -p 1-1000`):
   `before/` the `HOME_NET` fix (`nmap-*.txt`, `fast-*.txt` extracts, `sig-*.txt` per-signature counts) and `after/` it (`nmap2-*.txt`, `fast2-*.txt`, `sig2-*.txt`, incl. the `-p1000` run) · `homenet-change.diff` · `wazuh-2018489-alert.json`
 
-**`scenario-02-phishing/`** — phishing IOC match (rule 100100) → Shuffle → VirusTotal → TheHive.
-- `emlanalyzer-output.txt` · `eml-analysis.png`
-- `wazuh-100100-alert.json` (the TCP flow match) · `wazuh-100100-FALSE-POSITIVE-icmp.json` (the pre-tuning ICMP false positive)
-- `shuffle-workflow.png` · `shuffle-run-201.png` · `virustotal-enrichment.png` · `thehive-alert.png`
+**`scenario-02-phishing/`** — reframed as an L1 phishing investigation (redesigned 2026-10-27, **recapture pending**): email analysis (T1566.002) → IOC → flow match on the lab phishing server `192.168.56.99` (rule 100100, T1204.001) → Shuffle → TheHive alert with IOC observable.
+- `emlanalyzer-output.txt` · `eml-analysis.png` (recapture — new sample, auth passes)
+- `wazuh-100100-alert.json` (flow match, `dest_ip 192.168.56.99`) · `wazuh-100100-FALSE-POSITIVE-icmp.json` (historical, old design — see challenges #14)
+- `shuffle-workflow.png` · `shuffle-run-201.png` · `thehive-alert.png` (IOC attached) · `virustotal-enrichment.png` (manual lookup, enrichment-capability demo §5b)
 
 **`scenario-03-ssh/`** — SSH brute force, event `1792785099.20359`.
 - `attack-output.txt` (Hydra) · `alert-5712.json` (correlation) · `alert-5710.json` (per-attempt)

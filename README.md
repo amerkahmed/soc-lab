@@ -103,7 +103,7 @@ a **NAT** adapter (lets agents reach the cloud backend). See
 | # | Scenario | Severity | MITRE | Detection rule | Log source | Time to alert¹ | Status |
 |---|---|---|---|---|---|---|---|
 | 01 | [Nmap Recon](docs/scenarios/01-nmap-recon.md) | Low | T1046 / T1595 | Suricata SID 2200025 + ET SCAN (e.g. 2018489) → Wazuh 86601 | Suricata NIDS | ~1.3 s | ✅ Validated (gaps documented) |
-| 02 | [Phishing IOC → SOAR Enrichment](docs/scenarios/02-phishing-ioc.md) | High | T1566 | Wazuh 100100 (custom CDB/IOC match) | Suricata NIDS → Wazuh | ~60–90 s² | ✅ Validated |
+| 02 | [Phishing Investigation → SOAR](docs/scenarios/02-phishing-ioc.md) | High | T1566.002 (email) / T1204.001 (click) | Wazuh 100100 (CDB flow match) | Suricata NIDS → Wazuh | ~60–90 s² | ⏳ Rebuilt (re-run pending) |
 | 03 | [SSH Brute Force](docs/scenarios/03-ssh-brute-force.md) | Medium | T1110 | Wazuh 5710 / 5712 | journald (Ubuntu agent) | ~1–2 s¹ | ✅ Validated |
 | 04 | [RDP Brute Force → Lockout → Compromise](docs/scenarios/04-rdp-brute-force.md) | High | T1110 | Wazuh 60122 / 60115 / 92657 | Windows Security (agent) | ~1.1–1.3 s | ✅ Validated |
 | 05 | [Credential Dumping (Mimikatz / LSASS)](docs/scenarios/05-credential-dumping.md) | Critical | T1003.001 | Wazuh 92900 (+ custom 100002) | Sysmon EID 10 (agent) | ~1.3 s | ✅ Validated |
@@ -111,9 +111,9 @@ a **NAT** adapter (lets agents reach the cloud backend). See
 ¹ **Time to alert** = event time → Wazuh alert, measured from the captured evidence (see each scenario doc). The SSH figure is approximate: 5712 is a correlation rule and journald is second-resolution.
 ² Phishing (100100) fires on a Suricata **flow** record, which Suricata emits only at flow timeout — so the alert lands ~60–90 s after the connection (the capture step waits for this). Signature-alert (Nmap 86601) and host detections fire in ~1–2 s.
 
-> **SOAR → case creation.** Phishing (02), SSH (03), RDP (04) and credential
-> dumping (05) are forwarded to Shuffle and raised as cases in TheHive — end to end,
-> a host event reaches an analyst-ready case in **~5–7 s**; the phishing case lands
+> **SOAR → alert creation.** Phishing (02), SSH (03), RDP (04) and credential
+> dumping (05) are forwarded to Shuffle and raised as alerts in TheHive — end to end,
+> a host event reaches an analyst-ready alert in **~5–7 s**; the phishing alert lands
 > later (**~60–90 s**) because its detection waits on a Suricata flow record (see
 > footnote 2 above). Nmap (01) is detection-only, deliberately held back from the
 > SOAR layer as network-sensor noise.
@@ -128,24 +128,25 @@ escalate.
 
 The most complete automation path, end to end:
 
-1. A phishing email is analyzed; its IOC (attacker IP) is extracted and added to
-   a Wazuh **CDB watchlist**.
-2. A connection to that IOC is detected on the wire by Suricata.
-3. Wazuh **custom rule 100100** matches the destination against the watchlist →
-   level-12 alert, MITRE T1566.
+1. A reported phishing email is analyzed; its IOC (the phishing-server IP) is
+   extracted and added to a Wazuh **CDB watchlist**.
+2. A simulated click connects a victim host to the phishing server; Suricata emits
+   a flow record.
+3. Wazuh **custom rule 100100** matches the flow's destination against the watchlist
+   → level-12 alert, MITRE T1204.001 (the email itself maps to T1566.002).
 4. The manager forwards the alert to a **Shuffle** workflow.
-5. Shuffle enriches the IOC via **VirusTotal** (detection count, hosting, country).
-6. Shuffle creates an enriched **alert in TheHive** for analyst triage.
+5. Shuffle looks the IOC up on **VirusTotal** and attaches it as an observable.
+6. Shuffle creates an analyst-ready **alert in TheHive**, IOC attached.
 
 > **Phishing isn't the only scenario that reaches TheHive.** Forwarding is filtered
 > to the headline alerts — by rule group (`phishing`, `sysmon_eid10_detections`) and
 > by rule ID (`5712`, `60115`, `92657`) — so SSH (03), RDP (04) and the credential
-> dump (05) are all raised as cases too (RDP raises two: the lockout and the
+> dump (05) are all raised as alerts too (RDP raises two: the lockout and the
 > compromise; the cred-dump forwards via the `sysmon_eid10_detections` group). The
 > Nmap recon alerts (01) and per-attempt brute-force noise (`5710`, `60122`) are
-> held back. Phishing is simply where **VirusTotal enrichment** is showcased: its
-> IOC is a real external IP, while the brute-force sources are private IPs VT can't
-> resolve.
+> held back. Phishing is where **VirusTotal enrichment** is showcased: the lab IOC is
+> a private IP (so VT returns nothing on the live run), and the enrichment capability
+> is demonstrated with a clearly labeled synthetic test event (Scenario 02 §5b).
 
 Full walkthrough: [docs/scenarios/02-phishing-ioc.md](docs/scenarios/02-phishing-ioc.md).
 
@@ -177,13 +178,13 @@ evidence/                          ← screenshots + raw alert JSON per scenario
 
 ## Honesty & Scope Notes
 
-- The lab is isolated; the phishing IOC uses a **reserved documentation IP**
-  (203.0.113.17, RFC 5737). "Known-bad" means known-bad *within this lab's threat
-  list* — exactly how real watchlists work. VirusTotal enrichment is demonstrated
-  separately against a **genuinely malicious IP** sourced from abuse.ch, with the
-  lab IOC documented as synthetic. Because `203.0.113.17` is non-routable, the live
-  rule fire is triggered against a reachable stand-in (`192.168.56.10`) with
-  identical rule logic — documented in Scenario 02 §3.
+- The lab is isolated; the phishing IOC is a **lab-owned phishing server**
+  (`192.168.56.99`) with its own IP, so the IOC is real and reachable within the
+  lab. "Known-bad" means known-bad *within this lab's threat list* — exactly how
+  real watchlists work. The IOC is a private IP, so VirusTotal returns nothing on
+  the live run; the enrichment *capability* is demonstrated with a **clearly
+  labeled synthetic test event** carrying a genuinely malicious IP (no traffic is
+  ever sent to it) — documented in Scenario 02 §5b.
 - All attack traffic targets the author's own lab VMs only.
 - Cloud backend IPs and credentials are redacted in this public repo.
 - **Timestamps:** lab hosts run different local timezones, so wall-clock values

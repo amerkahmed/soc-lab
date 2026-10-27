@@ -9,8 +9,8 @@ scenario that exercises it and the detection source that catches it.
 | Discovery | Network Service Discovery | T1046 | Suricata — ET SCAN port rules (database/VNC/SSH ports); generic port scans not detected | [01](scenarios/01-nmap-recon.md) |
 | Credential Access | Brute Force | T1110 | Wazuh 5710 / 5712 (SSH) | [03](scenarios/03-ssh-brute-force.md) |
 | Credential Access | Brute Force | T1110 | Wazuh 60122 / 60115 / 92657 (RDP) | [04](scenarios/04-rdp-brute-force.md) |
-| Initial Access | Phishing | T1566 | Wazuh 100100 (custom, CDB IOC match) | [02](scenarios/02-phishing-ioc.md) |
-| Execution | User Execution: Malicious Link | T1204.001 | IOC detonation (curl — simulated click) → Suricata/Wazuh | [02](scenarios/02-phishing-ioc.md) · simulated |
+| Initial Access | Phishing: Spearphishing Link | T1566.002 | Email analysis (emlAnalyzer) of the crafted sample | [02](scenarios/02-phishing-ioc.md) · analyzed sample |
+| Execution | User Execution: Malicious Link | T1204.001 | Wazuh 100100 — Suricata flow to the phishing server (curl = simulated click) | [02](scenarios/02-phishing-ioc.md) · simulated |
 | Discovery | Account Discovery | T1087 | Sysmon (net.exe) | — (observed on Windows) |
 | Discovery | Remote System Discovery | T1018 | Sysmon | — (observed on Windows) |
 | Execution | Scheduled Task/Job | T1053 | Sysmon (taskschd.dll load) | — (observed on Windows) |
@@ -35,17 +35,18 @@ scenario that exercises it and the detection source that catches it.
   to the actionable alerts — by rule group (`phishing`, `sysmon_eid10_detections`)
   and by rule ID (`5712` SSH correlation, `60115` RDP lockout, `92657` RDP
   compromise). Phishing (02), SSH (03), RDP (04), and credential dumping (05) are
-  all forwarded and raised as cases in TheHive — RDP raises two (the lockout and
+  all forwarded and raised as alerts in TheHive — RDP raises two (the lockout and
   the compromise), and the cred-dump (rule 92900) forwards via the
   `sysmon_eid10_detections` group. The Nmap/Suricata recon alerts (01) and the
   per-attempt brute-force
   rules (`5710`, `60122`) are deliberately held back to keep noise off the SOAR
-  layer. Phishing is simply the scenario where **VirusTotal enrichment** is
-  showcased, because its IOC is a real external IP — the brute-force sources are
-  private RFC 1918 addresses VirusTotal can't resolve (see the selective-enrichment
-  note in [architecture.md](architecture.md) §6). Phishing's validated technique is
-  T1566 (the detected IOC callback); the user-click stage (T1204.001) is simulated
-  via the curl detonation, not an observed user action.
+  layer. Phishing is the scenario where **VirusTotal enrichment** is showcased —
+  its lab IOC is a private IP (so VT returns nothing on the live run), and the
+  enrichment *capability* is shown with a clearly labeled synthetic test event
+  carrying a real known-bad IP (Scenario 02 §5b). Phishing maps to **two** techniques,
+  each to its own evidence: **T1566.002** (the analyzed email) and **T1204.001**
+  (the simulated-click connection that rule 100100 observes) — the single network
+  event is not mapped to T1566 on its own.
 - The Sysmon-observed techniques (T1087, T1018, T1053) surfaced incidentally during
   Windows testing and show the depth of process-level telemetry available for
   future detection work.

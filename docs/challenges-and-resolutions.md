@@ -89,17 +89,25 @@ The Shuffle HTTP node's connection-timeout field was accidentally set to a
 VirusTotal variable that resolved to `0` (`timeout cannot be ≤ 0`).
 **Fix:** set it to a plain `30`.
 
-### 14. Phishing rule over-matched on ICMP (false positive → tuning)
-Custom rule 100100 matched any event whose `dest_ip` was on the phishing CDB list,
-regardless of protocol. Because the Nmap attacker host (`192.168.56.10`) is also the
-lab's IOC trigger, Nmap's ICMP probes to it fired the phishing rule (level 12) on
-scan traffic — a false positive.
-**Fix:** add `<field name="proto">TCP</field>` so the rule only matches TCP
-connections, not pings/scans.
-**Lesson:** a rule can fire on the right indicator and still be too broad — scope it
-to the right protocol/port. Evidence:
-`evidence/scenario-02-phishing/wazuh-100100-FALSE-POSITIVE-icmp.json` (before) vs
-`wazuh-100100-alert.json` (after).
+### 14. Phishing rule over-matched (false positive → root-cause fix)
+Custom rule 100100 originally matched any event whose top-level `dest_ip` was on
+the phishing CDB list (`match_key`), regardless of event type. The top-level
+`dest_ip` describes an *individual packet*, not the connection — and an early build
+reused the Kali attacker IP as the watchlist entry, so the target's **ICMP echo
+replies** to Nmap's OS-detection probe (SID 2200025) carried `dest_ip = <attacker>`
+and fired the phishing rule (level 12) on scan traffic.
+**Band-aid (first fix):** add `<field name="proto">TCP</field>` so pings stopped
+matching. This removed the symptom but still matched on packet-level direction and
+went blind to UDP callbacks.
+**Root-cause fix (now):** match `event_type: flow` (a flow record carries the true
+connection direction, so a reply can't trip it), use `address_match_key` for the
+IP field, and give the phishing server its own IP (`192.168.56.99`) instead of
+reusing the attacker's. Dropping `proto=TCP` restores UDP coverage.
+**Lesson:** a rule can fire on the right indicator and still be scoped wrong. The
+durable fix matched the *connection* (flow) rather than a *packet* field and removed
+the shared-IP ambiguity at its source. Evidence:
+`evidence/scenario-02-phishing/wazuh-100100-FALSE-POSITIVE-icmp.json` (historical)
+vs `wazuh-100100-alert.json` (flow match, recapture).
 
 ### 15. Enabled ET SCAN rules could never fire on the attacker (`HOME_NET` scope)
 A re-test of Scenario 01 found plain SYN (`-sS`) and version (`-sV`) scans produced
