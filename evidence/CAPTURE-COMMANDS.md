@@ -16,17 +16,34 @@ can't produce the artifact.
 
 ## Scenario 01 — Nmap recon (Suricata)
 
-**Attack (Kali):**
+Repeat the three steps for each scan type (`-sS`, `-sV`, `-A`), waiting ~1 minute
+between scans. Replace `sS` in the filenames to match.
+
+**1. Mark the log position (target):**
 ```bash
-mkdir -p evidence/scenario-01-nmap
-sudo nmap -A 192.168.56.20 | tee evidence/scenario-01-nmap/attack-output.txt
+sudo wc -l /var/log/suricata/fast.log | awk '{print $1}' > ~/n-sS.txt
 ```
 
-**Capture Suricata's own log (target):**
+**2. Attack (Kali):**
 ```bash
-# fast.log excerpt showing the scan alerts
-sudo grep "192.168.56.10" /var/log/suricata/fast.log | tail -20 \
-  > evidence/scenario-01-nmap/suricata-fast-log.txt
+# -n = no reverse DNS (Nmap 7.991 aborts in its DNS resolver without it)
+sudo nmap -n -sS 192.168.56.20 | tee ~/nmap-sS.txt
+```
+
+**3. Capture only this scan's alerts and count them per signature (target, ~30 s later):**
+```bash
+N=$(cat ~/n-sS.txt)
+sudo tail -n +$((N+1)) /var/log/suricata/fast.log | grep "192.168.56.10" > ~/fast-sS.txt
+awk -F'\\[\\*\\*\\]' '{print $2}' ~/fast-sS.txt | sort | uniq -c | sort -rn | tee ~/sig-sS.txt
+```
+
+An empty `sig-*.txt` is a valid result (no detection). Do **not** use `tail -N` on
+`fast.log` — it truncates the scan and hides earlier alerts.
+
+**Check what `HOME_NET` covers (target)** — ET inbound rules only fire on sources
+outside it:
+```bash
+grep -n "HOME_NET:" /etc/suricata/suricata.yaml
 ```
 
 **Capture the Suricata alert as seen by Wazuh (manager):**

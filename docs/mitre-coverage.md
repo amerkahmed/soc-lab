@@ -5,8 +5,8 @@ scenario that exercises it and the detection source that catches it.
 
 | Tactic | Technique | ID | Detection | Scenario |
 |---|---|---|---|---|
-| Reconnaissance | Active Scanning | T1595 | Suricata (ICMP/service probes) | [01](scenarios/01-nmap-recon.md) |
-| Discovery | Network Service Discovery | T1046 | Suricata (ET ruleset) | [01](scenarios/01-nmap-recon.md) |
+| Reconnaissance | Active Scanning | T1595 | Suricata — Nmap OS-detection probes (SID 2200025, ET 2018489) | [01](scenarios/01-nmap-recon.md) |
+| Discovery | Network Service Discovery | T1046 | Suricata — ET SCAN port rules (database/VNC/SSH ports); generic port scans not detected | [01](scenarios/01-nmap-recon.md) |
 | Credential Access | Brute Force | T1110 | Wazuh 5710 / 5712 (SSH) | [03](scenarios/03-ssh-brute-force.md) |
 | Credential Access | Brute Force | T1110 | Wazuh 60122 / 60115 / 92657 (RDP) | [04](scenarios/04-rdp-brute-force.md) |
 | Initial Access | Phishing | T1566 | Wazuh 100100 (custom, CDB IOC match) | [02](scenarios/02-phishing-ioc.md) |
@@ -25,8 +25,12 @@ scenario that exercises it and the detection source that catches it.
   sources** — Linux journald (sshd) and the Windows Security channel. Same
   technique, different telemetry: the clearest argument for cross-platform host
   coverage.
-- **Scanning (T1046 / T1595)** is caught only by the **network** sensor (Suricata),
-  not the host agents — the clearest argument for NIDS alongside HIDS.
+- **Scanning (T1046 / T1595)** is visible only to the **network** sensor (Suricata),
+  not the host agents — the clearest argument for NIDS alongside HIDS. Coverage is
+  partial: OS fingerprinting and scans touching watched ports are detected; a plain
+  SYN scan of ports 1–1000 is not (tested — Scenario 01 §6). Kali is modeled as an
+  external attacker (`HOME_NET` scoped to the victims), which is why T1595
+  (Reconnaissance) is mapped alongside T1046.
 - **SOAR / case creation is not phishing-only.** Forwarding to Shuffle is filtered
   to the actionable alerts — by rule group (`phishing`, `sysmon_eid10_detections`)
   and by rule ID (`5712` SSH correlation, `60115` RDP lockout, `92657` RDP

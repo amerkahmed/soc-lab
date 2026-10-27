@@ -91,15 +91,24 @@ until a `<localfile>` block for the **Security** event channel was added. Sysmon
 ## 4. Network-based detection (Suricata NIDS)
 
 Suricata runs on the Ubuntu target, watching `enp0s3`, with the full Emerging
-Threats Open ruleset (~53,000 rules). It detects nmap recon (ICMP probes, service
-banners) and writes JSON to `/var/log/suricata/eve.json`, which the Wazuh agent
-forwards to the manager (built-in Suricata decoders).
+Threats Open ruleset (~53,000 rules) plus Suricata's built-in decoder rules, and
+writes JSON to `/var/log/suricata/eve.json`, which the Wazuh agent forwards to the
+manager (built-in Suricata decoders).
+
+**`HOME_NET` is scoped to the victim hosts** (`[192.168.56.20,192.168.56.30]`),
+which models Kali as an outside attacker. With Suricata's default `HOME_NET`
+(all RFC 1918 ranges) Kali counted as "home", and most ET SCAN rules — written for
+`$EXTERNAL_NET -> $HOME_NET` traffic — could never fire on it (see
+[challenges-and-resolutions.md](challenges-and-resolutions.md), item 15). With the
+fix, Suricata detects Nmap OS fingerprinting and scans that touch watched ports
+(databases, VNC, SSH); a plain SYN scan of ports 1–1000 is **not** detected
+(Scenario 01 §6).
 
 **Why both HIDS and NIDS (defense-in-depth):** host-based detection only sees what
 gets logged *on* a machine; a port scan generates no host log, so Wazuh alone is
-blind to it, but Suricata catches it on the wire. Conversely, Suricata can't see a
-successful login or a file change — those are host events. Together they give full
-coverage.
+blind to it, and only a network sensor can see it. Conversely, Suricata can't see a
+successful login or a file change — those are host events. The two layers cover
+different things; neither covers everything (see each scenario's blind spots).
 
 ---
 

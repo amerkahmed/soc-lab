@@ -10,7 +10,9 @@ tie together. Cross-host clocks are reconciled by event ID + UTC (see the
 ## What's here
 
 **`scenario-01-nmap/`** — Nmap recon caught by Suricata (rule 86601, an alert event).
-- `attack-output.txt` · `suricata-fast-log.txt` · `wazuh-suricata-alert.json` · `wazuh-suricata.png`
+- Original run (2026-10-22): `attack-output.txt` · `suricata-fast-log.txt` (last 20 lines only) · `wazuh-suricata-alert.json` · `wazuh-suricata.png`
+- `retest-2026-10-27/` — per-scan-type re-test (`-sS`, `-sV`, `-A`, `-sS -p 1-1000`):
+  `before/` the `HOME_NET` fix (`nmap-*.txt`, `fast-*.txt` extracts, `sig-*.txt` per-signature counts) and `after/` it (`nmap2-*.txt`, `fast2-*.txt`, `sig2-*.txt`, incl. the `-p1000` run) · `homenet-change.diff` · `wazuh-2018489-alert.json`
 
 **`scenario-02-phishing/`** — phishing IOC match (rule 100100) → Shuffle → VirusTotal → TheHive.
 - `emlanalyzer-output.txt` · `eml-analysis.png`

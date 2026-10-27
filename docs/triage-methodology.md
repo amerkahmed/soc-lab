@@ -24,7 +24,8 @@ on top of the detections.
 ## Per-scenario triage logic
 
 ### Nmap recon (Scenario 01)
-- **Malicious indicators:** one source probing many ports/services; ICMP sweeps.
+- **Malicious indicators:** one source probing many ports/services on a host;
+  OS-fingerprinting probes (malformed ICMP, Nmap's UDP probe).
 - **Severity:** low on its own — recon is pre-attack, not intrusion.
 - **Do not auto-block:** scan source IPs are spoofable; blocking on them can be
   weaponized.

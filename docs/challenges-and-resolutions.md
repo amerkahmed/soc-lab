@@ -101,6 +101,26 @@ to the right protocol/port. Evidence:
 `evidence/scenario-02-phishing/wazuh-100100-FALSE-POSITIVE-icmp.json` (before) vs
 `wazuh-100100-alert.json` (after).
 
+### 15. Enabled ET SCAN rules could never fire on the attacker (`HOME_NET` scope)
+A re-test of Scenario 01 found plain SYN (`-sS`) and version (`-sV`) scans produced
+**zero** Suricata alerts; only Nmap's OS-detection ICMP probe tripped Suricata's
+built-in decoder rule (SID 2200025). The cause: Suricata's default `HOME_NET`
+(`[192.168.0.0/16,10.0.0.0/8,172.16.0.0/12]`) included Kali, and `EXTERNAL_NET`
+is `!$HOME_NET`. Of 274 enabled ET SCAN rules, 237 match only traffic from
+`$EXTERNAL_NET` — e.g. `ET SCAN NMAP OS Detection Probe` is
+`alert udp $EXTERNAL_NET 10000: -> $HOME_NET 10000:` — so they were loaded but
+could never match the attacker.
+**Fix:** scope `HOME_NET` to the victim hosts (`[192.168.56.20,192.168.56.30]`),
+modeling Kali as external. After the fix: `-sS` 5 alerts, `-sV` 4, `-A` 45 across
+8 signatures (including SID 2018489).
+**Lesson:** a loaded rule is not a working rule — variable scoping can silently
+disable most of a ruleset. Validate with real traffic and count alerts per
+signature. A SYN scan of ports 1–1000 is still undetected (documented as a blind
+spot in Scenario 01 §6).
+**Also hit during the re-test:** Nmap 7.991 aborted in its reverse-DNS resolver
+(`massdns.cc … Assertion 'new_reqs.empty()' failed`); `-n` (no reverse DNS) avoids
+it without changing the traffic sent to the target.
+
 ---
 
 ## What this log demonstrates
