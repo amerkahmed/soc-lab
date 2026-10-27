@@ -112,11 +112,11 @@ stand-in.
 Plain-English, line by line:
 - `if_sid 86600` — builds on Wazuh's base Suricata rule, which matches **every**
   Suricata event type (alerts, flow records, protocol logs) — not just alerts.
-- **`event_type = flow`** — matches only Suricata **flow** records, which describe
-  the *connection* (who initiated it and where it went). This is the fix for the
-  old false positive (see §3a): a flow record carries the real direction, so a
-  reply packet can no longer trip the rule, and the match is no longer limited to
-  TCP (a UDP callback would be caught too).
+- **`event_type = flow`** — matches only Suricata **flow** records (a *connection*),
+  not per-packet signature **alerts** or other event types. This is the scoping fix
+  from the tuning exercise (see §3a): the rule now matches the connection that
+  represents a callback, not any stray flagged packet addressed to the IOC, and it
+  is no longer limited to TCP (a UDP callback is caught too).
 - `list field="dest_ip" lookup="address_match_key"` — checks the flow's
   destination IP against the CDB watchlist. `address_match_key` is the lookup
   Wazuh's docs require **for IP-address fields** (the old rule used the plain
@@ -131,29 +131,63 @@ Plain-English, line by line:
   [leaping to conclusions](https://www.cisa.gov/sites/default/files/2023-01/Best%20Practices%20for%20MITRE%20ATTCK%20Mapping.pdf) —
   inferring a technique the single artifact does not establish.
 
-### 3a. The false positive that drove the rule design
+### 3a. Tuning exercise — an over-broad rule, and a reproducible fix
 
-The first version of the rule matched **any** event whose top-level `dest_ip` was
-on the watchlist, using `match_key`. The top-level `dest_ip` describes an
-*individual packet*, not the connection — so when an earlier build reused the Kali
-attacker IP as the watchlist entry, the target's **ICMP echo replies** to Nmap's
-OS-detection probe (SID 2200025 — the same alert as Scenario 01) carried
-`dest_ip = <attacker>` and fired the phishing rule (level 12) on scan traffic.
+Detection engineering is mostly tuning, so the rule is built in two iterations and
+the false-positive step is made **reproducible on demand** rather than just
+asserted.
 
-- **Band-aid (old):** add `<field name="proto">TCP</field>` so pings stopped
-  matching. This removed the symptom but left two problems — the rule still matched
-  on packet-level direction, and it was now blind to UDP callbacks.
-- **Root-cause fix (now):** match `event_type: flow` and give the phishing server
-  its own IP. Flow records carry the true connection direction, so a reply can't
-  trip the rule; dropping `proto=TCP` restores UDP coverage.
+**Why the rule can over-match.** Base rule 86600 matches **every** Suricata event
+type — per-packet signature **alerts**, protocol events (`http`/`dns`/`tls`), and
+connection **flows** alike (verified against Wazuh's ruleset source). A naive rule
+that only checks `dest_ip` with `match_key`, and no event-type scope, therefore
+fires on *any* event whose destination is the IOC — including a per-packet decoder
+alert, not just the connection that represents an actual callback.
 
-**Lesson:** a rule can fire on the right indicator and still be scoped wrong. The
-durable fix matched the *connection* (flow) rather than a *packet* field, and
-removed the shared-IP ambiguity at its source. See
+**Where this first showed up (history).** In an earlier build the IOC stand-in was
+the Kali attacker's own IP. When the attacker scanned the victim, the target's
+**ICMP echo replies** (SID 2200025 — the same alert as Scenario 01) were addressed
+*to* that IP, so their top-level `dest_ip` matched the watchlist and fired the
+phishing rule (level 12) on scan traffic — a false positive captured in
+`wazuh-100100-FALSE-POSITIVE-icmp.json`. That specific trigger depended on the
+attacker IP doubling as the IOC; with the phishing server on its own IP
+(`192.168.56.99`) it no longer recurs naturally, which is exactly why the fix is
+validated deterministically below rather than by waiting for it to happen again.
+
+**Reproduce the over-match on demand (deterministic).** Feed the manager two
+labeled test events for the IOC — one a per-packet `alert`, one a connection
+`flow` — and compare what each rule version matches:
+
+```bash
+# Both events target the IOC. SYNTHETIC — no traffic is sent anywhere.
+TS=$(date -u +%Y-%m-%dT%H:%M:%S.000000+0000)
+# (1) a per-packet ALERT event to the IOC (what a stray signature/probe looks like)
+echo "{\"timestamp\":\"$TS\",\"in_iface\":\"enp0s3\",\"event_type\":\"alert\",\"src_ip\":\"192.168.56.20\",\"dest_ip\":\"192.168.56.99\",\"proto\":\"ICMP\",\"alert\":{\"signature\":\"SYNTHETIC test alert\",\"signature_id\":9999999},\"lab_note\":\"SYNTHETIC\"}" | sudo tee -a /var/log/suricata/eve.json
+# (2) a CONNECTION flow event to the IOC (a real callback)
+echo "{\"timestamp\":\"$TS\",\"in_iface\":\"enp0s3\",\"event_type\":\"flow\",\"src_ip\":\"192.168.56.20\",\"dest_ip\":\"192.168.56.99\",\"dest_port\":80,\"proto\":\"TCP\",\"app_proto\":\"http\",\"lab_note\":\"SYNTHETIC\"}" | sudo tee -a /var/log/suricata/eve.json
+```
+
+- **Naive rule** (`match_key`, no `event_type`): matches **both** → the per-packet
+  alert is a false positive.
+- **Scoped rule** (`event_type: flow` + `address_match_key`, as deployed): matches
+  **only** the connection → the false positive is gone, and a real callback still
+  fires.
+
+**Why not just `proto=TCP`?** An earlier band-aid added `<field name="proto">TCP</field>`
+to stop the ICMP match. It worked but scoped to HTTP only and went blind to a UDP
+callback. Scoping to the **event type** (connection vs per-packet) fixes the actual
+confusion, and a watchlist should flag *any* connection to known-bad infra — TCP,
+UDP, or otherwise — so `proto=TCP` is deliberately dropped.
+
+**Lesson:** a rule can fire on the right indicator and still be scoped wrong — here
+it matched a per-packet *alert* when it meant a *connection*. Scope to the event
+type that represents what you actually mean, and validate the fix with a
+deterministic test rather than hoping the false positive recurs. See
 [challenges-and-resolutions.md](../challenges-and-resolutions.md), item 14.
 
-> _Evidence (recapture): `wazuh-100100-FALSE-POSITIVE-icmp.json` (historical, old
-> design) vs `wazuh-100100-alert.json` (flow match, new design)_
+> _Evidence (recapture): `wazuh-100100-FALSE-POSITIVE-icmp.json` (over-match on an
+> alert event) vs `wazuh-100100-alert.json` (flow-scoped match) — regenerated with
+> the two-event test above._
 
 ---
 
@@ -308,13 +342,15 @@ User reports email  →  analyst analyzes it (T1566.002)  →  IOCs extracted
 ## 10. Lessons Learned
 
 - **Own your lab infrastructure.** Giving the phishing server a real, reachable IP
-  of its own removed a whole class of problems: no documentation-IP placeholder, no
-  attacker-IP stand-in, and no shared-IP false positive.
+  of its own removed the documentation-IP placeholder and the attacker-IP stand-in,
+  so the one false positive left is a *deliberate, reproducible* tuning exercise
+  (§3a) rather than an artifact of a shared IP.
 - **Map to evidence, not to the story.** The email proves T1566.002; the connection
   proves T1204.001. A single network event does not prove "phishing" on its own.
 - **Match the connection, not the packet.** Scoping rule 100100 to Suricata **flow**
-  records (not a packet-level `dest_ip`) fixed the false positive at its root and
-  removed the TCP-only blind spot. Use `address_match_key` for IP fields.
+  records (not any event with a matching `dest_ip`) fixed the over-match and removed
+  the TCP-only blind spot. Use `address_match_key` for IP fields. Tuning false
+  positives is core SOC work, so the before/after is kept reproducible on demand.
 - **Authentication results don't decide phishing.** SPF/DKIM/DMARC can all pass for
   a lookalike domain the attacker owns; the content indicators are what matter.
 - **Enrich honestly.** A private IOC yields nothing from VirusTotal — say so. Show

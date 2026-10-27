@@ -89,25 +89,28 @@ The Shuffle HTTP node's connection-timeout field was accidentally set to a
 VirusTotal variable that resolved to `0` (`timeout cannot be ≤ 0`).
 **Fix:** set it to a plain `30`.
 
-### 14. Phishing rule over-matched (false positive → root-cause fix)
-Custom rule 100100 originally matched any event whose top-level `dest_ip` was on
-the phishing CDB list (`match_key`), regardless of event type. The top-level
-`dest_ip` describes an *individual packet*, not the connection — and an early build
-reused the Kali attacker IP as the watchlist entry, so the target's **ICMP echo
-replies** to Nmap's OS-detection probe (SID 2200025) carried `dest_ip = <attacker>`
-and fired the phishing rule (level 12) on scan traffic.
-**Band-aid (first fix):** add `<field name="proto">TCP</field>` so pings stopped
-matching. This removed the symptom but still matched on packet-level direction and
-went blind to UDP callbacks.
-**Root-cause fix (now):** match `event_type: flow` (a flow record carries the true
-connection direction, so a reply can't trip it), use `address_match_key` for the
-IP field, and give the phishing server its own IP (`192.168.56.99`) instead of
-reusing the attacker's. Dropping `proto=TCP` restores UDP coverage.
-**Lesson:** a rule can fire on the right indicator and still be scoped wrong. The
-durable fix matched the *connection* (flow) rather than a *packet* field and removed
-the shared-IP ambiguity at its source. Evidence:
-`evidence/scenario-02-phishing/wazuh-100100-FALSE-POSITIVE-icmp.json` (historical)
-vs `wazuh-100100-alert.json` (flow match, recapture).
+### 14. Phishing rule over-matched (false positive → reproducible tuning fix)
+Base rule 86600 matches **every** Suricata event type — per-packet signature
+**alerts**, protocol events, and connection **flows**. Custom rule 100100 first
+checked only `dest_ip` (`match_key`) with no event-type scope, so it fired on *any*
+event whose destination was the IOC, not just the callback connection. The original
+misfire: an early build used the Kali attacker IP as the IOC stand-in, so the
+target's **ICMP echo replies** to a scan (SID 2200025) were addressed to that IP
+and tripped the phishing rule (level 12) on scan traffic.
+**Band-aid (first fix):** `<field name="proto">TCP</field>` stopped the ICMP match
+but scoped to HTTP only and went blind to UDP callbacks.
+**Fix (now):** scope to `event_type: flow` (match a *connection*, not a per-packet
+alert), use `address_match_key` for the IP field, and give the phishing server its
+own IP (`192.168.56.99`). `proto=TCP` is dropped — a watchlist should flag any
+connection to known-bad infra.
+**Reproducibility:** the shared-IP trigger no longer recurs naturally once the IOC
+has its own IP, so the fix is validated deterministically by feeding two labeled
+test events (one `alert`, one `flow`) for the IOC and confirming the naive rule
+matches both while the scoped rule matches only the flow (Scenario 02 §3a).
+**Lesson:** a rule can fire on the right indicator and still be scoped wrong — scope
+to the event type that represents what you mean, and validate with a deterministic
+test. Evidence: `evidence/scenario-02-phishing/wazuh-100100-FALSE-POSITIVE-icmp.json`
+vs `wazuh-100100-alert.json` (recapture).
 
 ### 15. Enabled ET SCAN rules could never fire on the attacker (`HOME_NET` scope)
 A re-test of Scenario 01 found plain SYN (`-sS`) and version (`-sV`) scans produced
