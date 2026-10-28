@@ -7,13 +7,15 @@ alert in TheHive. The workflow mirrors how an L1 analyst actually handles a
 user-reported phish — **analyze → extract → "did anyone click?" → contain** — and
 each step is mapped only to the technique its own evidence supports.
 
-> **Status: redesigned 2026-10-27 — evidence recapture pending.** This scenario was
+> **Status: redesigned and re-validated 2026-10-28.** This scenario was
 > restructured around a **lab-owned phishing server** (`192.168.56.99`) so the IOC
 > is real and reachable within the lab, replacing the earlier
 > documentation-IP-plus-attacker-IP stand-in. The pipeline (Wazuh → Shuffle →
-> VirusTotal → TheHive) is unchanged in shape; screenshots and alert JSON are being
-> recaptured against the new design. Evidence files referenced below marked _(recapture)_
-> are regenerated on the re-run.
+> VirusTotal → TheHive) was re-run end to end against the new design: the http rule
+> fired live (~0.8 s, `status 200`), Shuffle enriched a real known-bad IP via
+> VirusTotal (20/92) and attached it as a TheHive observable, and the false-positive
+> tuning exercise was reproduced. Evidence in `evidence/scenario-02-phishing/` is the
+> 2026-10-28 recapture.
 
 | | |
 |---|---|
@@ -21,7 +23,7 @@ each step is mapped only to the technique its own evidence supports.
 | **Phishing server (lab IOC)** | `192.168.56.99` — a lab-owned host serving a fake login page (its own IP, separate from the Kali attacker `192.168.56.10`) |
 | **Detection source** | Suricata http event → Wazuh custom rule 100100 (CDB watchlist match) |
 | **Automation** | Wazuh → Shuffle → VirusTotal → TheHive (IOC attached as an observable) |
-| **Status** | ⏳ Rebuilt; detection → SOAR → TheHive alert re-run pending |
+| **Status** | ✅ Validated (detection → SOAR → VT enrichment → TheHive alert with observable) |
 
 ---
 
@@ -71,7 +73,7 @@ URL**, not on an SPF result.
 email itself, not by an observed delivery through a mail system (the lab has no
 mail server; the email is a crafted training sample).
 
-> _Evidence (recapture): `evidence/scenario-02-phishing/emlanalyzer-output.txt`,
+> _Evidence: `evidence/scenario-02-phishing/emlanalyzer-output.txt`,
 > `eml-analysis.png`_
 
 ---
@@ -194,7 +196,7 @@ event type that represents what you actually mean, and validate the fix with a
 deterministic test rather than hoping the false positive recurs. See
 [challenges-and-resolutions.md](../challenges-and-resolutions.md), item 14.
 
-> _Evidence (recapture): `wazuh-100100-FALSE-POSITIVE-icmp.json` (over-match on an
+> _Evidence: `wazuh-100100-FALSE-POSITIVE-icmp.json` (over-match on an
 > alert event) vs `wazuh-100100-alert.json` (http-scoped match) — regenerated with
 > the two-event test above._
 
@@ -212,8 +214,8 @@ curl -m 5 http://192.168.56.99/paypal/login/verify.php
 ```
 
 That request produces a Suricata **http** transaction event, which Wazuh matches
-against the watchlist in near-real-time (~1–2 s). Expected alert (to be captured on
-the re-run):
+against the watchlist in near-real-time (~1–2 s). Captured alert (event
+`1793218132.30217`, ~0.8 s after the request):
 
 ```
 ** Alert <event-id>:
@@ -228,7 +230,7 @@ internal host reached infrastructure the team had already flagged. It answers "d
 someone click" with a yes — it does **not** yet prove credentials were submitted
 (see §6).
 
-> _Evidence (recapture): `wazuh-100100-alert.json`_
+> _Evidence: `wazuh-100100-alert.json`_
 
 ---
 
@@ -244,7 +246,7 @@ group) to the workflow:
    analyst gets an actionable, pivot-ready indicator rather than just a description.
    Returns **HTTP 201 Created**.
 
-> _Evidence (recapture): `shuffle-run-201.png`, `thehive-alert.png`,
+> _Evidence: `shuffle-run-201.png`, `thehive-alert.png`,
 > `shuffle-workflow.png`_
 
 ### 5a. Enrichment on the live run
@@ -274,7 +276,7 @@ which requires a true-positive validation step). The VirusTotal screenshot is a
 **manual web lookup** shown only to illustrate the enrichment fields — it is not
 output of the live pipeline.
 
-> _Evidence (recapture): `shuffle-run-201.png` (synthetic run), `virustotal-enrichment.png`
+> _Evidence: `shuffle-run-201.png` (synthetic run), `virustotal-enrichment.png`
 > (manual lookup, clearly labeled)_
 
 ---
@@ -300,7 +302,7 @@ that it was malicious depends on the indicator's source and age — an IP is the
 so a stale or shared IP could match benign traffic; here the IOC is freshly
 extracted from the analyzed sample, which is why confidence is high.
 
-> _Evidence (recapture): `thehive-alert.png` (alert with observable attached)_
+> _Evidence: `thehive-alert.png` (alert with observable attached)_
 
 ---
 

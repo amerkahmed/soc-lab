@@ -14,7 +14,7 @@ tie together. Cross-host clocks are reconciled by event ID + UTC (see the
 - `retest-2026-10-27/` — per-scan-type re-test (`-sS`, `-sV`, `-A`, `-sS -p 1-1000`):
   `before/` the `HOME_NET` fix (`nmap-*.txt`, `fast-*.txt` extracts, `sig-*.txt` per-signature counts) and `after/` it (`nmap2-*.txt`, `fast2-*.txt`, `sig2-*.txt`, incl. the `-p1000` run) · `homenet-change.diff` · `wazuh-2018489-alert.json`
 
-**`scenario-02-phishing/`** — reframed as an L1 phishing investigation (redesigned 2026-10-27, **recapture pending**): email analysis (T1566.002) → IOC → http-event match on the lab phishing server `192.168.56.99` (rule 100100, T1204.001) → Shuffle → TheHive alert with IOC observable.
+**`scenario-02-phishing/`** — reframed as an L1 phishing investigation (redesigned + re-validated 2026-10-28): email analysis (T1566.002) → IOC → http-event match on the lab phishing server `192.168.56.99` (rule 100100, T1204.001) → Shuffle → TheHive alert with IOC observable.
 - `emlanalyzer-output.txt` · `eml-analysis.png` (recapture — new sample, auth passes)
 - `wazuh-100100-alert.json` (http-event match, `dest_ip 192.168.56.99`) · `wazuh-100100-FALSE-POSITIVE-icmp.json` (naive rule over-matching a per-packet alert event — reproducible tuning exercise, see Scenario 02 §3a / challenges #14)
 - `shuffle-run-201.png` (webhook run, rule_id 100100) · `thehive-alert.png` (VT-enriched description: `VT malicious: 20`) · `thehive-observable.png` (the IOC attached as an observable) · `virustotal-enrichment.png` (manual lookup of `1.92.135.168` — 20/92, Cobalt Strike C2, §5b) · `shuffle-workflow.png`
