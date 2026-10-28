@@ -98,8 +98,7 @@ stand-in.
 ```xml
 <group name="phishing,ioc,">
   <rule id="100100" level="12">
-    <if_sid>86600</if_sid>
-    <field name="event_type">^http$</field>
+    <if_sid>86602</if_sid>
     <list field="dest_ip" lookup="address_match_key">etc/lists/phishing-iocs</list>
     <description>Connection to known phishing infrastructure (IOC match)</description>
     <mitre>
@@ -110,13 +109,17 @@ stand-in.
 ```
 
 Plain-English, line by line:
-- `if_sid 86600` — builds on Wazuh's base Suricata rule, which matches **every**
-  Suricata event type (alerts, flow records, protocol logs) — not just alerts.
-- **`event_type = http`** — matches only Suricata **http** transaction events, which
-  Suricata logs **per HTTP request**. This is the detection the credential-harvest
-  callback actually is, so the rule fires in **near-real-time (~1–2 s)** rather than
-  waiting ~60 s for a flow record (see §3a for why it also can't be tripped by a
-  per-packet alert, and §10 for the specificity-vs-coverage decision behind `http`).
+- `if_sid 86602` — builds on Wazuh's **built-in Suricata HTTP rule** (86602, a child
+  of the base 86600), which already matches only `event_type: http` events — logged
+  by Suricata **per HTTP request**, so the rule fires in **near-real-time (~1–2 s)**
+  rather than waiting ~60 s for a flow record. Chaining off 86602 (not 86600) is
+  deliberate: Wazuh has a specific built-in child of 86600 per event type
+  (86601 alert / 86602 http / 86603 dns / 86604 tls), and the specific one pre-empts
+  a custom sibling hung off 86600 — so an `if_sid 86600 + event_type=http` rule never
+  fires on http events (it loses to 86602). This was found with `wazuh-logtest` and
+  is written up in [challenges-and-resolutions.md](../challenges-and-resolutions.md),
+  item 16. A per-packet alert produces no http event, so it can't trip the rule
+  (see §3a); §10 covers the specificity-vs-coverage choice.
 - `list field="dest_ip" lookup="address_match_key"` — checks the http event's
   destination IP against the CDB watchlist. `address_match_key` is the lookup
   Wazuh's docs require **for IP-address fields** (the old rule used the plain
@@ -169,9 +172,10 @@ echo "{\"timestamp\":\"$TS\",\"in_iface\":\"enp0s3\",\"event_type\":\"http\",\"s
 
 - **Naive rule** (`match_key`, no `event_type`): matches **both** → the per-packet
   alert is a false positive.
-- **Scoped rule** (`event_type: http` + `address_match_key`, as deployed): matches
-  **only** the HTTP transaction → the false positive is gone, and the real callback
-  still fires.
+- **Scoped rule** (`if_sid 86602` — child of Suricata's http rule — + `address_match_key`,
+  as deployed): matches **only** the HTTP transaction → the false positive is gone,
+  and the real callback still fires. (The alert event matches 86601 instead, never
+  reaching 100100.)
 
 **Why not just `proto=TCP`?** An earlier band-aid added `<field name="proto">TCP</field>`
 to a packet-level match to stop the ICMP hit. Scoping to the **event type** — the

@@ -133,6 +133,26 @@ spot in Scenario 01 §6).
 (`massdns.cc … Assertion 'new_reqs.empty()' failed`); `-n` (no reverse DNS) avoids
 it without changing the traffic sent to the target.
 
+### 16. Custom http rule never fired — a built-in sibling pre-empted it
+After switching rule 100100 to match HTTP events, it was written as
+`if_sid 86600` + `<field name="event_type">^http$</field>`. `wazuh-logtest` on a
+synthetic http event showed it matching **86602** ("Suricata: HTTP", level 0) — the
+custom rule never fired. Cause: Wazuh's Suricata ruleset has a specific built-in
+child of base rule 86600 for each event type (86601 alert, 86602 http, 86603 dns,
+86604 tls). For an http event the engine matches the specific child 86602, which
+pre-empts a custom rule hung off the same parent 86600. (The earlier flow-based
+version worked only because there is **no** built-in flow rule, so the custom rule
+was the sole matching child.)
+**Fix:** chain the custom rule off the specific event-type rule —
+`<if_sid>86602</if_sid>` — so 100100 is a child of the http rule and is evaluated
+whenever 86602 matches. The redundant `event_type` field is dropped (86602 already
+enforces it).
+**Lesson:** when extending Wazuh's built-in decoders, build on the **most specific**
+rule that already matches your event, not the generic base — and confirm with
+`wazuh-logtest` which rule actually fires, since a silent pre-emption looks exactly
+like "my rule is broken." Non-HTTP IOC callbacks would chain off 86604 (tls) / 86603
+(dns) the same way.
+
 ---
 
 ## What this log demonstrates

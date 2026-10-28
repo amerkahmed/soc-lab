@@ -24,19 +24,23 @@
 <group name="phishing,ioc,">
 
   <!--
-    Matches a Suricata *http* transaction event (not a per-packet decoder alert)
-    whose destination IP is on the phishing CDB watchlist. event_type=http is
-    logged per HTTP request, so the rule fires in near-real-time (~1-2s) and still
-    cannot be tripped by a per-packet alert (e.g. an ICMP reply), which has no http
-    event. address_match_key is the lookup Wazuh requires for IP-address fields.
-    MITRE T1204.001 (the observed HTTP callback that follows a click) — the
-    T1566.002 phishing technique is established by the email analysis, not here.
-    Scope note: http matches the HTTP credential-harvest callback precisely; a
-    non-HTTP callback (TLS/DNS/other) is a documented blind spot (Scenario 02 §10).
+    Fires when a Suricata HTTP transaction's destination IP is on the phishing CDB
+    watchlist. Chains off built-in rule 86602 ("Suricata: HTTP"), NOT the base 86600:
+    for each Suricata event type Wazuh has a specific built-in child of 86600
+    (86601 alert / 86602 http / 86603 dns / 86604 tls), and that specific rule
+    pre-empts a custom sibling hung off 86600 — so an `if_sid 86600 + event_type=http`
+    rule never fires on http events (it loses to 86602). Chaining off 86602 makes
+    100100 a child of the http rule, so it is evaluated whenever 86602 matches.
+    http is logged per request, so this fires in near-real-time (~1-2s); and a
+    per-packet alert (e.g. an ICMP reply) produces no http event, so it cannot trip
+    the rule. address_match_key is the lookup Wazuh requires for IP-address fields.
+    MITRE T1204.001 (the HTTP callback that follows a click) — the T1566.002 phishing
+    technique is established by the email analysis, not here. A non-HTTP callback
+    (TLS/DNS) is a documented blind spot (Scenario 02 §10); it would chain off
+    86604/86603. See challenges-and-resolutions.md item 16.
   -->
   <rule id="100100" level="12">
-    <if_sid>86600</if_sid>
-    <field name="event_type">^http$</field>
+    <if_sid>86602</if_sid>
     <list field="dest_ip" lookup="address_match_key">etc/lists/phishing-iocs</list>
     <description>Connection to known phishing infrastructure (IOC match)</description>
     <mitre>
