@@ -171,6 +171,7 @@ config/                            ← reproducible configs (sanitized)
   local_rules.xml                  ← custom Wazuh rules
   phishing-iocs                    ← CDB threat-intel list
   ossec-integration.xml            ← Shuffle integration block
+  shuffle-workflow.json            ← exported SOAR workflow (secrets scrubbed)
 evidence/                          ← screenshots + raw alert JSON per scenario
 ```
 
