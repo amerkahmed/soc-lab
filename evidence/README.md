@@ -17,7 +17,7 @@ tie together. Cross-host clocks are reconciled by event ID + UTC (see the
 **`scenario-02-phishing/`** — reframed as an L1 phishing investigation (redesigned 2026-10-27, **recapture pending**): email analysis (T1566.002) → IOC → http-event match on the lab phishing server `192.168.56.99` (rule 100100, T1204.001) → Shuffle → TheHive alert with IOC observable.
 - `emlanalyzer-output.txt` · `eml-analysis.png` (recapture — new sample, auth passes)
 - `wazuh-100100-alert.json` (http-event match, `dest_ip 192.168.56.99`) · `wazuh-100100-FALSE-POSITIVE-icmp.json` (naive rule over-matching a per-packet alert event — reproducible tuning exercise, see Scenario 02 §3a / challenges #14)
-- `shuffle-workflow.png` · `shuffle-run-201.png` · `thehive-alert.png` (IOC attached) · `virustotal-enrichment.png` (manual lookup, enrichment-capability demo §5b)
+- `shuffle-run-201.png` (webhook run, rule_id 100100) · `thehive-alert.png` (VT-enriched description: `VT malicious: 20`) · `thehive-observable.png` (the IOC attached as an observable) · `virustotal-enrichment.png` (manual lookup of `1.92.135.168` — 20/92, Cobalt Strike C2, §5b) · `shuffle-workflow.png`
 
 **`scenario-03-ssh/`** — SSH brute force, event `1792785099.20359`.
 - `attack-output.txt` (Hydra) · `alert-5712.json` (correlation) · `alert-5710.json` (per-attempt)
