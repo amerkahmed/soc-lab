@@ -2,10 +2,10 @@
  ||  Header  ||
  ==============
 Authentication-Results.....mx.yourlab.local;
-                           spf=fail (sender IP is 203.0.113.17) smtp.mailfrom=paypa1-secure.com;
-                           dkim=none;
-                           dmarc=fail (p=reject) header.from=paypa1-secure.com
-Received...................from paypa1-secure.com (unknown [203.0.113.17])
+                           spf=pass (sender IP is 192.168.56.99) smtp.mailfrom=paypa1-secure.com;
+                           dkim=pass header.d=paypa1-secure.com;
+                           dmarc=pass (p=none) header.from=paypa1-secure.com
+Received...................from paypa1-secure.com (unknown [192.168.56.99])
                            by mx.yourlab.local with ESMTP id abc123def456;
                            Fri, 09 Oct 2026 14:22:00 -0400
 From......................."PayPal Service" <service@paypa1-secure.com>
@@ -20,7 +20,7 @@ Content-Type...............text/html; charset="UTF-8"
  ==================================
  ||  URLs in HTML and text part  ||
  ==================================
- - http://203.0.113.17/paypal/login/verify.php
+ - http://192.168.56.99/paypal/login/verify.php
 
  =================
  ||  Plaintext  ||
@@ -36,7 +36,9 @@ Content-Type...............text/html; charset="UTF-8"
 your account access has been <b>limited</b>.</p>
 <p>You must verify your information within <b>24 hours</b> or your account
 will be <b>permanently suspended</b>.</p>
-<p><a href="http://203.0.113.17/paypal/login/verify.php">Verify My Account Now</a></p>
+<p><a href="http://192.168.56.99/paypal/login/verify.php">Verify My Account Now</a></p>
 <p>Thank you,<br>PayPal Security Team</p>
 <p style="font-size:9px;color:#999">This is an automated message. Please do not reply.</p>
 </body></html>
+
+
