@@ -170,12 +170,17 @@ echo "{\"timestamp\":\"$TS\",\"in_iface\":\"enp0s3\",\"event_type\":\"alert\",\"
 echo "{\"timestamp\":\"$TS\",\"in_iface\":\"enp0s3\",\"event_type\":\"http\",\"src_ip\":\"192.168.56.20\",\"dest_ip\":\"192.168.56.99\",\"dest_port\":80,\"proto\":\"TCP\",\"http\":{\"hostname\":\"192.168.56.99\",\"url\":\"/paypal/login/verify.php\"},\"lab_note\":\"SYNTHETIC\"}" | sudo tee -a /var/log/suricata/eve.json
 ```
 
-- **Naive rule** (`match_key`, no `event_type`): matches **both** → the per-packet
-  alert is a false positive.
-- **Scoped rule** (`if_sid 86602` — child of Suricata's http rule — + `address_match_key`,
-  as deployed): matches **only** the HTTP transaction → the false positive is gone,
-  and the real callback still fires. (The alert event matches 86601 instead, never
-  reaching 100100.)
+Result — confirmed with `wazuh-logtest`, then captured live:
+
+- **Naive rule** (`if_sid 86600`, `match_key`, no event-type scope) is **doubly
+  wrong**: on the per-packet **alert** event it fires `100100` (level 12) — a false
+  positive on scan/ICMP traffic — and on the real **http** callback it does **not**
+  fire at all, because Wazuh's built-in `86602` (http) pre-empts it (first matching
+  child wins; see item 16). So it alerts on the wrong thing *and* misses the right
+  thing.
+- **Scoped rule** (`if_sid 86602`, child of Suricata's http rule, + `address_match_key`,
+  as deployed) is correct on both: the alert event matches `86601` and never reaches
+  `100100` (no false positive), while the real http callback fires `100100`.
 
 **Why not just `proto=TCP`?** An earlier band-aid added `<field name="proto">TCP</field>`
 to a packet-level match to stop the ICMP hit. Scoping to the **event type** — the

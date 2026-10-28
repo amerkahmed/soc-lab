@@ -106,8 +106,10 @@ near-real-time (~1–2 s) vs ~60 s for a flow record; the non-HTTP coverage gap 
 documented blind spot (Scenario 02 §10).
 **Reproducibility:** the shared-IP trigger no longer recurs naturally once the IOC
 has its own IP, so the fix is validated deterministically by feeding two labeled
-test events (one `alert`, one `http`) for the IOC and confirming the naive rule
-matches both while the scoped rule matches only the http event (Scenario 02 §3a).
+test events (one `alert`, one `http`) for the IOC: the naive rule fires `100100` on
+the alert event (the false positive) and the scoped rule fires only on the http
+callback. (The naive rule also *misses* the http callback — built-in 86602 pre-empts
+it, see item 16 — so it is both noisy and blind; Scenario 02 §3a.)
 **Lesson:** a rule can fire on the right indicator and still be scoped wrong — scope
 to the event type that represents what you mean, and validate with a deterministic
 test. Evidence: `evidence/scenario-02-phishing/wazuh-100100-FALSE-POSITIVE-icmp.json`
