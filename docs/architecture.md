@@ -117,8 +117,8 @@ different things; neither covers everything (see each scenario's blind spots).
 A reported phishing email is analyzed (T1566.002), its IOCs extracted, and the
 phishing-server IP loaded into a Wazuh **CDB list** referenced by **custom rule
 100100** (level 12). When a victim host connects to the server (a simulated click),
-Suricata emits a flow record that rule 100100 matches — the observed outbound
-connection is T1204.001. Full walkthrough:
+Suricata emits an http transaction event that rule 100100 matches in near-real-time
+— the observed outbound HTTP callback is T1204.001. Full walkthrough:
 [scenarios/02-phishing-ioc.md](scenarios/02-phishing-ioc.md).
 
 The lab IOC is a **lab-owned phishing server** (`192.168.56.99`) with its own IP, so

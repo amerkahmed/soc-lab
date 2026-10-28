@@ -14,9 +14,9 @@ tie together. Cross-host clocks are reconciled by event ID + UTC (see the
 - `retest-2026-10-27/` — per-scan-type re-test (`-sS`, `-sV`, `-A`, `-sS -p 1-1000`):
   `before/` the `HOME_NET` fix (`nmap-*.txt`, `fast-*.txt` extracts, `sig-*.txt` per-signature counts) and `after/` it (`nmap2-*.txt`, `fast2-*.txt`, `sig2-*.txt`, incl. the `-p1000` run) · `homenet-change.diff` · `wazuh-2018489-alert.json`
 
-**`scenario-02-phishing/`** — reframed as an L1 phishing investigation (redesigned 2026-10-27, **recapture pending**): email analysis (T1566.002) → IOC → flow match on the lab phishing server `192.168.56.99` (rule 100100, T1204.001) → Shuffle → TheHive alert with IOC observable.
+**`scenario-02-phishing/`** — reframed as an L1 phishing investigation (redesigned 2026-10-27, **recapture pending**): email analysis (T1566.002) → IOC → http-event match on the lab phishing server `192.168.56.99` (rule 100100, T1204.001) → Shuffle → TheHive alert with IOC observable.
 - `emlanalyzer-output.txt` · `eml-analysis.png` (recapture — new sample, auth passes)
-- `wazuh-100100-alert.json` (flow-scoped match, `dest_ip 192.168.56.99`) · `wazuh-100100-FALSE-POSITIVE-icmp.json` (naive rule over-matching a per-packet alert event — reproducible tuning exercise, see Scenario 02 §3a / challenges #14)
+- `wazuh-100100-alert.json` (http-event match, `dest_ip 192.168.56.99`) · `wazuh-100100-FALSE-POSITIVE-icmp.json` (naive rule over-matching a per-packet alert event — reproducible tuning exercise, see Scenario 02 §3a / challenges #14)
 - `shuffle-workflow.png` · `shuffle-run-201.png` · `thehive-alert.png` (IOC attached) · `virustotal-enrichment.png` (manual lookup, enrichment-capability demo §5b)
 
 **`scenario-03-ssh/`** — SSH brute force, event `1792785099.20359`.

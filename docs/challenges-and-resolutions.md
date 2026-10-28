@@ -97,16 +97,17 @@ event whose destination was the IOC, not just the callback connection. The origi
 misfire: an early build used the Kali attacker IP as the IOC stand-in, so the
 target's **ICMP echo replies** to a scan (SID 2200025) were addressed to that IP
 and tripped the phishing rule (level 12) on scan traffic.
-**Band-aid (first fix):** `<field name="proto">TCP</field>` stopped the ICMP match
-but scoped to HTTP only and went blind to UDP callbacks.
-**Fix (now):** scope to `event_type: flow` (match a *connection*, not a per-packet
-alert), use `address_match_key` for the IP field, and give the phishing server its
-own IP (`192.168.56.99`). `proto=TCP` is dropped — a watchlist should flag any
-connection to known-bad infra.
+**Band-aid (first fix):** `<field name="proto">TCP</field>` on a packet-level match
+stopped the ICMP hit but filtered by a packet field rather than fixing the scope.
+**Fix (now):** scope to `event_type: http` (match the HTTP transaction that *is* the
+callback, not a per-packet alert), use `address_match_key` for the IP field, and
+give the phishing server its own IP (`192.168.56.99`). `http` also fires in
+near-real-time (~1–2 s) vs ~60 s for a flow record; the non-HTTP coverage gap is a
+documented blind spot (Scenario 02 §10).
 **Reproducibility:** the shared-IP trigger no longer recurs naturally once the IOC
 has its own IP, so the fix is validated deterministically by feeding two labeled
-test events (one `alert`, one `flow`) for the IOC and confirming the naive rule
-matches both while the scoped rule matches only the flow (Scenario 02 §3a).
+test events (one `alert`, one `http`) for the IOC and confirming the naive rule
+matches both while the scoped rule matches only the http event (Scenario 02 §3a).
 **Lesson:** a rule can fire on the right indicator and still be scoped wrong — scope
 to the event type that represents what you mean, and validate with a deterministic
 test. Evidence: `evidence/scenario-02-phishing/wazuh-100100-FALSE-POSITIVE-icmp.json`

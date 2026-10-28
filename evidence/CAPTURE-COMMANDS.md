@@ -79,7 +79,7 @@ sudo python3 -m http.server 80 --bind 192.168.56.99
 curl -m 5 http://192.168.56.99/paypal/login/verify.php
 ```
 
-**Capture the IOC-match alert (manager) — wait ~60-90s for the flow to flush:**
+**Capture the IOC-match alert (manager) — fires in ~1-2s (http transaction event):**
 ```bash
 sudo grep '"id":"100100"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
   > evidence/scenario-02-phishing/wazuh-100100-alert.json
@@ -89,7 +89,7 @@ sudo grep '"id":"100100"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
 IP; no traffic is sent to it:**
 ```bash
 TS=$(date -u +%Y-%m-%dT%H:%M:%S.000000+0000)
-echo "{\"timestamp\":\"$TS\",\"in_iface\":\"enp0s3\",\"event_type\":\"flow\",\"src_ip\":\"192.168.56.20\",\"dest_ip\":\"<known-bad-ip>\",\"dest_port\":80,\"proto\":\"TCP\",\"app_proto\":\"http\",\"lab_note\":\"SYNTHETIC TEST EVENT\"}" \
+echo "{\"timestamp\":\"$TS\",\"in_iface\":\"enp0s3\",\"event_type\":\"http\",\"src_ip\":\"192.168.56.20\",\"dest_ip\":\"<known-bad-ip>\",\"dest_port\":80,\"proto\":\"TCP\",\"http\":{\"hostname\":\"<known-bad-ip>\",\"url\":\"/\"},\"lab_note\":\"SYNTHETIC TEST EVENT\"}" \
   | sudo tee -a /var/log/suricata/eve.json
 # (add <known-bad-ip>:phishing_infrastructure to the CDB list + restart manager first)
 ```

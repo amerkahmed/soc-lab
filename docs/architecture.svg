@@ -61,8 +61,8 @@
   <rect x="70" y="440" width="460" height="104" rx="10" fill="#ffffff" stroke="#dfe3e8" stroke-width="1.3"/>
   <text x="86" y="466" class="boxttl" font-size="14">Detection coverage (defense-in-depth)</text>
   <text x="86" y="488" class="boxtxt">• HIDS (Wazuh): SSH 5710/5712 · RDP 60122/60115/92657 · Sysmon</text>
-  <text x="86" y="508" class="boxtxt">• NIDS (Suricata): recon that leaves no host log · IOC flow match 100100</text>
-  <text x="86" y="528" class="boxtxt">• Threat intel: phishing IOCs → CDB watchlist → custom rule (T1566)</text>
+  <text x="86" y="508" class="boxtxt">• NIDS (Suricata): recon that leaves no host log · IOC http match 100100</text>
+  <text x="86" y="528" class="boxtxt">• Threat intel: phishing IOCs → CDB watchlist → rule 100100 (T1204.001)</text>
 
   <!-- ===================== ZONE: cloud backend ===================== -->
   <rect x="610" y="96" width="390" height="620" rx="14" fill="#f4f6f8" stroke="#dfe3e8" stroke-width="1.5"/>

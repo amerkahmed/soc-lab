@@ -103,20 +103,20 @@ a **NAT** adapter (lets agents reach the cloud backend). See
 | # | Scenario | Severity | MITRE | Detection rule | Log source | Time to alert¹ | Status |
 |---|---|---|---|---|---|---|---|
 | 01 | [Nmap Recon](docs/scenarios/01-nmap-recon.md) | Low | T1046 / T1595 | Suricata SID 2200025 + ET SCAN (e.g. 2018489) → Wazuh 86601 | Suricata NIDS | ~1.3 s | ✅ Validated (gaps documented) |
-| 02 | [Phishing Investigation → SOAR](docs/scenarios/02-phishing-ioc.md) | High | T1566.002 (email) / T1204.001 (click) | Wazuh 100100 (CDB flow match) | Suricata NIDS → Wazuh | ~60–90 s² | ⏳ Rebuilt (re-run pending) |
+| 02 | [Phishing Investigation → SOAR](docs/scenarios/02-phishing-ioc.md) | High | T1566.002 (email) / T1204.001 (click) | Wazuh 100100 (CDB http match) | Suricata NIDS → Wazuh | ~1–2 s² | ⏳ Rebuilt (re-run pending) |
 | 03 | [SSH Brute Force](docs/scenarios/03-ssh-brute-force.md) | Medium | T1110 | Wazuh 5710 / 5712 | journald (Ubuntu agent) | ~1–2 s¹ | ✅ Validated |
 | 04 | [RDP Brute Force → Lockout → Compromise](docs/scenarios/04-rdp-brute-force.md) | High | T1110 | Wazuh 60122 / 60115 / 92657 | Windows Security (agent) | ~1.1–1.3 s | ✅ Validated |
 | 05 | [Credential Dumping (Mimikatz / LSASS)](docs/scenarios/05-credential-dumping.md) | Critical | T1003.001 | Wazuh 92900 (+ custom 100002) | Sysmon EID 10 (agent) | ~1.3 s | ✅ Validated |
 
 ¹ **Time to alert** = event time → Wazuh alert, measured from the captured evidence (see each scenario doc). The SSH figure is approximate: 5712 is a correlation rule and journald is second-resolution.
-² Phishing (100100) fires on a Suricata **flow** record, which Suricata emits only at flow timeout — so the alert lands ~60–90 s after the connection (the capture step waits for this). Signature-alert (Nmap 86601) and host detections fire in ~1–2 s.
+² Phishing (100100) matches a Suricata **http** transaction event (logged per request), so it fires in ~1–2 s. (Matching a `flow` record instead would add ~60 s of flow-timeout latency; `http` is used for near-real-time detection of the HTTP callback — a deliberate specificity-vs-coverage call, see Scenario 02 §10.)
 
 > **SOAR → alert creation.** Phishing (02), SSH (03), RDP (04) and credential
 > dumping (05) are forwarded to Shuffle and raised as alerts in TheHive — end to end,
-> a host event reaches an analyst-ready alert in **~5–7 s**; the phishing alert lands
-> later (**~60–90 s**) because its detection waits on a Suricata flow record (see
-> footnote 2 above). Nmap (01) is detection-only, deliberately held back from the
-> SOAR layer as network-sensor noise.
+> a host event reaches an analyst-ready alert in **~5–7 s**, and the phishing alert
+> now lands in the same range because its detection matches a Suricata http event
+> rather than waiting on a flow record (footnote 2). Nmap (01) is detection-only,
+> deliberately held back from the SOAR layer as network-sensor noise.
 
 See [docs/triage-methodology.md](docs/triage-methodology.md) for how each alert
 is triaged — what I check next, malicious vs. benign reasoning, and when to
@@ -130,10 +130,10 @@ The most complete automation path, end to end:
 
 1. A reported phishing email is analyzed; its IOC (the phishing-server IP) is
    extracted and added to a Wazuh **CDB watchlist**.
-2. A simulated click connects a victim host to the phishing server; Suricata emits
-   a flow record.
-3. Wazuh **custom rule 100100** matches the flow's destination against the watchlist
-   → level-12 alert, MITRE T1204.001 (the email itself maps to T1566.002).
+2. A simulated click makes a victim host send an HTTP request to the phishing server;
+   Suricata emits an http transaction event.
+3. Wazuh **custom rule 100100** matches the http event's destination against the
+   watchlist → level-12 alert, MITRE T1204.001 (the email itself maps to T1566.002).
 4. The manager forwards the alert to a **Shuffle** workflow.
 5. Shuffle looks the IOC up on **VirusTotal** and attaches it as an observable.
 6. Shuffle creates an analyst-ready **alert in TheHive**, IOC attached.

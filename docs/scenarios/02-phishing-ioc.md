@@ -19,7 +19,7 @@ each step is mapped only to the technique its own evidence supports.
 |---|---|
 | **MITRE ATT&CK** | T1566.002 (Spearphishing Link) — represented by the analyzed sample · T1204.001 (User Execution: Malicious Link) — **simulated** via a `curl` "click" · the detection itself observes the resulting outbound connection |
 | **Phishing server (lab IOC)** | `192.168.56.99` — a lab-owned host serving a fake login page (its own IP, separate from the Kali attacker `192.168.56.10`) |
-| **Detection source** | Suricata flow → Wazuh custom rule 100100 (CDB watchlist match) |
+| **Detection source** | Suricata http event → Wazuh custom rule 100100 (CDB watchlist match) |
 | **Automation** | Wazuh → Shuffle → VirusTotal → TheHive (IOC attached as an observable) |
 | **Status** | ⏳ Rebuilt; detection → SOAR → TheHive alert re-run pending |
 
@@ -99,7 +99,7 @@ stand-in.
 <group name="phishing,ioc,">
   <rule id="100100" level="12">
     <if_sid>86600</if_sid>
-    <field name="event_type">^flow$</field>
+    <field name="event_type">^http$</field>
     <list field="dest_ip" lookup="address_match_key">etc/lists/phishing-iocs</list>
     <description>Connection to known phishing infrastructure (IOC match)</description>
     <mitre>
@@ -112,12 +112,12 @@ stand-in.
 Plain-English, line by line:
 - `if_sid 86600` — builds on Wazuh's base Suricata rule, which matches **every**
   Suricata event type (alerts, flow records, protocol logs) — not just alerts.
-- **`event_type = flow`** — matches only Suricata **flow** records (a *connection*),
-  not per-packet signature **alerts** or other event types. This is the scoping fix
-  from the tuning exercise (see §3a): the rule now matches the connection that
-  represents a callback, not any stray flagged packet addressed to the IOC, and it
-  is no longer limited to TCP (a UDP callback is caught too).
-- `list field="dest_ip" lookup="address_match_key"` — checks the flow's
+- **`event_type = http`** — matches only Suricata **http** transaction events, which
+  Suricata logs **per HTTP request**. This is the detection the credential-harvest
+  callback actually is, so the rule fires in **near-real-time (~1–2 s)** rather than
+  waiting ~60 s for a flow record (see §3a for why it also can't be tripped by a
+  per-packet alert, and §10 for the specificity-vs-coverage decision behind `http`).
+- `list field="dest_ip" lookup="address_match_key"` — checks the http event's
   destination IP against the CDB watchlist. `address_match_key` is the lookup
   Wazuh's docs require **for IP-address fields** (the old rule used the plain
   `match_key`, which is for exact string keys).
@@ -155,38 +155,38 @@ attacker IP doubling as the IOC; with the phishing server on its own IP
 validated deterministically below rather than by waiting for it to happen again.
 
 **Reproduce the over-match on demand (deterministic).** Feed the manager two
-labeled test events for the IOC — one a per-packet `alert`, one a connection
-`flow` — and compare what each rule version matches:
+labeled test events for the IOC — one a per-packet `alert`, one an `http`
+transaction (the callback) — and compare what each rule version matches:
 
 ```bash
 # Both events target the IOC. SYNTHETIC — no traffic is sent anywhere.
 TS=$(date -u +%Y-%m-%dT%H:%M:%S.000000+0000)
 # (1) a per-packet ALERT event to the IOC (what a stray signature/probe looks like)
 echo "{\"timestamp\":\"$TS\",\"in_iface\":\"enp0s3\",\"event_type\":\"alert\",\"src_ip\":\"192.168.56.20\",\"dest_ip\":\"192.168.56.99\",\"proto\":\"ICMP\",\"alert\":{\"signature\":\"SYNTHETIC test alert\",\"signature_id\":9999999},\"lab_note\":\"SYNTHETIC\"}" | sudo tee -a /var/log/suricata/eve.json
-# (2) a CONNECTION flow event to the IOC (a real callback)
-echo "{\"timestamp\":\"$TS\",\"in_iface\":\"enp0s3\",\"event_type\":\"flow\",\"src_ip\":\"192.168.56.20\",\"dest_ip\":\"192.168.56.99\",\"dest_port\":80,\"proto\":\"TCP\",\"app_proto\":\"http\",\"lab_note\":\"SYNTHETIC\"}" | sudo tee -a /var/log/suricata/eve.json
+# (2) an HTTP transaction event to the IOC (the real callback)
+echo "{\"timestamp\":\"$TS\",\"in_iface\":\"enp0s3\",\"event_type\":\"http\",\"src_ip\":\"192.168.56.20\",\"dest_ip\":\"192.168.56.99\",\"dest_port\":80,\"proto\":\"TCP\",\"http\":{\"hostname\":\"192.168.56.99\",\"url\":\"/paypal/login/verify.php\"},\"lab_note\":\"SYNTHETIC\"}" | sudo tee -a /var/log/suricata/eve.json
 ```
 
 - **Naive rule** (`match_key`, no `event_type`): matches **both** → the per-packet
   alert is a false positive.
-- **Scoped rule** (`event_type: flow` + `address_match_key`, as deployed): matches
-  **only** the connection → the false positive is gone, and a real callback still
-  fires.
+- **Scoped rule** (`event_type: http` + `address_match_key`, as deployed): matches
+  **only** the HTTP transaction → the false positive is gone, and the real callback
+  still fires.
 
 **Why not just `proto=TCP`?** An earlier band-aid added `<field name="proto">TCP</field>`
-to stop the ICMP match. It worked but scoped to HTTP only and went blind to a UDP
-callback. Scoping to the **event type** (connection vs per-packet) fixes the actual
-confusion, and a watchlist should flag *any* connection to known-bad infra — TCP,
-UDP, or otherwise — so `proto=TCP` is deliberately dropped.
+to a packet-level match to stop the ICMP hit. Scoping to the **event type** — the
+HTTP transaction that *is* the callback — fixes the confusion at its root instead of
+filtering by a packet field. (Choosing `http` over the broader `flow` is a
+deliberate specificity-vs-coverage call; see §10.)
 
 **Lesson:** a rule can fire on the right indicator and still be scoped wrong — here
-it matched a per-packet *alert* when it meant a *connection*. Scope to the event
-type that represents what you actually mean, and validate the fix with a
+it matched a per-packet *alert* when it meant the *HTTP transaction*. Scope to the
+event type that represents what you actually mean, and validate the fix with a
 deterministic test rather than hoping the false positive recurs. See
 [challenges-and-resolutions.md](../challenges-and-resolutions.md), item 14.
 
 > _Evidence (recapture): `wazuh-100100-FALSE-POSITIVE-icmp.json` (over-match on an
-> alert event) vs `wazuh-100100-alert.json` (flow-scoped match) — regenerated with
+> alert event) vs `wazuh-100100-alert.json` (http-scoped match) — regenerated with
 > the two-event test above._
 
 ---
@@ -202,20 +202,22 @@ link):
 curl -m 5 http://192.168.56.99/paypal/login/verify.php
 ```
 
-That connection produces a Suricata **flow** record, which Wazuh matches against
-the watchlist. Expected alert (to be captured on the re-run):
+That request produces a Suricata **http** transaction event, which Wazuh matches
+against the watchlist in near-real-time (~1–2 s). Expected alert (to be captured on
+the re-run):
 
 ```
 ** Alert <event-id>:
 Rule: 100100 (level 12) -> 'Connection to known phishing infrastructure (IOC match)'
   mitre.id: ["T1204.001"]
-  event_type: flow   src_ip: 192.168.56.20   dest_ip: 192.168.56.99   dest_port: 80
-  proto: TCP   app_proto: http
+  event_type: http   src_ip: 192.168.56.20   dest_ip: 192.168.56.99   dest_port: 80
+  proto: TCP   http.url: /paypal/login/verify.php
 ```
 
-A watchlist hit on a flow is deterministic, high-signal evidence: an internal host
-reached infrastructure the team had already flagged. It answers "did someone click"
-with a yes — it does **not** yet prove credentials were submitted (see §6).
+A watchlist hit on the HTTP callback is deterministic, high-signal evidence: an
+internal host reached infrastructure the team had already flagged. It answers "did
+someone click" with a yes — it does **not** yet prove credentials were submitted
+(see §6).
 
 > _Evidence (recapture): `wazuh-100100-alert.json`_
 
@@ -227,7 +229,7 @@ The level-12 alert is forwarded by the manager's Shuffle integration (by rule
 group) to the workflow:
 
 1. **Webhook** receives the alert.
-2. **VirusTotal node** looks up the flow's `dest_ip`.
+2. **VirusTotal node** looks up the alert's `dest_ip`.
 3. **HTTP request node** POSTs a hand-built JSON body to TheHive's
    `/api/v1/alert`, and **attaches the IOC as an observable** on the alert, so the
    analyst gets an actionable, pivot-ready indicator rather than just a description.
@@ -247,13 +249,13 @@ analyst-ready alert**, not external reputation.
 
 To show what VirusTotal enrichment *produces* for genuinely malicious
 infrastructure — without ever sending traffic to a real C2 — a **clearly labeled
-synthetic flow event** carrying a real known-bad IP is injected into the pipeline
+synthetic http event** carrying a real known-bad IP is injected into the pipeline
 and run through the same Wazuh → Shuffle → VirusTotal → TheHive path:
 
 ```bash
 # SYNTHETIC — no traffic is sent to the IP; this is a pipeline validation test only
 TS=$(date -u +%Y-%m-%dT%H:%M:%S.000000+0000)
-echo "{\"timestamp\":\"$TS\",\"in_iface\":\"enp0s3\",\"event_type\":\"flow\",\"src_ip\":\"192.168.56.20\",\"dest_ip\":\"<known-bad-ip>\",\"dest_port\":80,\"proto\":\"TCP\",\"app_proto\":\"http\",\"lab_note\":\"SYNTHETIC TEST EVENT\"}" | sudo tee -a /var/log/suricata/eve.json
+echo "{\"timestamp\":\"$TS\",\"in_iface\":\"enp0s3\",\"event_type\":\"http\",\"src_ip\":\"192.168.56.20\",\"dest_ip\":\"<known-bad-ip>\",\"dest_port\":80,\"proto\":\"TCP\",\"http\":{\"hostname\":\"<known-bad-ip>\",\"url\":\"/\"},\"lab_note\":\"SYNTHETIC TEST EVENT\"}" | sudo tee -a /var/log/suricata/eve.json
 ```
 
 This follows the detection-engineering convention of validating an alert with a
@@ -272,7 +274,7 @@ output of the live pipeline.
 
 The analyst-ready alert lands in TheHive with the IOC attached:
 
-- **IOC match** — rule 100100 fired because a host's flow matched the
+- **IOC match** — rule 100100 fired because a host's HTTP request matched the
   `phishing_infrastructure` watchlist entry. Deterministic, high-signal: an
   internal host reached flagged infrastructure.
 - **Direction & context** — *outbound*, from an internal victim to the phishing
@@ -317,7 +319,7 @@ See the tiered response model in
 | Stage | Technique | Evidence it rests on |
 |---|---|---|
 | The reported email | **T1566.002** Spearphishing Link | The analyzed sample (§2) — typosquat, Reply-To mismatch, raw-IP harvest URL |
-| The simulated click → outbound connection | **T1204.001** Malicious Link (simulated) | The Suricata flow to the phishing server, matched by rule 100100 (§4) |
+| The simulated click → outbound connection | **T1204.001** Malicious Link (simulated) | The Suricata http event to the phishing server, matched by rule 100100 (§4) |
 
 Each row is mapped only to the technique its own artifact establishes — the email
 to the phishing technique, the connection to the user-execution technique — rather
@@ -331,8 +333,8 @@ than inferring the whole phishing chain from a single network event
 ```
 User reports email  →  analyst analyzes it (T1566.002)  →  IOCs extracted
    →  IP added to Wazuh CDB watchlist
-   →  simulated click: host connects to the phishing server
-   →  Suricata flow → Wazuh rule 100100 matches the watchlist (T1204.001)
+   →  simulated click: host makes an HTTP request to the phishing server
+   →  Suricata http event → Wazuh rule 100100 matches the watchlist (T1204.001)
    →  alert forwarded to Shuffle → VirusTotal lookup → TheHive alert (IOC attached)
    →  analyst triages, contains, and feeds new indicators back to the watchlist
 ```
@@ -347,16 +349,20 @@ User reports email  →  analyst analyzes it (T1566.002)  →  IOCs extracted
   (§3a) rather than an artifact of a shared IP.
 - **Map to evidence, not to the story.** The email proves T1566.002; the connection
   proves T1204.001. A single network event does not prove "phishing" on its own.
-- **Match the connection, not the packet.** Scoping rule 100100 to Suricata **flow**
-  records (not any event with a matching `dest_ip`) fixed the over-match and removed
-  the TCP-only blind spot. Use `address_match_key` for IP fields. Tuning false
-  positives is core SOC work, so the before/after is kept reproducible on demand.
+- **Match the event type that *is* the behavior.** Scoping rule 100100 to the
+  Suricata **http** transaction (not any event with a matching `dest_ip`) fixed the
+  over-match *and* made the detection near-real-time. Use `address_match_key` for IP
+  fields. Tuning false positives is core SOC work, so the before/after is kept
+  reproducible on demand.
+- **Specificity vs coverage — a deliberate call.** `http` matches the credential-
+  harvest callback precisely and fires in ~1–2 s, where a `flow` record would add
+  ~60 s of flow-timeout latency. The trade-off is coverage: a **non-HTTP callback
+  (TLS/DNS/other) is a blind spot** — a `flow`-scoped rule would be the protocol-
+  agnostic backstop, at the cost of latency and more noise. For this HTTP scenario,
+  specificity wins; the gap is documented rather than papered over. (A later refinement
+  could confirm the server's HTTP `200` response to detect a *successful* callback.)
 - **Authentication results don't decide phishing.** SPF/DKIM/DMARC can all pass for
   a lookalike domain the attacker owns; the content indicators are what matter.
 - **Enrich honestly.** A private IOC yields nothing from VirusTotal — say so. Show
   the enrichment *capability* with a clearly labeled synthetic test, never by
   touching real malicious infrastructure.
-- **Flow-based IOC matching has latency.** Suricata emits flow records at flow
-  timeout, so the alert lands ~60–90 s after the connection. Matching a Suricata
-  **protocol event** (`http`/`dns`/`tls`) instead would detect the callback in
-  near-real-time — noted as a direction, not yet built.
