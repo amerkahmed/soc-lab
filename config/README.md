@@ -12,6 +12,7 @@ reproducible. Secrets and public cloud IPs are redacted.
 | `local_internal_options.conf` | JSON decoder field-limit fix | append to `/var/ossec/etc/local_internal_options.conf` (manager) |
 | `thehive-http-body.json` | Reference body for the Shuffle HTTP → TheHive node | Shuffle workflow |
 | `paypal_phish.eml` | The crafted phishing sample for analysis | analyze on Kali with `emlAnalyzer` |
+| `shuffle-workflow.json` | Exported Shuffle SOAR workflow (webhook, cloud IPs, and API keys scrubbed) | import into Shuffle |
 
 ## Redactions
 - Shuffle webhook URL → `webhook_REDACTED`
@@ -26,5 +27,3 @@ reproducible. Secrets and public cloud IPs are redacted.
     <log_format>eventchannel</log_format>
   </localfile>
   ```
-- The exported Shuffle workflow JSON (add `shuffle-workflow.json` after exporting
-  it from Shuffle, with the webhook/API key scrubbed).

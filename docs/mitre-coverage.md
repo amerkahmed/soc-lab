@@ -10,7 +10,7 @@ scenario that exercises it and the detection source that catches it.
 | Credential Access | Brute Force | T1110 | Wazuh 5710 / 5712 (SSH) | [03](scenarios/03-ssh-brute-force.md) |
 | Credential Access | Brute Force | T1110 | Wazuh 60122 / 60115 / 92657 (RDP) | [04](scenarios/04-rdp-brute-force.md) |
 | Initial Access | Phishing: Spearphishing Link | T1566.002 | Email analysis (emlAnalyzer) of the crafted sample | [02](scenarios/02-phishing-ioc.md) · analyzed sample |
-| Execution | User Execution: Malicious Link | T1204.001 | Wazuh 100100 — Suricata flow to the phishing server (curl = simulated click) | [02](scenarios/02-phishing-ioc.md) · simulated |
+| Execution | User Execution: Malicious Link | T1204.001 | Wazuh 100100 — Suricata **http** event to the phishing server (curl = simulated click) | [02](scenarios/02-phishing-ioc.md) · simulated |
 | Discovery | Account Discovery | T1087 | Sysmon (net.exe) | — (observed on Windows) |
 | Discovery | Remote System Discovery | T1018 | Sysmon | — (observed on Windows) |
 | Execution | Scheduled Task/Job | T1053 | Sysmon (taskschd.dll load) | — (observed on Windows) |
