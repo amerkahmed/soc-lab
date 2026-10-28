@@ -132,10 +132,12 @@ is demonstrated with a clearly labeled synthetic test event (Scenario 02 §5b).
 ## 6. SOAR automation (Wazuh → Shuffle → TheHive)
 
 The manager forwards curated alerts to a Shuffle webhook — filtered to the
-actionable alerts, never a broad level: by rule **group** (`phishing`,
-`sysmon_eid10_detections`) and by rule **ID** (`5712` SSH correlation, `60115` RDP
-lockout, `92657` RDP compromise). Per-attempt rules (`5710`, `60122`) and the
-Suricata flood are deliberately excluded. The Shuffle workflow is **Webhook → VirusTotal lookup → HTTP
+actionable alerts, never a broad level: by rule **group** (`phishing`) and by rule
+**ID** (`5712` SSH correlation, `60115` RDP lockout, `92900` LSASS access, `92657`
+RDP compromise). The cred-dump is forwarded by its specific rule ID rather than the
+`sysmon_eid10_detections` group, which also carries benign Event-ID-10 rules (e.g.
+`92910`) that would be noise. Per-attempt rules (`5710`, `60122`) and the Suricata
+flood are deliberately excluded. The Shuffle workflow is **Webhook → VirusTotal lookup → HTTP
 request node** that POSTs a hand-built JSON body to TheHive's `/api/v1/alert`
 (HTTP 201). Selected scalar VT fields (malicious / harmless counts and reputation)
 are embedded in the alert description.

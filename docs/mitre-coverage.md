@@ -32,12 +32,13 @@ scenario that exercises it and the detection source that catches it.
   external attacker (`HOME_NET` scoped to the victims), which is why T1595
   (Reconnaissance) is mapped alongside T1046.
 - **SOAR / case creation is not phishing-only.** Forwarding to Shuffle is filtered
-  to the actionable alerts — by rule group (`phishing`, `sysmon_eid10_detections`)
-  and by rule ID (`5712` SSH correlation, `60115` RDP lockout, `92657` RDP
-  compromise). Phishing (02), SSH (03), RDP (04), and credential dumping (05) are
-  all forwarded and raised as alerts in TheHive — RDP raises two (the lockout and
-  the compromise), and the cred-dump (rule 92900) forwards via the
-  `sysmon_eid10_detections` group. The Nmap/Suricata recon alerts (01) and the
+  to the actionable alerts — by rule group (`phishing`) and by rule ID (`5712` SSH
+  correlation, `60115` RDP lockout, `92900` LSASS access, `92657` RDP compromise).
+  Phishing (02), SSH (03), RDP (04), and credential dumping (05) are all forwarded
+  and raised as alerts in TheHive — RDP raises two (the lockout and the
+  compromise), and the cred-dump (rule 92900) is forwarded by its specific rule ID,
+  not the `sysmon_eid10_detections` group (which also carries benign Event-ID-10
+  rules such as 92910). The Nmap/Suricata recon alerts (01) and the
   per-attempt brute-force
   rules (`5710`, `60122`) are deliberately held back to keep noise off the SOAR
   layer. Phishing is the scenario where **VirusTotal enrichment** is showcased —

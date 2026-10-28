@@ -6,10 +6,16 @@
   the Suricata alert flood and per-attempt brute-force noise never reach the
   Shuffle SaaS execution quota. Two blocks are used:
 
-    1. by GROUP    - phishing (rule 100100, IOC match) and
-                     sysmon_eid10_detections (LSASS access, rule 92900)
-    2. by RULE_ID  - the headline brute-force alerts only: 5712 (SSH
-                     correlation), 60115 (RDP lockout), 92657 (RDP compromise)
+    1. by GROUP    - phishing (rule 100100, IOC match)
+    2. by RULE_ID  - the headline host alerts only: 5712 (SSH correlation),
+                     60115 (RDP lockout), 92900 (LSASS access / cred dump),
+                     92657 (RDP compromise)
+
+  The LSASS cred-dump (92900) is forwarded by its specific RULE_ID, not via the
+  sysmon_eid10_detections group: that group also carries benign Event-ID-10 rules
+  (e.g. 92910) that would reach the SOAR as noise. Forwarding the one malicious
+  rule keeps the case queue clean - the same "signal, not noise" tuning as the
+  rest of this filter.
 
   Per-attempt rules (5710 SSH, 60122 RDP) are intentionally NOT forwarded.
   The webhook token is redacted in this public repo.
@@ -17,12 +23,12 @@
 <integration>
   <name>shuffle</name>
   <hook_url>https://shuffler.io/api/v1/hooks/webhook_REDACTED</hook_url>
-  <group>phishing,sysmon_eid10_detections</group>
+  <group>phishing</group>
   <alert_format>json</alert_format>
 </integration>
 <integration>
   <name>shuffle</name>
   <hook_url>https://shuffler.io/api/v1/hooks/webhook_REDACTED</hook_url>
-  <rule_id>5712,60115,92657</rule_id>
+  <rule_id>5712,60115,92900,92657</rule_id>
   <alert_format>json</alert_format>
 </integration>

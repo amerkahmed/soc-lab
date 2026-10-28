@@ -142,11 +142,13 @@ The most complete automation path, end to end:
 6. Shuffle creates an analyst-ready **alert in TheHive**, IOC attached.
 
 > **Phishing isn't the only scenario that reaches TheHive.** Forwarding is filtered
-> to the headline alerts — by rule group (`phishing`, `sysmon_eid10_detections`) and
-> by rule ID (`5712`, `60115`, `92657`) — so SSH (03), RDP (04) and the credential
-> dump (05) are all raised as alerts too (RDP raises two: the lockout and the
-> compromise; the cred-dump forwards via the `sysmon_eid10_detections` group). The
-> Nmap recon alerts (01) and per-attempt brute-force noise (`5710`, `60122`) are
+> to the headline alerts — by rule group (`phishing`) and by rule ID (`5712`,
+> `60115`, `92900`, `92657`) — so SSH (03), RDP (04) and the credential dump (05)
+> are all raised as alerts too (RDP raises two: the lockout and the compromise). The
+> cred-dump is forwarded by its specific rule ID (`92900`), not the
+> `sysmon_eid10_detections` group, which also carries benign Event-ID-10 rules
+> (e.g. `92910`) that would be noise. The Nmap recon alerts (01) and per-attempt
+> brute-force noise (`5710`, `60122`) are
 > held back. Phishing is where **VirusTotal enrichment** is showcased: the lab IOC is
 > a private IP (so VT returns nothing on the live run), and the enrichment capability
 > is demonstrated with a clearly labeled synthetic test event (Scenario 02 §5b).

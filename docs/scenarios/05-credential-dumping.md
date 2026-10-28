@@ -101,8 +101,9 @@ accessing `lsass.exe`, `grantedAccess 0x1010`, `SourceUser DESKTOP-T0LOHB5\Clien
 
 ![Expanded 92900 event — id 1792790035.929684, eventID 10, grantedAccess 0x1010, MITRE T1003.001, rule.groups include sysmon_eid10_detections](../../evidence/scenario-05-creddump/wazuh-92900-detail.png)
 *Event `1792790035.929684` expanded: rule 92900 level 12, MITRE T1003.001, and
-`rule.groups` includes `sysmon_eid10_detections` — the group that routes it to the
-SOAR layer (§3).*
+`rule.groups` includes `sysmon_eid10_detections` — the group that classifies it as a
+Sysmon Event-ID-10 detection (§3 explains why forwarding keys on the specific rule
+ID, not this group).*
 
 > _Evidence: `evidence/scenario-05-creddump/wazuh-92900-alert.json`,
 > `wazuh-92900-alerts.png`, `wazuh-92900-detail.png`. Authoritative time is the UTC
@@ -167,9 +168,11 @@ line shows the full `http://192.168.56.10/...` URL — the Ingress Tool Transfer
 
 ## 3. SOAR → case creation
 
-Because rule 92900 carries the **`sysmon_eid10_detections`** group, the manager's
-Shuffle integration forwards it (the group-based block in
-[`config/ossec-integration.xml`](../../config/ossec-integration.xml)). The alert
+The manager's Shuffle integration forwards rule **92900** by its specific rule ID
+(the rule-ID block in
+[`config/ossec-integration.xml`](../../config/ossec-integration.xml)) — **not** via
+the `sysmon_eid10_detections` group it belongs to, because that group also carries
+benign Event-ID-10 rules (e.g. 92910) that would reach the SOAR as noise. The alert
 becomes a Shuffle run and a TheHive case — so a credential-dump detection lands in
 front of an analyst automatically, the same path phishing (02), SSH (03) and RDP
 (04) take.
