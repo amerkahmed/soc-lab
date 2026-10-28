@@ -137,8 +137,8 @@ actionable alerts, never a broad level: by rule **group** (`phishing`,
 lockout, `92657` RDP compromise). Per-attempt rules (`5710`, `60122`) and the
 Suricata flood are deliberately excluded. The Shuffle workflow is **Webhook → VirusTotal lookup → HTTP
 request node** that POSTs a hand-built JSON body to TheHive's `/api/v1/alert`
-(HTTP 201). Selected scalar VT fields (malicious count, country, owner) are
-embedded in the alert description.
+(HTTP 201). Selected scalar VT fields (malicious / harmless counts and reputation)
+are embedded in the alert description.
 
 **Why a raw HTTP node instead of the TheHive app node:** the native app node
 proved unreliable (empty body, content-type mismatch). A plain HTTP node — with

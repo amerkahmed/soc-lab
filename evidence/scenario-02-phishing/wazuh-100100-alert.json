@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-28T20:08:52.147+0000",
+  "timestamp": "2026-10-28T22:04:19.716+0000",
   "rule": {
     "level": 12,
     "description": "Connection to known phishing infrastructure (IOC match)",
@@ -30,18 +30,18 @@
   "manager": {
     "name": "Wazuh"
   },
-  "id": "1793218132.30217",
-  "full_log": "{\"timestamp\":\"2026-10-28T20:08:51.340244+0000\",\"flow_id\":875801672389373,\"in_iface\":\"enp0s3\",\"event_type\":\"http\",\"src_ip\":\"192.168.56.20\",\"src_port\":34762,\"dest_ip\":\"192.168.56.99\",\"dest_port\":80,\"proto\":\"TCP\",\"ip_v\":4,\"pkt_src\":\"wire/pcap\",\"metadata\":{\"flowbits\":[\"http.dottedquadhost\"]},\"tx_id\":0,\"http\":{\"hostname\":\"192.168.56.99\",\"url\":\"/paypal/login/verify.php\",\"http_user_agent\":\"curl/8.18.0\",\"http_content_type\":\"application/x-httpd-php\",\"http_method\":\"GET\",\"protocol\":\"HTTP/1.1\",\"status\":200,\"length\":61}}",
+  "id": "1793225059.80603",
+  "full_log": "{\"timestamp\":\"2026-10-28T22:04:18.678952+0000\",\"flow_id\":651410918998745,\"in_iface\":\"enp0s3\",\"event_type\":\"http\",\"src_ip\":\"192.168.56.20\",\"src_port\":48036,\"dest_ip\":\"192.168.56.99\",\"dest_port\":80,\"proto\":\"TCP\",\"ip_v\":4,\"pkt_src\":\"wire/pcap\",\"metadata\":{\"flowbits\":[\"http.dottedquadhost\"]},\"tx_id\":0,\"http\":{\"hostname\":\"192.168.56.99\",\"url\":\"/paypal/login/verify.php\",\"http_user_agent\":\"curl/8.18.0\",\"http_content_type\":\"application/x-httpd-php\",\"http_method\":\"GET\",\"protocol\":\"HTTP/1.1\",\"status\":200,\"length\":218}}",
   "decoder": {
     "name": "json"
   },
   "data": {
-    "timestamp": "2026-10-28T20:08:51.340244+0000",
-    "flow_id": "875801672389373.000000",
+    "timestamp": "2026-10-28T22:04:18.678952+0000",
+    "flow_id": "651410918998745.000000",
     "in_iface": "enp0s3",
     "event_type": "http",
     "src_ip": "192.168.56.20",
-    "src_port": "34762",
+    "src_port": "48036",
     "dest_ip": "192.168.56.99",
     "dest_port": "80",
     "proto": "TCP",
@@ -61,7 +61,7 @@
       "http_method": "GET",
       "protocol": "HTTP/1.1",
       "status": "200",
-      "length": "61"
+      "length": "218"
     }
   },
   "location": "/var/log/suricata/eve.json"

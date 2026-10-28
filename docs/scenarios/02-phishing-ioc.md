@@ -215,14 +215,14 @@ curl -m 5 http://192.168.56.99/paypal/login/verify.php
 
 That request produces a Suricata **http** transaction event, which Wazuh matches
 against the watchlist in near-real-time (~1–2 s). Captured alert (event
-`1793218132.30217`, ~0.8 s after the request):
+`1793225059.80603`, ~1 s after the request, HTTP 200):
 
 ```
 ** Alert <event-id>:
 Rule: 100100 (level 12) -> 'Connection to known phishing infrastructure (IOC match)'
   mitre.id: ["T1204.001"]
   event_type: http   src_ip: 192.168.56.20   dest_ip: 192.168.56.99   dest_port: 80
-  proto: TCP   http.url: /paypal/login/verify.php
+  proto: TCP   http.url: /paypal/login/verify.php   http.status: 200
 ```
 
 A watchlist hit on the HTTP callback is deterministic, high-signal evidence: an
@@ -246,15 +246,19 @@ group) to the workflow:
    analyst gets an actionable, pivot-ready indicator rather than just a description.
    Returns **HTTP 201 Created**.
 
-> _Evidence: `shuffle-run-201.png`, `thehive-alert.png`,
+> _Evidence (all event `1793225059.80603` — the same event as the §4 detection):
+> `shuffle-run-real.png`, `thehive-alert-real.png`, `thehive-observable-real.png`,
 > `shuffle-workflow.png`_
 
 ### 5a. Enrichment on the live run
 
-The real IOC here is a **private lab IP** (`192.168.56.99`), so VirusTotal has
-nothing to report on it — a correct, expected result, not a pipeline failure. On
-the live run, the value the pipeline adds is the **attached observable and the
-analyst-ready alert**, not external reputation.
+The real IOC here is a **private lab IP** (`192.168.56.99`), so VirusTotal returns
+**no malicious verdict** (`VT malicious: 0` — it holds no threat intelligence on a
+private address). That is a correct, expected result, not a pipeline failure. On the
+live run the value the pipeline adds is the **attached observable and the
+analyst-ready alert**, not external reputation — the TheHive alert and its IOC
+observable both carry event `1793225059.80603`, tying the case back to the detection
+in §4.
 
 ### 5b. Enrichment capability — labeled synthetic test
 
@@ -276,8 +280,10 @@ which requires a true-positive validation step). The VirusTotal screenshot is a
 **manual web lookup** shown only to illustrate the enrichment fields — it is not
 output of the live pipeline.
 
-> _Evidence: `shuffle-run-201.png` (synthetic run), `virustotal-enrichment.png`
-> (manual lookup, clearly labeled)_
+> _Evidence (synthetic enrichment chain — a **separate**, clearly labeled event
+> `1793219216.47653`, IOC `1.92.135.168`): `shuffle-run-synthetic.png`,
+> `thehive-alert-synthetic.png` (`VT malicious: 20`), `thehive-observable-synthetic.png`,
+> `virustotal-enrichment.png` (manual VT lookup corroborating the fields)_
 
 ---
 
@@ -302,7 +308,8 @@ that it was malicious depends on the indicator's source and age — an IP is the
 so a stale or shared IP could match benign traffic; here the IOC is freshly
 extracted from the analyzed sample, which is why confidence is high.
 
-> _Evidence: `thehive-alert.png` (alert with observable attached)_
+> _Evidence: `thehive-alert-real.png`, `thehive-observable-real.png` (event
+> `1793225059.80603` — the same event as the detection)_
 
 ---
 
@@ -329,8 +336,8 @@ See the tiered response model in
 
 | Stage | Technique | Evidence it rests on |
 |---|---|---|
-| The reported email | **T1566.002** Spearphishing Link | The analyzed sample (§2) — typosquat, Reply-To mismatch, raw-IP harvest URL |
-| The simulated click → outbound connection | **T1204.001** Malicious Link (simulated) | The Suricata http event to the phishing server, matched by rule 100100 (§4) |
+| The reported email | **[T1566.002](https://attack.mitre.org/techniques/T1566/002/)** Spearphishing Link | The analyzed sample (§2) — typosquat, Reply-To mismatch, raw-IP harvest URL |
+| The simulated click → outbound connection | **[T1204.001](https://attack.mitre.org/techniques/T1204/001/)** Malicious Link (simulated) | The Suricata http event to the phishing server, matched by rule 100100 (§4) |
 
 Each row is mapped only to the technique its own artifact establishes — the email
 to the phishing technique, the connection to the user-execution technique — rather

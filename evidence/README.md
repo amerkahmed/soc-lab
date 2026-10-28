@@ -3,7 +3,9 @@
 Captured proof that each scenario fired end to end — raw alert JSON and
 screenshots, one folder per scenario. Within a scenario, the artifacts share a
 single Wazuh **event ID**, so the detection, the SOAR run, and the TheHive case
-tie together. Cross-host clocks are reconciled by event ID + UTC (see the
+tie together. (Scenario 02 additionally carries a *separate, clearly labeled*
+synthetic enrichment event — see its entry below.) Cross-host clocks are reconciled
+by event ID + UTC (see the
 [README](../README.md#honesty--scope-notes)); the exact capture commands are in
 [CAPTURE-COMMANDS.md](CAPTURE-COMMANDS.md).
 
@@ -16,8 +18,10 @@ tie together. Cross-host clocks are reconciled by event ID + UTC (see the
 
 **`scenario-02-phishing/`** — reframed as an L1 phishing investigation (redesigned + re-validated 2026-10-28): email analysis (T1566.002) → IOC → http-event match on the lab phishing server `192.168.56.99` (rule 100100, T1204.001) → Shuffle → TheHive alert with IOC observable.
 - `emlanalyzer-output.txt` · `eml-analysis.png` (recapture — new sample, auth passes)
-- `wazuh-100100-alert.json` (http-event match, `dest_ip 192.168.56.99`) · `wazuh-100100-FALSE-POSITIVE-icmp.json` (naive rule over-matching a per-packet alert event — reproducible tuning exercise, see Scenario 02 §3a / challenges #14)
-- `shuffle-run-201.png` (webhook run, rule_id 100100) · `thehive-alert.png` (VT-enriched description: `VT malicious: 20`) · `thehive-observable.png` (the IOC attached as an observable) · `virustotal-enrichment.png` (manual lookup of `1.92.135.168` — 20/92, Cobalt Strike C2, §5b) · `shuffle-workflow.png`
+- **Real detection chain — one event `1793225059.80603`, HTTP 200:** `wazuh-100100-alert.json` (http-event match, `dest_ip 192.168.56.99`, `status 200`) · `wazuh-100100-discover.png` (the same alert in the Wazuh dashboard) · `shuffle-run-real.png` (webhook run) · `thehive-alert-real.png` (`VT malicious: 0` — VT has no intel on the private IP) · `thehive-observable-real.png` (IOC `192.168.56.99` attached). The detection JSON `id`, the Shuffle `$exec.id`, and the TheHive `Reference` all read `1793225059.80603`.
+- **Tuning exercise:** `wazuh-100100-FALSE-POSITIVE-icmp.json` (naive rule over-matching a per-packet alert event — reproducible, see Scenario 02 §3a / challenges #14).
+- **Synthetic enrichment demo — a separate event `1793219216.47653`, IOC `1.92.135.168` (§5b):** `shuffle-run-synthetic.png` · `thehive-alert-synthetic.png` (`VT malicious: 20`) · `thehive-observable-synthetic.png` · `virustotal-enrichment.png` (manual VT lookup — 20/92 — corroborating the fields). No traffic is ever sent to the known-bad IP.
+- `shuffle-workflow.png` (the Shuffle workflow itself).
 
 **`scenario-03-ssh/`** — SSH brute force, event `1792785099.20359`.
 - `attack-output.txt` (Hydra) · `alert-5712.json` (correlation) · `alert-5710.json` (per-attempt)

@@ -71,7 +71,17 @@ emlAnalyzer -i ~/paypal_phish.eml --header --html --url --text \
 ```bash
 # Add the phishing-server IP to the attack interface (replace eth0 as needed):
 sudo ip address add 192.168.56.99/24 dev eth0
-sudo python3 -m http.server 80 --bind 192.168.56.99
+# Create the page the link points at. http.server is a STATIC file server rooted at
+# the launch dir — without this file the callback returns 404 instead of 200:
+mkdir -p ~/phish/paypal/login
+cat > ~/phish/paypal/login/verify.php <<'EOF'
+<!DOCTYPE html><html><body>
+<h2>Account Verification</h2>
+<form method="post">Email: <input name="email"><br>
+Password: <input name="password" type="password"><br><button>Verify</button></form>
+</body></html>
+EOF
+cd ~/phish && sudo python3 -m http.server 80 --bind 192.168.56.99
 ```
 
 **Simulated click (target) — a victim host follows the phishing link:**
@@ -94,13 +104,21 @@ echo "{\"timestamp\":\"$TS\",\"in_iface\":\"enp0s3\",\"event_type\":\"http\",\"s
 # (add <known-bad-ip>:phishing_infrastructure to the CDB list + restart manager first)
 ```
 
-**Screenshots (the SOAR half can't be captured by CLI):**
-- Shuffle workflow run with the HTTP node returning 201 →
-  `evidence/scenario-02-phishing/shuffle-run-201.png`
-- The analyst-ready alert in TheHive, **IOC attached as an observable** →
-  `evidence/scenario-02-phishing/thehive-alert.png`
-- Manual VirusTotal web lookup of the known-bad IP (enrichment fields) →
-  `evidence/scenario-02-phishing/virustotal-enrichment.png`
+**Screenshots (the SOAR half can't be captured by CLI).** The detection JSON `id`,
+the Shuffle `$exec.id`, and the TheHive `Reference` must all be the **same** event ID
+— that is what makes the chain verifiable.
+
+*Real detection chain (the `.99` callback above):*
+- Shuffle workflow run for that event → `evidence/scenario-02-phishing/shuffle-run-real.png`
+- TheHive alert, **IOC attached as an observable** → `evidence/scenario-02-phishing/thehive-alert-real.png`
+- TheHive observable (`192.168.56.99`) → `evidence/scenario-02-phishing/thehive-observable-real.png`
+- (optional) the alert in the Wazuh dashboard → `evidence/scenario-02-phishing/wazuh-100100-discover.png`
+
+*Synthetic enrichment demo (the known-bad-IP event — a separate event):*
+- Shuffle run → `evidence/scenario-02-phishing/shuffle-run-synthetic.png`
+- TheHive alert (`VT malicious: 20`) → `evidence/scenario-02-phishing/thehive-alert-synthetic.png`
+- TheHive observable → `evidence/scenario-02-phishing/thehive-observable-synthetic.png`
+- Manual VirusTotal web lookup of the known-bad IP → `evidence/scenario-02-phishing/virustotal-enrichment.png`
 
 ---
 
