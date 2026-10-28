@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-23T19:51:39.676+0000",
+  "timestamp": "2026-10-28T23:03:41.524+0000",
   "rule": {
     "level": 10,
     "description": "sshd: brute force trying to get access to the system. Non existent user.",
@@ -55,12 +55,12 @@
   "manager": {
     "name": "Wazuh"
   },
-  "id": "1792785099.20359",
-  "previous_output": "Oct 23 19:51:38 target sshd-session[5235]: Failed password for invalid user fakeuser from 192.168.56.10 port 37502 ssh2\nOct 23 19:51:36 target sshd-session[5232]: Invalid user fakeuser from 192.168.56.10 port 37478\nOct 23 19:51:36 target sshd-session[5233]: Invalid user fakeuser from 192.168.56.10 port 37480\nOct 23 19:51:36 target sshd-session[5235]: Invalid user fakeuser from 192.168.56.10 port 37502\nOct 23 19:51:36 target sshd-session[5231]: Invalid user fakeuser from 192.168.56.10 port 37476\nOct 23 19:51:36 target sshd-session[5229]: Disconnected from invalid user fakeuser 192.168.56.10 port 37474 [preauth]\nOct 23 19:51:36 target sshd-session[5229]: Invalid user fakeuser from 192.168.56.10 port 37474",
-  "full_log": "Oct 23 19:51:38 target sshd-session[5233]: Failed password for invalid user fakeuser from 192.168.56.10 port 37480 ssh2",
+  "id": "1793228621.106252",
+  "previous_output": "Oct 28 23:03:39 target sshd-session[7661]: Failed password for invalid user fakeuser from 192.168.56.10 port 32884 ssh2\nOct 28 23:03:37 target sshd-session[7663]: Invalid user fakeuser from 192.168.56.10 port 32900\nOct 28 23:03:37 target sshd-session[7665]: Invalid user fakeuser from 192.168.56.10 port 32916\nOct 28 23:03:37 target sshd-session[7662]: Invalid user fakeuser from 192.168.56.10 port 32886\nOct 28 23:03:37 target sshd-session[7661]: Invalid user fakeuser from 192.168.56.10 port 32884\nOct 28 23:03:37 target sshd-session[7659]: Disconnected from invalid user fakeuser 192.168.56.10 port 32882 [preauth]\nOct 28 23:03:37 target sshd-session[7659]: Invalid user fakeuser from 192.168.56.10 port 32882",
+  "full_log": "Oct 28 23:03:39 target sshd-session[7665]: Failed password for invalid user fakeuser from 192.168.56.10 port 32916 ssh2",
   "predecoder": {
     "program_name": "sshd-session",
-    "timestamp": "Oct 23 19:51:38",
+    "timestamp": "Oct 28 23:03:39",
     "hostname": "target"
   },
   "decoder": {

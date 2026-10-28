@@ -122,26 +122,59 @@ the Shuffle `$exec.id`, and the TheHive `Reference` must all be the **same** eve
 
 ---
 
-## Scenario 03 — SSH brute force
+## Scenario 03 — SSH brute force (+ auto-block)
+
+**One-time setup — the temporary auto-block** (manager `ossec.conf`, inside the
+first `<ossec_config>`; the `firewall-drop` command is already defined by default):
+```xml
+<active-response>
+  <command>firewall-drop</command>   <!-- built-in; drops the srcip via iptables -->
+  <location>local</location>         <!-- runs on the agent that fired the alert -->
+  <rules_id>5712</rules_id>
+  <timeout>300</timeout>             <!-- temporary 5-min ban (best practice) -->
+</active-response>
+```
+`sudo systemctl restart wazuh-manager`, then confirm the `active-response queue`
+connects cleanly in `ossec.log`.
+
+**Password list (Kali):** a ~25-entry `~/passwords.txt` — a realistic burst, well
+above the 5712 threshold of 8.
 
 **Attack (Kali):**
 ```bash
-hydra -l fakeuser -P ~/passwords.txt ssh://192.168.56.20 -t 4 | tee evidence/scenario-03-ssh/attack-output.txt
-```
-
-**Capture the correlation alert (manager):**
-```bash
 mkdir -p evidence/scenario-03-ssh
-# newest SSH brute-force (5712) alert, pretty-printed
+hydra -l fakeuser -P ~/passwords.txt ssh://192.168.56.20 -t 4 -w 5 | tee evidence/scenario-03-ssh/attack-output.txt
+```
+Once 5712 fires, `firewall-drop` drops `192.168.56.10` and hydra's remaining tries
+time out — that's the block working. `Ctrl+C` after it stalls.
+
+**Capture the detection + per-attempt alerts (manager):**
+```bash
 sudo grep '"id":"5712"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
   > evidence/scenario-03-ssh/alert-5712.json
-# supporting failed-login (5710) alert
 sudo grep '"id":"5710"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
   > evidence/scenario-03-ssh/alert-5710.json
 ```
 
-**Screenshot:** the manager `alerts.log` tail or the dashboard showing 5710/5712 →
-`evidence/scenario-03-ssh/wazuh-alerts.png`
+**Capture the auto-block (manager for the alerts; target for iptables):**
+```bash
+# the block/unblock active-response alerts (651 add, 652 delete after the timeout)
+sudo grep '"id":"651"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
+  > evidence/scenario-03-ssh/alert-651-block.json
+sudo grep '"id":"652"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
+  > evidence/scenario-03-ssh/alert-652-unblock.json
+# on the TARGET (192.168.56.20): the AR log + the live iptables DROP. Check promptly,
+# before the 300s timeout removes it; save both into active-response-block.txt
+sudo grep firewall-drop /var/ossec/logs/active-responses.log | tail -8
+sudo iptables -L -n | grep 192.168.56.10
+```
+
+**Screenshots:**
+- Wazuh Discover filtered to the 5712 → `evidence/scenario-03-ssh/wazuh-5712-alerts.png`
+- that alert expanded (`frequency`, `srcip`, `srcuser`, MITRE) → `evidence/scenario-03-ssh/wazuh-5712-detail.png`
+- the Shuffle run for the event → `evidence/scenario-03-ssh/shuffle-aggregated.png`
+- the TheHive case (`Reference` = the 5712 event id) → `evidence/scenario-03-ssh/thehive-alert.png`
+- the TheHive observable (attacker IP) → `evidence/scenario-03-ssh/thehive-observable.png`
 
 ---
 

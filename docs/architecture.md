@@ -157,10 +157,18 @@ applies enrichment selectively by alert type.
 | Detection | Response | Rationale |
 |---|---|---|
 | Port scan (recon) | Alert only | Noisy; source IP is spoofable |
-| Brute force (in progress) | Auto-block (`firewall-drop`) | High confidence, time-sensitive, reversible, source not spoofable (needs full TCP handshake) |
+| Brute force (in progress) | Auto-block (`firewall-drop`, 300 s temporary ban) — **implemented & validated, Scenario 03** | High confidence, time-sensitive, reversible, source not spoofable (needs full TCP handshake) |
 | Successful logon post-brute-force | Human-in-the-loop (analyst approves) | High impact, ambiguous, disruptive |
 
 **Spoofability is the key distinction:** a SYN/ICMP scan can carry a forged source
 IP, so auto-blocking it risks blocking an innocent/critical address (or being
 weaponized to make you block yourself). A brute-force login requires a completed
 TCP handshake, so its source IP is genuine and safe to block.
+
+**Blocks are temporary and scoped.** The brute-force auto-block uses a short
+`<timeout>` (300 s) so it self-reverses and gets reviewed rather than hardening into
+a permanent deny-list, and it is justified only because the source is non-spoofable
+and unambiguous (a non-existent user). In a real environment a shared NAT/VPN egress
+could carry legitimate users, so the timeout stays short and the policy is reviewed —
+auto-remediation is applied where the source is trustworthy, not everywhere.
+Validated end to end in [Scenario 03 §4a](scenarios/03-ssh-brute-force.md).

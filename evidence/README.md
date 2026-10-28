@@ -23,9 +23,10 @@ by event ID + UTC (see the
 - **Synthetic enrichment demo — a separate event `1793219216.47653`, IOC `1.92.135.168` (§5b):** `shuffle-run-synthetic.png` · `thehive-alert-synthetic.png` (`VT malicious: 20`) · `thehive-observable-synthetic.png` · `virustotal-enrichment.png` (manual VT lookup — 20/92 — corroborating the fields). No traffic is ever sent to the known-bad IP.
 - `shuffle-workflow.png` (the Shuffle workflow itself).
 
-**`scenario-03-ssh/`** — SSH brute force, event `1792785099.20359`.
-- `attack-output.txt` (Hydra) · `alert-5712.json` (correlation) · `alert-5710.json` (per-attempt)
-- `wazuh-5712-alerts.png` · `wazuh-5712-detail.png` · `shuffle-aggregated.png` · `thehive-alert.png`
+**`scenario-03-ssh/`** — SSH brute force → auto-block, event `1793228621.106252` (one event ties the whole chain).
+- `attack-output.txt` (Hydra, 25 guesses) · `alert-5712.json` (correlation, `frequency 8` threshold) · `alert-5710.json` (per-attempt, `firedtimes 13`)
+- **Auto-block:** `alert-651-block.json` (firewall-drop `add` 192.168.56.10) · `alert-652-unblock.json` (`delete` after the 300 s timeout) · `active-response-block.txt` (the `active-responses.log` add/delete + the `iptables` DROP)
+- `wazuh-5712-alerts.png` · `wazuh-5712-detail.png` · `shuffle-aggregated.png` · `thehive-alert.png` (description shows `Correlation threshold: 8 failed logins / 120s`) · `thehive-observable.png` (attacker IP)
 
 **`scenario-04-rdp/`** — RDP brute force → lockout → compromise (lockout `…895940`, compromise `…933151`).
 - `attack-output.txt` (xfreerdp3 — winning password redacted)

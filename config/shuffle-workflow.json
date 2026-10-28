@@ -862,7 +862,7 @@
           "id": "",
           "name": "body",
           "example": "{\n  \"body\": \"This is the content of the post.\",\n  \"title\": \"Sample Post\",\n  \"userId\": 1\n}",
-          "value": "{\n  \"title\": \"$exec.title\",\n  \"description\": \"SSH brute force | Source: $exec.all_fields.data.srcip | Target user: $exec.all_fields.data.srcuser | Correlated failed attempts: $exec.all_fields.rule.frequency | MITRE T1110 | Rule $exec.rule_id\",\n  \"type\": \"wazuh\",\n  \"source\": \"wazuh\",\n  \"sourceRef\": \"$exec.id\",\n  \"severity\": 2,\n  \"tags\": [\"wazuh\", \"ssh\", \"brute-force\"],\n  \"observables\": [\n    {\"dataType\": \"ip\", \"data\": \"$exec.all_fields.data.srcip\", \"tags\": [\"source\", \"attacker\"], \"message\": \"Source IP of SSH brute-force attempts\"}\n  ]\n}",
+          "value": "{\n  \"title\": \"$exec.title\",\n  \"description\": \"SSH brute force | Source: $exec.all_fields.data.srcip | Target user: $exec.all_fields.data.srcuser | Correlation threshold: $exec.all_fields.rule.frequency failed logins / 120s | MITRE T1110 | Rule $exec.rule_id\",\n  \"type\": \"wazuh\",\n  \"source\": \"wazuh\",\n  \"sourceRef\": \"$exec.id\",\n  \"severity\": 2,\n  \"tags\": [\"wazuh\", \"ssh\", \"brute-force\"],\n  \"observables\": [\n    {\"dataType\": \"ip\", \"data\": \"$exec.all_fields.data.srcip\", \"tags\": [\"source\", \"attacker\"], \"message\": \"Source IP of SSH brute-force attempts\"}\n  ]\n}",
           "multiline": true,
           "multiselect": false,
           "options": null,

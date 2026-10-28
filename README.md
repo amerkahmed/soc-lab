@@ -28,6 +28,9 @@ in front of an analyst.
   infrastructure.
 - **SOAR automation** — Wazuh → Shuffle → VirusTotal enrichment → TheHive case,
   fully automated.
+- **Automated response** — a brute-force source is auto-blocked by a Wazuh
+  `firewall-drop` active response (temporary iptables ban), validated end to end
+  (Scenario 03).
 - **Detection engineering judgment** — custom rules, alert tuning to cut noise,
   and reasoning about when a rule *should not* fire (false positives).
 - **Real troubleshooting** — a documented log of the engineering problems solved

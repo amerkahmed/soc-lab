@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-23T19:51:41.684+0000",
+  "timestamp": "2026-10-28T23:03:43.533+0000",
   "rule": {
     "level": 5,
     "description": "sshd: Attempt to login using a non-existent user",
@@ -18,7 +18,7 @@
         "SSH"
       ]
     },
-    "firedtimes": 10,
+    "firedtimes": 13,
     "mail": false,
     "groups": [
       "syslog",
@@ -61,11 +61,11 @@
   "manager": {
     "name": "Wazuh"
   },
-  "id": "1792785101.22666",
-  "full_log": "Oct 23 19:51:41 target sshd-session[5235]: Failed password for invalid user fakeuser from 192.168.56.10 port 37502 ssh2",
+  "id": "1793228623.114825",
+  "full_log": "Oct 28 23:03:43 target sshd-session[7662]: Failed password for invalid user fakeuser from 192.168.56.10 port 32886 ssh2",
   "predecoder": {
     "program_name": "sshd-session",
-    "timestamp": "Oct 23 19:51:41",
+    "timestamp": "Oct 28 23:03:43",
     "hostname": "target"
   },
   "decoder": {

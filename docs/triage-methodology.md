@@ -41,8 +41,9 @@ on top of the detections.
   known-bad infrastructure.
 
 ### SSH brute force (Scenario 03)
-- **Malicious indicators:** single source, non-existent username, many attempts/sec,
-  rule 5712 correlation fires.
+- **Malicious indicators:** single source, non-existent username, a rapid burst of
+  failures that crosses the 5712 correlation threshold (8 events / 120 s) far faster
+  than a human mistyping.
 - **Benign look-alike:** a real user mistyping a few times (low volume, real
   account, ends in success) — would *not* trip 5712 and would not come as a burst.
 - **Escalate when:** correlation fires, or any success follows the failures.
