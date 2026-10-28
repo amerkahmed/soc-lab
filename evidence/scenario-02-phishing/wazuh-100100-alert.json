@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-10-20T22:24:35.455+0000",
+  "timestamp": "2026-10-28T20:08:52.147+0000",
   "rule": {
     "level": 12,
     "description": "Connection to known phishing infrastructure (IOC match)",
     "id": "100100",
     "mitre": {
       "id": [
-        "T1566"
+        "T1204.001"
       ],
       "tactic": [
-        "Initial Access"
+        "Execution"
       ],
       "technique": [
-        "Phishing"
+        "Malicious Link"
       ]
     },
     "firedtimes": 1,
@@ -30,47 +30,38 @@
   "manager": {
     "name": "Wazuh"
   },
-  "id": "1792535075.328599",
-  "full_log": "{\"timestamp\":\"2026-10-20T22:24:35.435756+0000\",\"flow_id\":889124892732150,\"in_iface\":\"enp0s3\",\"event_type\":\"flow\",\"src_ip\":\"192.168.56.20\",\"src_port\":34096,\"dest_ip\":\"192.168.56.10\",\"dest_port\":80,\"ip_v\":4,\"proto\":\"TCP\",\"app_proto\":\"http\",\"flow\":{\"pkts_toserver\":6,\"pkts_toclient\":6,\"bytes_toserver\":481,\"bytes_toclient\":3325,\"start\":\"2026-10-20T22:23:31.927911+0000\",\"end\":\"2026-10-20T22:23:31.929799+0000\",\"age\":0,\"state\":\"closed\",\"reason\":\"timeout\",\"alerted\":true,\"tx_cnt\":1},\"tcp\":{\"tcp_flags\":\"1b\",\"tcp_flags_ts\":\"1b\",\"tcp_flags_tc\":\"1b\",\"syn\":true,\"fin\":true,\"psh\":true,\"ack\":true,\"state\":\"closed\",\"ts_max_regions\":1,\"tc_max_regions\":1}}",
+  "id": "1793218132.30217",
+  "full_log": "{\"timestamp\":\"2026-10-28T20:08:51.340244+0000\",\"flow_id\":875801672389373,\"in_iface\":\"enp0s3\",\"event_type\":\"http\",\"src_ip\":\"192.168.56.20\",\"src_port\":34762,\"dest_ip\":\"192.168.56.99\",\"dest_port\":80,\"proto\":\"TCP\",\"ip_v\":4,\"pkt_src\":\"wire/pcap\",\"metadata\":{\"flowbits\":[\"http.dottedquadhost\"]},\"tx_id\":0,\"http\":{\"hostname\":\"192.168.56.99\",\"url\":\"/paypal/login/verify.php\",\"http_user_agent\":\"curl/8.18.0\",\"http_content_type\":\"application/x-httpd-php\",\"http_method\":\"GET\",\"protocol\":\"HTTP/1.1\",\"status\":200,\"length\":61}}",
   "decoder": {
     "name": "json"
   },
   "data": {
-    "timestamp": "2026-10-20T22:24:35.435756+0000",
-    "flow_id": "889124892732150.000000",
+    "timestamp": "2026-10-28T20:08:51.340244+0000",
+    "flow_id": "875801672389373.000000",
     "in_iface": "enp0s3",
-    "event_type": "flow",
+    "event_type": "http",
     "src_ip": "192.168.56.20",
-    "src_port": "34096",
-    "dest_ip": "192.168.56.10",
+    "src_port": "34762",
+    "dest_ip": "192.168.56.99",
     "dest_port": "80",
-    "ip_v": "4",
     "proto": "TCP",
-    "app_proto": "http",
-    "flow": {
-      "pkts_toserver": "6",
-      "pkts_toclient": "6",
-      "bytes_toserver": "481",
-      "bytes_toclient": "3325",
-      "start": "2026-10-20T22:23:31.927911+0000",
-      "end": "2026-10-20T22:23:31.929799+0000",
-      "age": "0",
-      "state": "closed",
-      "reason": "timeout",
-      "alerted": "true",
-      "tx_cnt": "1"
+    "ip_v": "4",
+    "pkt_src": "wire/pcap",
+    "metadata": {
+      "flowbits": [
+        "http.dottedquadhost"
+      ]
     },
-    "tcp": {
-      "tcp_flags": "1b",
-      "tcp_flags_ts": "1b",
-      "tcp_flags_tc": "1b",
-      "syn": "true",
-      "fin": "true",
-      "psh": "true",
-      "ack": "true",
-      "state": "closed",
-      "ts_max_regions": "1",
-      "tc_max_regions": "1"
+    "tx_id": "0",
+    "http": {
+      "hostname": "192.168.56.99",
+      "url": "/paypal/login/verify.php",
+      "http_user_agent": "curl/8.18.0",
+      "http_content_type": "application/x-httpd-php",
+      "http_method": "GET",
+      "protocol": "HTTP/1.1",
+      "status": "200",
+      "length": "61"
     }
   },
   "location": "/var/log/suricata/eve.json"
