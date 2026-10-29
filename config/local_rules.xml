@@ -4,14 +4,13 @@
     100002  Mimikatz by PE OriginalFileName (Sysmon EID 1)      [Scenario 05]
     100100  Connection to a phishing IOC on the CDB watchlist   [Scenario 02]
   SSH / RDP brute force and LSASS access are caught by Wazuh's built-in rules
-  (5710/5712, 60122/60115/92657, 92900) and are not redefined here.
+  (5710/5712, 60122/60115/92657/92653, 92075, 92900) and are not redefined here.
 -->
 
 <group name="sysmon,sysmon_eid1_detections,">
 
   <rule id="100002" level="15">
-    <field name="win.system.providerName">^Microsoft-Windows-Sysmon$</field>
-    <field name="win.system.eventID">^1$</field>
+    <if_group>sysmon_event1</if_group>
     <field name="win.eventdata.originalFileName" type="pcre2">(?i)mimikatz\.exe</field>
     <description>Mimikatz Usage Detected (original filename match)</description>
     <mitre>

@@ -155,6 +155,25 @@ rule that already matches your event, not the generic base — and confirm with
 like "my rule is broken." Non-HTTP IOC callbacks would chain off 86604 (tls) / 86603
 (dns) the same way.
 
+### 17. Custom Sysmon rule passed logtest but never fired live (parentless rule fell into the syslog phase)
+Custom rule 100002 (Mimikatz by PE `OriginalFileName`) passed `wazuh-logtest` but
+produced **no live alert** on real Sysmon Event ID 1 traffic. It was written
+**parentless** — matching `providerName` + `eventID` + `originalFileName` fields
+with no `<if_group>`/`<if_sid>`. A parentless custom rule is evaluated in Wazuh's
+default **syslog** decoding phase, so it was never tested against the
+`windows_eventchannel`-decoded Sysmon events, even though the fields decoded
+correctly and logtest (which evaluates a rule in isolation) passed.
+**Misdiagnosis corrected:** an earlier write-up blamed a *missing* `sysmon_event1`
+group. That was wrong — built-in rule **61603** decodes Sysmon EID 1 and **does**
+assign the `sysmon_event1` group.
+**Fix:** anchor the rule with `<if_group>sysmon_event1</if_group>` so it becomes a
+child of the Sysmon process-creation tree and is evaluated on every EID-1 event.
+After the fix, 100002 fired live (event `1793241281.2087863`, level 15, T1003)
+alongside the behavioral LSASS rule 92900 — see Scenario 05 §2b.
+**Lesson:** `logtest` success ≠ live detection (again) — logtest tests a rule in
+isolation; the live pipeline only tests it where its decoding phase places it.
+Anchor custom Sysmon rules to the Sysmon tree, or they silently never fire.
+
 ---
 
 ## What this log demonstrates

@@ -2,9 +2,11 @@
 
 Captured proof that each scenario fired end to end — raw alert JSON and
 screenshots, one folder per scenario. Within a scenario, the artifacts share a
-single Wazuh **event ID**, so the detection, the SOAR run, and the TheHive case
-tie together. (Scenario 02 additionally carries a *separate, clearly labeled*
-synthetic enrichment event — see its entry below.) Cross-host clocks are reconciled
+single Wazuh **event ID**, so each detection, its SOAR run, and its TheHive alert
+tie together. (Scenarios 04 and 05 are a single multi-stage incident captured in one
+~98-second window — each forwarded detection still chains by its own event ID, and
+the stages share one source/host/account. Scenario 02 additionally carries a
+*separate, clearly labeled* synthetic enrichment event — see its entry below.) Cross-host clocks are reconciled
 by event ID + UTC (see the
 [README](../README.md#honesty--scope-notes)); the exact capture commands are in
 [CAPTURE-COMMANDS.md](CAPTURE-COMMANDS.md).
@@ -28,15 +30,16 @@ by event ID + UTC (see the
 - **Auto-block:** `alert-651-block.json` (firewall-drop `add` 192.168.56.10) · `alert-652-unblock.json` (`delete` after the 300 s timeout) · `active-response-block.txt` (the `active-responses.log` add/delete + the `iptables` DROP)
 - `wazuh-5712-alerts.png` · `wazuh-5712-detail.png` · `shuffle-aggregated.png` · `thehive-alert.png` (description shows `Correlation threshold: 8 failed logins / 120s`) · `thehive-observable.png` (attacker IP)
 
-**`scenario-04-rdp/`** — RDP brute force → lockout → compromise (lockout `…895940`, compromise `…933151`).
-- `attack-output.txt` (xfreerdp3 — winning password redacted)
-- `alert-60122.json` (failed logon) · `alert-60115.json` (lockout) · `alert-92657.json` (compromise)
-- `wazuh-rdp-sequence.png` · `wazuh-92657-detail-1.png` · `wazuh-92657-detail-2.png`
+**`scenario-04-rdp/`** — RDP brute force → lockout → interactive session, one live pass **2026-10-29 02:33–02:34 UTC** (lockout `1793241183.1942214`, NLA logon `1793241240.1979272`, Type-10 session `1793241240.2020471`).
+- `attack-output.txt` (xfreerdp3 brute-force method — winning password redacted; Kali's local clock, authoritative timeline is the JSONs)
+- `alert-60122-failure.json` (failed logon, Type 3) · `alert-60115-lockout.json` (account lockout, 4740) · `alert-92657-type3-nla.json` (NLA pre-auth, Type 3 — the forwarded headline) · `alert-92653-type10-session.json` (genuine interactive RDP session, Type 10)
+- `wazuh-rdp-sequence.png` (the full arc in one Discover view)
 - `shuffle-rdp-lockout.png` · `shuffle-rdp-compromise.png` · `thehive-lockout.png` · `thehive-compromise.png`
 
-**`scenario-05-creddump/`** — Mimikatz LSASS access (rule 92900), event `1792790035.929684`.
+**`scenario-05-creddump/`** — certutil ingress → Mimikatz LSASS dump, one live pass **2026-10-29 02:34 UTC**; all three rules fired (certutil `1793241263.2077496`, Mimikatz name `1793241281.2087863`, LSASS access `1793241281.2094013`).
 - `attack-output.txt` (certutil + Mimikatz — dumped credentials redacted)
-- `wazuh-92900-alert.json` · `wazuh-92900-alerts.png` · `wazuh-92900-detail.png`
+- `alert-92075-certutil.json` (ingress transfer, T1105) · `alert-92900-lsass.json` (LSASS access, forwarded, T1003.001) · `alert-100002-mimikatz.json` (PE OriginalFileName, T1003)
+- `wazuh-92900-alerts.png` · `wazuh-92900-detail.png`
 - `shuffle-creddump.png` · `thehive-creddump.png`
 
 ## Provenance & integrity

@@ -1,13 +1,16 @@
 # SOC Home Lab — Detection, Enrichment & Automated Response
 
-> At 22:17 UTC, a brute-force run from the lab's Kali host locked out the Windows
-> target's `Client` account after a burst of failed RDP logons — then one
-> attempt succeeded. Wazuh fired rule **60115** (account lockout) and **92657**
-> (successful remote logon, flagged as possible pass-the-hash). I confirmed the
-> source as `192.168.56.10` across every 4625 event, correlated the lockout with
-> the subsequent 4624, and traced the full sequence from first failure to
-> compromise. That workflow — detect, correlate, decide — is what this lab is
-> built to practice, automate, and document.
+> At 02:33 UTC, a brute-force run from the lab's Kali host locked out the Windows
+> target's `Client` account after a burst of failed RDP logons. The lockout stopped
+> the loop cold — so the account was cleared and the attacker logged in with the
+> now-known password, opening a real Type-10 RDP session. Wazuh fired **60115**
+> (account lockout) and, on the successful login, **92657** (NLA pre-auth) and
+> **92653** (the interactive session). I confirmed the source as `192.168.56.10`
+> across every 4625 event, correlated the lockout with the subsequent 4624s, and
+> traced the full sequence from first failure to interactive foothold — then on into
+> a hands-on LSASS credential dump (Scenario 05), all in one ~98-second pass. That
+> workflow — detect, correlate, decide — is what this lab is built to practice,
+> automate, and document.
 
 A self-built Security Operations Center lab demonstrating **end-to-end threat
 detection across host and network layers, threat-intel-driven detection, and
@@ -108,8 +111,8 @@ a **NAT** adapter (lets agents reach the cloud backend). See
 | 01 | [Nmap Recon](docs/scenarios/01-nmap-recon.md) | Low | T1046 / T1595 | Suricata SID 2200025 + ET SCAN (e.g. 2018489) → Wazuh 86601 | Suricata NIDS | ~1.3 s | ✅ Validated (gaps documented) |
 | 02 | [Phishing Investigation → SOAR](docs/scenarios/02-phishing-ioc.md) | High | T1566.002 (email) / T1204.001 (click) | Wazuh 100100 (CDB http match) | Suricata NIDS → Wazuh | ~1–2 s² | ✅ Validated |
 | 03 | [SSH Brute Force](docs/scenarios/03-ssh-brute-force.md) | Medium | T1110 | Wazuh 5710 / 5712 | journald (Ubuntu agent) | ~1–2 s¹ | ✅ Validated |
-| 04 | [RDP Brute Force → Lockout → Compromise](docs/scenarios/04-rdp-brute-force.md) | High | T1110 | Wazuh 60122 / 60115 / 92657 | Windows Security (agent) | ~1.1–1.3 s | ✅ Validated |
-| 05 | [Credential Dumping (Mimikatz / LSASS)](docs/scenarios/05-credential-dumping.md) | Critical | T1003.001 | Wazuh 92900 (+ custom 100002) | Sysmon EID 10 (agent) | ~1.3 s | ✅ Validated |
+| 04 | [RDP Brute Force → Lockout → Session](docs/scenarios/04-rdp-brute-force.md) | High | T1110.001 → T1021.001 / T1078.003 | Wazuh 60122 / 60115 / 92657 / 92653 | Windows Security (agent) | ~1.1–1.3 s | ✅ Validated |
+| 05 | [Credential Dumping (Mimikatz / LSASS)](docs/scenarios/05-credential-dumping.md) | Critical | T1105 → T1003.001 / T1003 | Wazuh 92075 + 92900 + custom 100002 | Sysmon EID 1 / 10 (agent) | ~1.3 s | ✅ Validated |
 
 ¹ **Time to alert** = event time → Wazuh alert, measured from the captured evidence (see each scenario doc). The SSH figure is approximate: 5712 is a correlation rule and journald is second-resolution.
 ² Phishing (100100) matches a Suricata **http** transaction event (logged per request), so it fires in ~1–2 s. (Matching a `flow` record instead would add ~60 s of flow-timeout latency; `http` is used for near-real-time detection of the HTTP callback — a deliberate specificity-vs-coverage call, see Scenario 02 §10.)
@@ -144,7 +147,7 @@ The most complete automation path, end to end:
 > **Phishing isn't the only scenario that reaches TheHive.** Forwarding is filtered
 > to the headline alerts — by rule group (`phishing`) and by rule ID (`5712`,
 > `60115`, `92900`, `92657`) — so SSH (03), RDP (04) and the credential dump (05)
-> are all raised as alerts too (RDP raises two: the lockout and the compromise). The
+> are all raised as alerts too (RDP raises two: the lockout and the successful logon). The
 > cred-dump is forwarded by its specific rule ID (`92900`), not the
 > `sysmon_eid10_detections` group, which also carries benign Event-ID-10 rules
 > (e.g. `92910`) that would be noise. The Nmap recon alerts (01) and per-attempt
