@@ -67,11 +67,11 @@ The post-clear access was a **real RDP session** (not `+auth-only`) — the atta
 logging in interactively with the now-known password. That genuine desktop session
 is what makes the foothold usable for Scenario 05's hands-on credential dump.
 
-> _Evidence: `evidence/scenario-04-rdp/attack-output.txt` — representative
-> attacker-side console for the brute-force method (winning password redacted;
-> note the `ACCOUNT_LOCKED_OUT` transition on the final, correct attempt). The
-> clock there is Kali's local time; the **authoritative timeline is the manager
-> events** (JSON + Discover below)._
+> _Evidence: `evidence/scenario-04-rdp/attack-output.txt` — the brute-force console
+> from this run (no password values are echoed). Its clock (`22:33:02–22:33:03`
+> Kali local = **`02:33 UTC`**) lines up with the manager events below: ten
+> `LOGON_FAILURE` results, then `ACCOUNT_LOCKED_OUT` once the lockout threshold is
+> crossed._
 
 ---
 
@@ -114,6 +114,15 @@ session (a Type 10 logon → `92653`), ~0.2 s apart in the capture. The failed
 attempts only ever reach the Type 3 stage, which is why every 4625 above is
 `logonType 3`. The pair together is the signature of a **completed interactive RDP
 login**, not merely a credential check.
+
+![Expanded 92653 event 1793241240.2020471 — eventID 4624, logonType 10, Negotiate, rule 92653 level 3, description "User: WORKGROUP\Client logged using Remote Desktop Connection (RDP) from ip:192.168.56.10", logonProcessName User32 / svchost.exe, MITRE T1021.001](../../evidence/scenario-04-rdp/wazuh-92653-detail.png)
+*The genuine interactive session expanded — the same event as
+`alert-92653-type10-session.json` (`1793241240.2020471`): `logonType 10`,
+`Negotiate`, `logonProcessName User32`, Wazuh's 92653 stating it plainly, "logged
+using Remote Desktop Connection (RDP) from ip:192.168.56.10." (A local-admin RDP
+logon under UAC records a **linked pair** of Type-10 logons — a filtered standard
+token and a full elevated token, their logon IDs cross-referenced — so 92653 fires
+more than once; this is the standard-token session.)*
 
 **ATT&CK mapping note — the pass-the-hash tag is a false lead here.** Built-in rule
 92657 is titled "possible pass-the-hash" and tags **T1550.002**, because it sees a

@@ -228,6 +228,8 @@ sudo jq -c "select(.rule.id==\"60122\" and (.id|tonumber < ($LOCK|tonumber)+2))"
 **Screenshots:**
 - Wazuh Discover, the full arc filtered to `rule.id:(60122 or 60115 or 92657 or 92653)`
   and `targetUserName: Client` → `evidence/scenario-04-rdp/wazuh-rdp-sequence.png`
+- the Type-10 session event expanded (`logonType 10`, `Negotiate`, the RDP description)
+  → `evidence/scenario-04-rdp/wazuh-92653-detail.png`
 - Shuffle runs for the lockout and the logon →
   `shuffle-rdp-lockout.png`, `shuffle-rdp-compromise.png`
 - TheHive alerts (lockout `Reference` = 60115 id; logon `Reference` = 92657 id) →

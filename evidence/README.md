@@ -33,7 +33,7 @@ by event ID + UTC (see the
 **`scenario-04-rdp/`** — RDP brute force → lockout → interactive session, one live pass **2026-10-29 02:33–02:34 UTC** (lockout `1793241183.1942214`, NLA logon `1793241240.1979272`, Type-10 session `1793241240.2020471`).
 - `attack-output.txt` (xfreerdp3 brute-force method — winning password redacted; Kali's local clock, authoritative timeline is the JSONs)
 - `alert-60122-failure.json` (failed logon, Type 3) · `alert-60115-lockout.json` (account lockout, 4740) · `alert-92657-type3-nla.json` (NLA pre-auth, Type 3 — the forwarded headline) · `alert-92653-type10-session.json` (genuine interactive RDP session, Type 10)
-- `wazuh-rdp-sequence.png` (the full arc in one Discover view)
+- `wazuh-rdp-sequence.png` (the full arc in one Discover view) · `wazuh-92653-detail.png` (the Type-10 interactive session expanded)
 - `shuffle-rdp-lockout.png` · `shuffle-rdp-compromise.png` · `thehive-lockout.png` · `thehive-compromise.png`
 
 **`scenario-05-creddump/`** — certutil ingress → Mimikatz LSASS dump, one live pass **2026-10-29 02:34 UTC**; all three rules fired (certutil `1793241263.2077496`, Mimikatz name `1793241281.2087863`, LSASS access `1793241281.2094013`).
