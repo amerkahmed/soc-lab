@@ -56,6 +56,47 @@ sudo grep '"id":"86601"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
 **Screenshot:** optional — the dashboard filtered to `rule.groups: ids` →
 `evidence/scenario-01-nmap/wazuh-suricata.png`
 
+### Re-test: before/after `HOME_NET` (the `retest-2026-10-27/` folder)
+
+The re-test runs the scan set **twice** so the before/after contrast is evidenced,
+not asserted: once under Suricata's default `HOME_NET` (which counts Kali as "home"
+and suppresses the `EXTERNAL_NET -> HOME_NET` ET SCAN rules), then once with
+`HOME_NET` scoped to the victims. The `~/n-*.txt` files from Step 1 above are just
+log-position markers — intermediate, not part of the committed evidence.
+
+**Round 1 — before the fix (default `HOME_NET`).** If your sensor is already scoped,
+temporarily revert `HOME_NET` to the stock default (a list including
+`192.168.0.0/16`) and restart Suricata first. Then run the 3-step capture above for
+`-sS`, `-sV`, `-A`. These files become `before/`.
+
+**Flip `HOME_NET` and reload (target)** — this reload timestamp is the before/after
+boundary:
+```bash
+# edit /etc/suricata/suricata.yaml -> scope HOME_NET to the victims:
+#   HOME_NET: "[192.168.56.20,192.168.56.30]"
+sudo systemctl restart suricata
+sudo grep "rules successfully loaded" /var/log/suricata/suricata.log | tail -1
+```
+
+**Round 2 — after the fix (scoped `HOME_NET`).** Re-run the same 3-step capture for
+`-sS`, `-sV`, `-A`, plus the blind-spot probe (expected: **0** alerts — no DB/VNC
+port falls in 1–1000):
+```bash
+sudo nmap -n -sS -p 1-1000 192.168.56.20 | tee ~/nmap-p1000.txt
+```
+These files become `after/`.
+
+**Capture the config change (target):**
+```bash
+sudo sed -n '/^vars:/,/EXTERNAL_NET: "any"/p' /etc/suricata/suricata.yaml \
+  > evidence/scenario-01-nmap/retest-2026-10-27/homenet-config.txt
+```
+
+**Organize into the repo:** put each round's `nmap-*.txt` and `fast-*.txt` under
+`before/` and `after/`, plus a `signature-counts.txt` derived from the `fast-*.txt`
+extracts (an empty `fast-*.txt` is a valid 0-result). The per-scan counts reproduce
+the §2 table, and the before/after split is pinned to the reload timestamp above.
+
 ---
 
 ## Scenario 02 — Phishing IOC → SOAR
