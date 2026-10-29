@@ -143,6 +143,15 @@ Plain-English:
   original filename metadata.
 - `level 15` — one below Wazuh's maximum (the scale tops out at **16**).
 
+**Kept deliberately name-based.** 100002 matches *only* the PE `OriginalFileName` —
+nothing about the command line or runtime behavior. That is by design: it is the
+cheap, specific *"this is Mimikatz"* signal, and it is paired with the behavioral
+92900 (*"something read LSASS"*) in §2a, not merged with it. Folding a `sekurlsa::`
+command-line match into 100002 would blur that contrast — matching on what the tool
+*does* is 92900's job, and a recompiled or metadata-stripped Mimikatz that slips past
+100002's name check is exactly the case 92900 is there to catch. The two rules are
+most useful as a clean pair (name **and** behavior), not as one hybrid rule.
+
 **The fix that made it fire — `if_group`, not field-matching.** The rule originally
 had **no parent dependency** (no `<if_group>`/`<if_sid>`). A parentless custom rule
 falls into Wazuh's default **syslog** evaluation phase, so it was never tested
