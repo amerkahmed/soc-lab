@@ -64,8 +64,15 @@ $u.SetInfo()
 ```
 
 The post-clear access was a **real RDP session** (not `+auth-only`) — the attacker
-logging in interactively with the now-known password. That genuine desktop session
-is what makes the foothold usable for Scenario 05's hands-on credential dump.
+logging in interactively with the now-known password:
+
+```bash
+# Kali: a genuine interactive RDP session (no +auth-only) → Type-10 logon
+xfreerdp3 /u:Client /p:"<known-good>" /v:192.168.56.30 /cert:ignore -clipboard
+```
+
+That genuine desktop session is what makes the foothold usable for Scenario 05's
+hands-on credential dump.
 
 > _Evidence: `evidence/scenario-04-rdp/attack-output.txt` — the brute-force console
 > from this run (no password values are echoed). Its clock (`22:33:02–22:33:03`
