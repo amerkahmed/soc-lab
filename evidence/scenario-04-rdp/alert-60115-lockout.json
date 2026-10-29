@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-21T22:17:44.098+0000",
+  "timestamp": "2026-10-29T02:33:03.996+0000",
   "rule": {
     "level": 9,
     "description": "User account locked out (multiple login errors)",
@@ -18,7 +18,7 @@
         "Account Access Removal"
       ]
     },
-    "firedtimes": 1,
+    "firedtimes": 2,
     "mail": false,
     "groups": [
       "windows",
@@ -57,7 +57,7 @@
   "manager": {
     "name": "Wazuh"
   },
-  "id": "1792621064.895940",
+  "id": "1793241183.1942214",
   "decoder": {
     "name": "windows_eventchannel"
   },
@@ -72,10 +72,10 @@
         "task": "13824",
         "opcode": "0",
         "keywords": "0x8020000000000000",
-        "systemTime": "2026-10-21T22:17:43.0111332Z",
-        "eventRecordID": "16699",
-        "processID": "740",
-        "threadID": "1560",
+        "systemTime": "2026-10-29T02:33:02.7738955Z",
+        "eventRecordID": "18641",
+        "processID": "744",
+        "threadID": "284",
         "channel": "Security",
         "computer": "DESKTOP-T0LOHB5",
         "severityValue": "AUDIT_SUCCESS",

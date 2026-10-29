@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-21T22:17:44.115+0000",
+  "timestamp": "2026-10-29T02:33:04.029+0000",
   "rule": {
     "level": 5,
     "description": "Logon Failure - Unknown user or bad password",
@@ -15,7 +15,7 @@
         "Account Access Removal"
       ]
     },
-    "firedtimes": 15,
+    "firedtimes": 19,
     "mail": false,
     "groups": [
       "windows",
@@ -55,7 +55,7 @@
   "manager": {
     "name": "Wazuh"
   },
-  "id": "1792621064.898521",
+  "id": "1793241184.1944794",
   "decoder": {
     "name": "windows_eventchannel"
   },
@@ -70,10 +70,10 @@
         "task": "12544",
         "opcode": "0",
         "keywords": "0x8010000000000000",
-        "systemTime": "2026-10-21T22:17:43.0112823Z",
-        "eventRecordID": "16700",
-        "processID": "740",
-        "threadID": "1560",
+        "systemTime": "2026-10-29T02:33:02.7740091Z",
+        "eventRecordID": "18642",
+        "processID": "744",
+        "threadID": "284",
         "channel": "Security",
         "computer": "DESKTOP-T0LOHB5",
         "severityValue": "AUDIT_FAILURE",

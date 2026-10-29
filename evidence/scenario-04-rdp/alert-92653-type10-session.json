@@ -1,0 +1,92 @@
+{
+  "timestamp": "2026-10-29T02:34:00.722+0000",
+  "rule": {
+    "level": 3,
+    "description": "User: WORKGROUP\\Client logged using Remote Desktop Connection (RDP) from ip:192.168.56.10.",
+    "id": "92653",
+    "mitre": {
+      "id": [
+        "T1021.001",
+        "T1078.002"
+      ],
+      "tactic": [
+        "Lateral Movement",
+        "Defense Evasion",
+        "Persistence",
+        "Privilege Escalation",
+        "Initial Access"
+      ],
+      "technique": [
+        "Remote Desktop Protocol",
+        "Domain Accounts"
+      ]
+    },
+    "firedtimes": 4,
+    "mail": false,
+    "groups": [
+      "win_evt_channel",
+      "windows"
+    ]
+  },
+  "agent": {
+    "id": "001",
+    "name": "Project-Windows",
+    "ip": "10.0.3.15"
+  },
+  "manager": {
+    "name": "Wazuh"
+  },
+  "id": "1793241240.2020471",
+  "full_log": "{\"win\":{\"system\":{\"providerName\":\"Microsoft-Windows-Security-Auditing\",\"providerGuid\":\"{54849625-5478-4994-a5ba-3e3b0328c30d}\",\"eventID\":\"4624\",\"version\":\"2\",\"level\":\"0\",\"task\":\"12544\",\"opcode\":\"0\",\"keywords\":\"0x8020000000000000\",\"systemTime\":\"2026-10-29T02:33:59.9764928Z\",\"eventRecordID\":\"18670\",\"processID\":\"744\",\"threadID\":\"284\",\"channel\":\"Security\",\"computer\":\"DESKTOP-T0LOHB5\",\"severityValue\":\"AUDIT_SUCCESS\",\"message\":\"\\\"An account was successfully logged on.\\r\\n\\r\\nSubject:\\r\\n\\tSecurity ID:\\t\\tS-1-5-18\\r\\n\\tAccount Name:\\t\\tDESKTOP-T0LOHB5$\\r\\n\\tAccount Domain:\\t\\tWORKGROUP\\r\\n\\tLogon ID:\\t\\t0x3E7\\r\\n\\r\\nLogon Information:\\r\\n\\tLogon Type:\\t\\t10\\r\\n\\tRestricted Admin Mode:\\tNo\\r\\n\\tVirtual Account:\\t\\tNo\\r\\n\\tElevated Token:\\t\\tNo\\r\\n\\r\\nImpersonation Level:\\t\\tImpersonation\\r\\n\\r\\nNew Logon:\\r\\n\\tSecurity ID:\\t\\tS-1-5-21-2661131266-3240031718-58152211-1001\\r\\n\\tAccount Name:\\t\\tClient\\r\\n\\tAccount Domain:\\t\\tDESKTOP-T0LOHB5\\r\\n\\tLogon ID:\\t\\t0xB0983B\\r\\n\\tLinked Logon ID:\\t\\t0xB09815\\r\\n\\tNetwork Account Name:\\t-\\r\\n\\tNetwork Account Domain:\\t-\\r\\n\\tLogon GUID:\\t\\t{00000000-0000-0000-0000-000000000000}\\r\\n\\r\\nProcess Information:\\r\\n\\tProcess ID:\\t\\t0x69c\\r\\n\\tProcess Name:\\t\\tC:\\\\Windows\\\\System32\\\\svchost.exe\\r\\n\\r\\nNetwork Information:\\r\\n\\tWorkstation Name:\\tDESKTOP-T0LOHB5\\r\\n\\tSource Network Address:\\t192.168.56.10\\r\\n\\tSource Port:\\t\\t0\\r\\n\\r\\nDetailed Authentication Information:\\r\\n\\tLogon Process:\\t\\tUser32 \\r\\n\\tAuthentication Package:\\tNegotiate\\r\\n\\tTransited Services:\\t-\\r\\n\\tPackage Name (NTLM only):\\t-\\r\\n\\tKey Length:\\t\\t0\\r\\n\\r\\nThis event is generated when a logon session is created. It is generated on the computer that was accessed.\\r\\n\\r\\nThe subject fields indicate the account on the local system which requested the logon. This is most commonly a service such as the Server service, or a local process such as Winlogon.exe or Services.exe.\\r\\n\\r\\nThe logon type field indicates the kind of logon that occurred. The most common types are 2 (interactive) and 3 (network).\\r\\n\\r\\nThe New Logon fields indicate the account for whom the new logon was created, i.e. the account that was logged on.\\r\\n\\r\\nThe network fields indicate where a remote logon request originated. Workstation name is not always available and may be left blank in some cases.\\r\\n\\r\\nThe impersonation level field indicates the extent to which a process in the logon session can impersonate.\\r\\n\\r\\nThe authentication information fields provide detailed information about this specific logon request.\\r\\n\\t- Logon GUID is a unique identifier that can be used to correlate this event with a KDC event.\\r\\n\\t- Transited services indicate which intermediate services have participated in this logon request.\\r\\n\\t- Package name indicates which sub-protocol was used among the NTLM protocols.\\r\\n\\t- Key length indicates the length of the generated session key. This will be 0 if no session key was requested.\\\"\"},\"eventdata\":{\"subjectUserSid\":\"S-1-5-18\",\"subjectUserName\":\"DESKTOP-T0LOHB5$\",\"subjectDomainName\":\"WORKGROUP\",\"subjectLogonId\":\"0x3e7\",\"targetUserSid\":\"S-1-5-21-2661131266-3240031718-58152211-1001\",\"targetUserName\":\"Client\",\"targetDomainName\":\"DESKTOP-T0LOHB5\",\"targetLogonId\":\"0xb0983b\",\"logonType\":\"10\",\"logonProcessName\":\"User32\",\"authenticationPackageName\":\"Negotiate\",\"workstationName\":\"DESKTOP-T0LOHB5\",\"logonGuid\":\"{00000000-0000-0000-0000-000000000000}\",\"keyLength\":\"0\",\"processId\":\"0x69c\",\"processName\":\"C:\\\\\\\\Windows\\\\\\\\System32\\\\\\\\svchost.exe\",\"ipAddress\":\"192.168.56.10\",\"ipPort\":\"0\",\"impersonationLevel\":\"%%1833\",\"restrictedAdminMode\":\"%%1843\",\"virtualAccount\":\"%%1843\",\"targetLinkedLogonId\":\"0xb09815\",\"elevatedToken\":\"%%1843\"}}}",
+  "decoder": {
+    "name": "windows_eventchannel"
+  },
+  "data": {
+    "win": {
+      "system": {
+        "providerName": "Microsoft-Windows-Security-Auditing",
+        "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+        "eventID": "4624",
+        "version": "2",
+        "level": "0",
+        "task": "12544",
+        "opcode": "0",
+        "keywords": "0x8020000000000000",
+        "systemTime": "2026-10-29T02:33:59.9764928Z",
+        "eventRecordID": "18670",
+        "processID": "744",
+        "threadID": "284",
+        "channel": "Security",
+        "computer": "DESKTOP-T0LOHB5",
+        "severityValue": "AUDIT_SUCCESS",
+        "message": "\"An account was successfully logged on.\r\n\r\nSubject:\r\n\tSecurity ID:\t\tS-1-5-18\r\n\tAccount Name:\t\tDESKTOP-T0LOHB5$\r\n\tAccount Domain:\t\tWORKGROUP\r\n\tLogon ID:\t\t0x3E7\r\n\r\nLogon Information:\r\n\tLogon Type:\t\t10\r\n\tRestricted Admin Mode:\tNo\r\n\tVirtual Account:\t\tNo\r\n\tElevated Token:\t\tNo\r\n\r\nImpersonation Level:\t\tImpersonation\r\n\r\nNew Logon:\r\n\tSecurity ID:\t\tS-1-5-21-2661131266-3240031718-58152211-1001\r\n\tAccount Name:\t\tClient\r\n\tAccount Domain:\t\tDESKTOP-T0LOHB5\r\n\tLogon ID:\t\t0xB0983B\r\n\tLinked Logon ID:\t\t0xB09815\r\n\tNetwork Account Name:\t-\r\n\tNetwork Account Domain:\t-\r\n\tLogon GUID:\t\t{00000000-0000-0000-0000-000000000000}\r\n\r\nProcess Information:\r\n\tProcess ID:\t\t0x69c\r\n\tProcess Name:\t\tC:\\Windows\\System32\\svchost.exe\r\n\r\nNetwork Information:\r\n\tWorkstation Name:\tDESKTOP-T0LOHB5\r\n\tSource Network Address:\t192.168.56.10\r\n\tSource Port:\t\t0\r\n\r\nDetailed Authentication Information:\r\n\tLogon Process:\t\tUser32 \r\n\tAuthentication Package:\tNegotiate\r\n\tTransited Services:\t-\r\n\tPackage Name (NTLM only):\t-\r\n\tKey Length:\t\t0\r\n\r\nThis event is generated when a logon session is created. It is generated on the computer that was accessed.\r\n\r\nThe subject fields indicate the account on the local system which requested the logon. This is most commonly a service such as the Server service, or a local process such as Winlogon.exe or Services.exe.\r\n\r\nThe logon type field indicates the kind of logon that occurred. The most common types are 2 (interactive) and 3 (network).\r\n\r\nThe New Logon fields indicate the account for whom the new logon was created, i.e. the account that was logged on.\r\n\r\nThe network fields indicate where a remote logon request originated. Workstation name is not always available and may be left blank in some cases.\r\n\r\nThe impersonation level field indicates the extent to which a process in the logon session can impersonate.\r\n\r\nThe authentication information fields provide detailed information about this specific logon request.\r\n\t- Logon GUID is a unique identifier that can be used to correlate this event with a KDC event.\r\n\t- Transited services indicate which intermediate services have participated in this logon request.\r\n\t- Package name indicates which sub-protocol was used among the NTLM protocols.\r\n\t- Key length indicates the length of the generated session key. This will be 0 if no session key was requested.\""
+      },
+      "eventdata": {
+        "subjectUserSid": "S-1-5-18",
+        "subjectUserName": "DESKTOP-T0LOHB5$",
+        "subjectDomainName": "WORKGROUP",
+        "subjectLogonId": "0x3e7",
+        "targetUserSid": "S-1-5-21-2661131266-3240031718-58152211-1001",
+        "targetUserName": "Client",
+        "targetDomainName": "DESKTOP-T0LOHB5",
+        "targetLogonId": "0xb0983b",
+        "logonType": "10",
+        "logonProcessName": "User32",
+        "authenticationPackageName": "Negotiate",
+        "workstationName": "DESKTOP-T0LOHB5",
+        "logonGuid": "{00000000-0000-0000-0000-000000000000}",
+        "keyLength": "0",
+        "processId": "0x69c",
+        "processName": "C:\\\\Windows\\\\System32\\\\svchost.exe",
+        "ipAddress": "192.168.56.10",
+        "ipPort": "0",
+        "impersonationLevel": "%%1833",
+        "restrictedAdminMode": "%%1843",
+        "virtualAccount": "%%1843",
+        "targetLinkedLogonId": "0xb09815",
+        "elevatedToken": "%%1843"
+      }
+    }
+  },
+  "location": "EventChannel"
+}
