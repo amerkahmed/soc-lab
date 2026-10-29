@@ -29,24 +29,52 @@ isolated `192.168.56.0/24` internal network (setup in §2).
 
 ### End-to-end flow
 
-```
-                 Attacker (Kali)
-                       │  attack traffic (SSH/RDP brute force, nmap, IOC connection)
-         ┌─────────────┴─────────────┐
-         ▼                           ▼
-  Ubuntu victim                Windows victim
-  Wazuh agent + Suricata       Wazuh agent + Sysmon
-  (journald + eve.json)        (Security eventchannel)
-         │                           │
-         │ host logs + NIDS alerts   │ Security/Sysmon eventchannel
-         └─────────────┬─────────────┘
-                       ▼
-        Wazuh Manager (cloud)  ── detection rules, CDB threat-intel list, correlation
-                       │  integration forwards curated alerts
-                       ▼
-        Shuffle (SOAR)  ── workflow: branch by rule_id, enrich phishing via VirusTotal
-                       ▼
-        TheHive  ── alert created for the analyst
+```mermaid
+graph TB
+    kali["Kali — Attacker<br/>192.168.56.10<br/>Hydra · xfreerdp · Nmap · emlAnalyzer"]
+    phish["Phishing server · .99<br/>lab IOC (Kali-hosted alias)<br/>serves fake login page"]
+
+    subgraph victims["Victim endpoints · isolated net 192.168.56.0/24"]
+        ubuntu["Ubuntu · .20<br/>Wazuh agent (journald)<br/>Suricata NIDS (enp0s3)"]
+        windows["Windows 10 · .30<br/>Wazuh agent<br/>Sysmon + Security channel"]
+    end
+
+    kali -->|"nmap recon (01)<br/>SSH brute force (03)"| ubuntu
+    kali -->|"RDP brute force → session (04)<br/>→ credential dumping (05)"| windows
+    ubuntu -->|"outbound IOC callback (02)"| phish
+
+    subgraph cloud["Cloud backend + SOAR"]
+        manager["Wazuh Manager — SIEM<br/>rules · CDB threat-intel list<br/>correlation · forwards curated alerts"]
+        branch{"Shuffle SOAR<br/>branch by rule_id"}
+        vt["VirusTotal<br/>IP reputation"]
+        sev["Severity node<br/>60115 → Med · 92657 → High<br/>92900 → Critical"]
+        thehive["TheHive<br/>analyst alerts + observables"]
+    end
+
+    ubuntu -->|"journald + Suricata eve.json"| manager
+    windows -->|"Security + Sysmon eventchannel"| manager
+    manager -->|"curated alerts (webhook)"| branch
+
+    branch -->|"100100 phishing"| vt
+    vt --> thehive
+    branch -->|"5712 SSH"| thehive
+    branch -->|"60115 / 92657 / 92900"| sev
+    sev --> thehive
+
+    classDef atk fill:#fde2e2,stroke:#c0392b,color:#111
+    classDef vic fill:#e3f3e6,stroke:#27ae60,color:#111
+    classDef siem fill:#e4ecfb,stroke:#2d6cdf,color:#111
+    classDef soar fill:#efe6fb,stroke:#8e44ad,color:#111
+    classDef kase fill:#e2f4f6,stroke:#16a085,color:#111
+    class kali atk
+    class phish atk
+    class ubuntu vic
+    class windows vic
+    class manager siem
+    class branch soar
+    class vt soar
+    class sev soar
+    class thehive kase
 ```
 
 Both agents report to the manager on their own path — Ubuntu ships journald +
@@ -89,7 +117,9 @@ cloud manager, which applies detection rules.
 **Windows** — agent installed via MSI, pointed at the cloud manager; **Sysmon**
 installed for process/DLL/file telemetry. RDP brute force produces Security
 **Event ID 4625** (rule **60122**), lockout **4740** (rule **60115**), and a
-successful **4624** (rule **92657**, flagged as possible pass-the-hash). Sysmon
+successful **4624** (rule **92657**, which the built-in rule flags as possible
+pass-the-hash — a *false lead* here: the attack brute-forced the password, it did
+not replay a stolen hash, see [Scenario 04 §2](scenarios/04-rdp-brute-force.md)). Sysmon
 also surfaced account-discovery (T1087), remote-system discovery (T1018), and
 scheduled-task DLL loads (T1053), plus a CIS benchmark (SCA) compliance scan.
 
@@ -156,8 +186,10 @@ it needs:
 
 - **Phishing (`100100`) → VirusTotal → enriched POST.** The IOC's destination IP is
   looked up (`get_an_ip_address_report`) and the malicious / harmless counts are
-  embedded in the TheHive alert. VT is applied **only** here, where the IOC is a
-  real external IP VT can resolve.
+  embedded in the TheHive alert. VT is applied **only** on this path — the one IOC
+  type that can carry an external IP. On the live run the lab IOC is a private
+  address, so VT returns nothing; the enrichment is demonstrated with a clearly
+  labeled synthetic external IP (Scenario 02 §5b).
 - **SSH correlation (`5712`) → direct POST** — no VT (the brute-force source is a
   private IP).
 - **Everything else (`60115`, `92657`, `92900`) → a `Severity` node → POST.** A
@@ -178,7 +210,7 @@ explicit `Content-Type: application/json`, an auth header, and a hand-built body
 is reliable and fully visible for debugging.
 
 **Design principle — selective enrichment:** VirusTotal enrichment is meaningful
-for network/IP-based IOCs (phishing, recon with a real external IP), less so for
+for network/IP-based IOCs (the phishing callback's destination), less so for
 brute force (whose lab source is a private IP VT can't resolve). The mature design
 applies enrichment selectively by alert type.
 

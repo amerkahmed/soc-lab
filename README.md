@@ -58,45 +58,53 @@ in front of an analyst.
 
 ## Architecture
 
-![SOC lab architecture](docs/architecture.png)
+```mermaid
+graph TB
+    kali["Kali — Attacker<br/>192.168.56.10<br/>Hydra · xfreerdp · Nmap · emlAnalyzer"]
+    phish["Phishing server · .99<br/>lab IOC (Kali-hosted alias)<br/>serves fake login page"]
 
-<details>
-<summary>Text version of the diagram</summary>
+    subgraph victims["Victim endpoints · isolated net 192.168.56.0/24"]
+        ubuntu["Ubuntu · .20<br/>Wazuh agent (journald)<br/>Suricata NIDS (enp0s3)"]
+        windows["Windows 10 · .30<br/>Wazuh agent<br/>Sysmon + Security channel"]
+    end
 
+    kali -->|"nmap recon (01)<br/>SSH brute force (03)"| ubuntu
+    kali -->|"RDP brute force → session (04)<br/>→ credential dumping (05)"| windows
+    ubuntu -->|"outbound IOC callback (02)"| phish
+
+    subgraph cloud["Cloud backend + SOAR"]
+        manager["Wazuh Manager — SIEM<br/>rules · CDB threat-intel list<br/>correlation · forwards curated alerts"]
+        branch{"Shuffle SOAR<br/>branch by rule_id"}
+        vt["VirusTotal<br/>IP reputation"]
+        sev["Severity node<br/>60115 → Med · 92657 → High<br/>92900 → Critical"]
+        thehive["TheHive<br/>analyst alerts + observables"]
+    end
+
+    ubuntu -->|"journald + Suricata eve.json"| manager
+    windows -->|"Security + Sysmon eventchannel"| manager
+    manager -->|"curated alerts (webhook)"| branch
+
+    branch -->|"100100 phishing"| vt
+    vt --> thehive
+    branch -->|"5712 SSH"| thehive
+    branch -->|"60115 / 92657 / 92900"| sev
+    sev --> thehive
+
+    classDef atk fill:#fde2e2,stroke:#c0392b,color:#111
+    classDef vic fill:#e3f3e6,stroke:#27ae60,color:#111
+    classDef siem fill:#e4ecfb,stroke:#2d6cdf,color:#111
+    classDef soar fill:#efe6fb,stroke:#8e44ad,color:#111
+    classDef kase fill:#e2f4f6,stroke:#16a085,color:#111
+    class kali atk
+    class phish atk
+    class ubuntu vic
+    class windows vic
+    class manager siem
+    class branch soar
+    class vt soar
+    class sev soar
+    class thehive kase
 ```
-                         INTERNAL NETWORK (192.168.56.0/24)
-   ┌──────────────┐          attack traffic          ┌──────────────────┐
-   │   Kali       │ ───────────────────────────────▶ │  Ubuntu target   │
-   │  Attacker    │   SSH/RDP brute force, nmap,      │  Wazuh agent +   │
-   │ 192.168.56.10│   IOC connection                 │  Suricata (NIDS) │
-   └──────────────┘ ───────────────────────────────▶ │ 192.168.56.20    │
-          │                                           └────────┬─────────┘
-          │                                           ┌────────┴─────────┐
-          └─────────────────────────────────────────▶│  Windows target  │
-                                                      │  Wazuh agent +   │
-                                                      │  Sysmon          │
-                                                      └────────┬─────────┘
-                                                               │ NAT adapter
-                                                               ▼  (internet)
-                                          ┌────────────────────────────────┐
-                                          │       Wazuh Manager (cloud)     │
-                                          │  rules · CDB threat list ·      │
-                                          │  correlation · alerting         │
-                                          └────────────────┬────────────────┘
-                                                           │ forwards curated alerts
-                                                           ▼
-                                          ┌────────────────────────────────┐
-                                          │        Shuffle (SOAR)           │
-                                          │  webhook → VirusTotal enrich    │
-                                          └────────────────┬────────────────┘
-                                                           ▼
-                                          ┌────────────────────────────────┐
-                                          │           TheHive               │
-                                          │   alert for analyst             │
-                                          └────────────────────────────────┘
-```
-
-</details>
 
 Each VM uses two adapters: an **internal** adapter (isolated attack traffic) and
 a **NAT** adapter (lets agents reach the cloud backend). See
