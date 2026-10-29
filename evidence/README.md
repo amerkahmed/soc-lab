@@ -22,7 +22,7 @@ by event ID + UTC (see the
 - `emlanalyzer-output.txt` · `eml-analysis.png` (recapture — new sample, auth passes)
 - **Real detection chain — one event `1793225059.80603`, HTTP 200:** `wazuh-100100-alert.json` (http-event match, `dest_ip 192.168.56.99`, `status 200`) · `wazuh-100100-discover.png` (the same alert in the Wazuh dashboard) · `shuffle-run-real.png` (webhook run) · `thehive-alert-real.png` (`VT malicious: 0` — VT has no intel on the private IP) · `thehive-observable-real.png` (IOC `192.168.56.99` attached). The detection JSON `id`, the Shuffle `$exec.id`, and the TheHive `Reference` all read `1793225059.80603`.
 - **Tuning exercise:** `wazuh-100100-FALSE-POSITIVE-icmp.json` (naive rule over-matching a per-packet alert event — reproducible, see Scenario 02 §3a / challenges #14).
-- **Synthetic enrichment demo — a separate event `1793219216.47653`, IOC `1.92.135.168` (§5b):** `shuffle-run-synthetic.png` · `thehive-alert-synthetic.png` (`VT malicious: 20`) · `thehive-observable-synthetic.png` · `virustotal-enrichment.png` (manual VT lookup — 20/92 — corroborating the fields). No traffic is ever sent to the known-bad IP.
+- **Synthetic enrichment demo — a separate event `1793219216.47653`, IOC `1.92.135.168` (a ThreatFox-listed Cobalt Strike C2) (§5b):** `threatfox-1.92.135.168.png` (the abuse.ch ThreatFox entry) · `shuffle-run-synthetic.png` · `thehive-alert-synthetic.png` (`VT malicious: 20`) · `thehive-observable-synthetic.png` · `virustotal-enrichment.png` (manual VT lookup — 20/92 — corroborating the fields). No traffic is ever sent to the known-bad IP.
 - `shuffle-workflow.png` (the Shuffle workflow itself).
 
 **`scenario-03-ssh/`** — SSH brute force → auto-block, event `1793228621.106252` (one event ties the whole chain).

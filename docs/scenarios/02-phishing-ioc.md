@@ -273,6 +273,12 @@ TS=$(date -u +%Y-%m-%dT%H:%M:%S.000000+0000)
 echo "{\"timestamp\":\"$TS\",\"in_iface\":\"enp0s3\",\"event_type\":\"http\",\"src_ip\":\"192.168.56.20\",\"dest_ip\":\"<known-bad-ip>\",\"dest_port\":80,\"proto\":\"TCP\",\"http\":{\"hostname\":\"<known-bad-ip>\",\"url\":\"/\"},\"lab_note\":\"SYNTHETIC TEST EVENT\"}" | sudo tee -a /var/log/suricata/eve.json
 ```
 
+The known-bad IP used here (`1.92.135.168`) is a **real abuse.ch
+[ThreatFox](https://threatfox.abuse.ch/) IOC** — a Cobalt Strike C2 reported
+`2026-10-20` — chosen so VirusTotal has genuine intelligence to return
+(`threatfox-1.92.135.168.png`). No traffic is ever sent to it; only its reputation
+is looked up.
+
 This follows the detection-engineering convention of validating an alert with a
 representative, labeled test input (cf.
 [Palantir's ADS framework](https://github.com/palantir/alerting-detection-strategy-framework),
@@ -281,7 +287,8 @@ which requires a true-positive validation step). The VirusTotal screenshot is a
 output of the live pipeline.
 
 > _Evidence (synthetic enrichment chain — a **separate**, clearly labeled event
-> `1793219216.47653`, IOC `1.92.135.168`): `shuffle-run-synthetic.png`,
+> `1793219216.47653`, IOC `1.92.135.168`, a ThreatFox-listed Cobalt Strike C2):
+> `threatfox-1.92.135.168.png` (the abuse.ch ThreatFox entry), `shuffle-run-synthetic.png`,
 > `thehive-alert-synthetic.png` (`VT malicious: 20`), `thehive-observable-synthetic.png`,
 > `virustotal-enrichment.png` (manual VT lookup corroborating the fields)_
 

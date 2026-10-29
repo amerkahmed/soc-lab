@@ -30,19 +30,30 @@ isolated `192.168.56.0/24` internal network (setup in §2).
 ### End-to-end flow
 
 ```
-Attacker (Kali)
-      │  attack traffic (SSH/RDP brute force, nmap, IOC connection)
-      ▼
-Victim endpoints (Ubuntu / Windows)
-      │  Wazuh agent (host logs) + Suricata (network, on Ubuntu)
-      ▼
-Wazuh Manager (cloud)  ── detection rules, CDB threat-intel list, correlation
-      │  integration forwards curated alerts
-      ▼
-Shuffle (SOAR)  ── workflow: branch by rule_id, enrich phishing via VirusTotal
-      ▼
-TheHive  ── alert created for the analyst
+                 Attacker (Kali)
+                       │  attack traffic (SSH/RDP brute force, nmap, IOC connection)
+         ┌─────────────┴─────────────┐
+         ▼                           ▼
+  Ubuntu victim                Windows victim
+  Wazuh agent + Suricata       Wazuh agent + Sysmon
+  (journald + eve.json)        (Security eventchannel)
+         │                           │
+         │ host logs + NIDS alerts   │ Security/Sysmon eventchannel
+         └─────────────┬─────────────┘
+                       ▼
+        Wazuh Manager (cloud)  ── detection rules, CDB threat-intel list, correlation
+                       │  integration forwards curated alerts
+                       ▼
+        Shuffle (SOAR)  ── workflow: branch by rule_id, enrich phishing via VirusTotal
+                       ▼
+        TheHive  ── alert created for the analyst
 ```
+
+Both agents report to the manager on their own path — Ubuntu ships journald +
+Suricata `eve.json`, Windows ships the **Security** and **Sysmon** event channels —
+which is why the Windows→manager arrow is drawn separately: the RDP (04) and
+credential-dumping (05) detections ride the Windows path, the SSH (03) and Suricata
+(01/02) detections the Ubuntu path.
 
 ---
 

@@ -49,7 +49,7 @@ in front of an analyst.
 | NIDS | Suricata (Emerging Threats ruleset, eve.json) |
 | Endpoint telemetry | Sysmon (Windows), journald (Linux) |
 | SOAR / automation | Shuffle (SOAR workflows, webhook integration, API) |
-| Threat intelligence | VirusTotal enrichment, abuse.ch feeds, IOC watchlists |
+| Threat intelligence | VirusTotal enrichment, [abuse.ch ThreatFox](https://threatfox.abuse.ch/) IOCs, IOC watchlists |
 | Case management | TheHive (alerts, cases, observables) |
 | Adversary simulation | Hydra, xfreerdp, Nmap, phishing analysis (emlAnalyzer) |
 | Frameworks | MITRE ATT&CK mapping |
