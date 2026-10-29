@@ -7,8 +7,8 @@
 | **Target** | Ubuntu — 192.168.56.20 |
 | **Detection source** | Wazuh agent → journald (sshd) |
 | **Rules fired** | 5710 (invalid user), 5712 (brute-force correlation) |
-| **Response** | Automated `firewall-drop` (temporary iptables ban) + SOAR → TheHive case |
-| **Reaches** | Detection → auto-block → SOAR → TheHive case |
+| **Response** | Automated `firewall-drop` (temporary iptables ban) + SOAR → TheHive alert |
+| **Reaches** | Detection → auto-block → SOAR → TheHive alert |
 | **Status** | ✅ Validated (incl. live auto-block) |
 
 ---
@@ -129,7 +129,7 @@ recorded the `delete` — the ban auto-expired as configured.
 > after 300 s), `active-response-block.txt` (the `active-responses.log` add/delete +
 > the `iptables` DROP)._
 
-### 4b. SOAR aggregation and case creation
+### 4b. SOAR aggregation and alert creation
 
 The same 5712 alert is also forwarded to Shuffle by webhook. The key behavior here
 is **aggregation**: Wazuh's correlation has already collapsed the burst, so Shuffle
@@ -141,11 +141,11 @@ receives **one** event for the whole run rather than one per failed login.
 event, not many.*
 
 Shuffle then opens a case in TheHive. This is the same path phishing (Scenario
-02) takes — **SSH brute force reaches case creation too**; phishing is simply the
+02) takes — **SSH brute force reaches alert creation too**; phishing is simply the
 scenario where VirusTotal enrichment is showcased.
 
-![TheHive case for event 1793228621.106252 — SEVERITY:MEDIUM, tags brute-force/ssh/wazuh, description with source, target user, correlation threshold, MITRE and rule](../../evidence/scenario-03-ssh/thehive-alert.png)
-*TheHive case: `SEVERITY:MEDIUM`, tagged brute-force / ssh / wazuh, description
+![TheHive alert for event 1793228621.106252 — SEVERITY:MEDIUM, tags brute-force/ssh/wazuh, description with source, target user, correlation threshold, MITRE and rule](../../evidence/scenario-03-ssh/thehive-alert.png)
+*TheHive alert: `SEVERITY:MEDIUM`, tagged brute-force / ssh / wazuh, description
 `SSH brute force | Source: 192.168.56.10 | Target user: fakeuser | Correlation
 threshold: 8 failed logins / 120s | MITRE T1110 | Rule 5712`. The `Reference` is
 `1793228621.106252` — the same event as the alert, the auto-block, and the Shuffle

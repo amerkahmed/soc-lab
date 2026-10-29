@@ -195,7 +195,7 @@ So the full chain is alerted at every stage: **92075** (tool pulled in) → **92
 
 ---
 
-## 3. SOAR → case creation
+## 3. SOAR → alert creation
 
 The manager's Shuffle integration forwards rule **92900** by its specific rule ID
 (the rule-ID block in

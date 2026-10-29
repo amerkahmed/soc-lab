@@ -157,7 +157,7 @@ sensors. See [challenges-and-resolutions.md](../challenges-and-resolutions.md), 
 
 ---
 
-## 3. SOAR → case creation
+## 3. SOAR → alert creation
 
 The manager's Shuffle integration forwards the two **headline** RDP alerts — the
 lockout (`60115`) and the successful NLA logon (`92657`) — by **rule ID**. The

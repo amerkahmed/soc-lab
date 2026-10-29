@@ -50,13 +50,19 @@ opened — `End of file and some elements were not closed (line 38)` — which
 and watch the manager startup log after every rule change.
 
 ### 8. SOAR body broke on a field that changes type between sources
-The Shuffle→TheHive JSON body referenced `$exec.text`. On host-based alerts this
-is a string; on Suricata alerts it's a JSON **object**. Inserting the object
-shattered the JSON body (`invalid decimal literal`).
-**Fix:** build the body only from consistently-typed fields (`title`, `rule_id`,
-`id`) and never the variable-shaped `text` blob.
-**Lesson:** SOAR templates must be resilient to differing alert schemas across
-sources.
+The Shuffle→TheHive JSON body referenced `$exec.text`, which maps from Wazuh's
+**`full_log`** — and `full_log` is not consistently typed. It is **absent/empty**
+when a rule emits no log text (e.g. the 4740 lockout `60115` and the LSASS-access
+`92900` carry none), a **plain string** for ordinary syslog-style alerts (sshd, the
+RDP `4624`), and a **JSON object** when the source log is itself JSON (Suricata
+`eve.json`). Inserting the object form shattered the hand-built JSON body
+(`invalid decimal literal`).
+**Fix:** build the body only from consistently-typed scalar fields (`title`,
+`rule_id`, `id`) and never the variable-shaped `full_log`/`text` blob.
+**Lesson:** SOAR templates must be resilient to differing alert schemas — the same
+field can be missing, a string, or a nested object depending on the rule and the log
+source. (It's the same mechanism behind the Shuffle `text` reading `NULL` for
+`60115`/`92900` while other alerts carry it — Scenario 04 §3.)
 
 ### 9. Agent silently lost its manager connection
 Repeated manager restarts (during rule development) dropped the agent's

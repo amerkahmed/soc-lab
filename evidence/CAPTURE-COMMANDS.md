@@ -278,8 +278,8 @@ Before committing, scrub any public cloud IPs or credentials from the captured
 files:
 
 ```bash
-# dry-run: see what would match
-grep -rInE "159\.203\.|142\.93\.|password|api[_-]?key|token" evidence/
+# dry-run: see what would match (add your cloud host's own IP octets to the pattern)
+grep -rInE "password|api[_-]?key|token|secret" evidence/
 ```
 
 Replace real cloud IPs with `<MANAGER_IP>` / `<THEHIVE_IP>` in any captured JSON

@@ -39,9 +39,9 @@ Victim endpoints (Ubuntu / Windows)
 Wazuh Manager (cloud)  ── detection rules, CDB threat-intel list, correlation
       │  integration forwards curated alerts
       ▼
-Shuffle (SOAR)  ── workflow: enrich with VirusTotal → build case
+Shuffle (SOAR)  ── workflow: branch by rule_id, enrich phishing via VirusTotal
       ▼
-TheHive  ── alert/case created for the analyst
+TheHive  ── alert created for the analyst
 ```
 
 ---
@@ -133,14 +133,33 @@ is demonstrated with a clearly labeled synthetic test event (Scenario 02 §5b).
 
 The manager forwards curated alerts to a Shuffle webhook — filtered to the
 actionable alerts, never a broad level: by rule **group** (`phishing`) and by rule
-**ID** (`5712` SSH correlation, `60115` RDP lockout, `92900` LSASS access, `92657`
-RDP compromise). The cred-dump is forwarded by its specific rule ID rather than the
+**ID** (`5712` SSH correlation, `60115` RDP lockout, `92657` RDP logon, `92900`
+LSASS access). The cred-dump is forwarded by its specific rule ID rather than the
 `sysmon_eid10_detections` group, which also carries benign Event-ID-10 rules (e.g.
 `92910`) that would be noise. Per-attempt rules (`5710`, `60122`) and the Suricata
-flood are deliberately excluded. The Shuffle workflow is **Webhook → VirusTotal lookup → HTTP
-request node** that POSTs a hand-built JSON body to TheHive's `/api/v1/alert`
-(HTTP 201). Selected scalar VT fields (malicious / harmless counts and reputation)
-are embedded in the alert description.
+flood are deliberately excluded.
+
+Inside Shuffle the workflow is **not linear — a `Branch` node routes on
+`$exec.rule_id`** into three conditional paths, so each alert type gets the handling
+it needs:
+
+- **Phishing (`100100`) → VirusTotal → enriched POST.** The IOC's destination IP is
+  looked up (`get_an_ip_address_report`) and the malicious / harmless counts are
+  embedded in the TheHive alert. VT is applied **only** here, where the IOC is a
+  real external IP VT can resolve.
+- **SSH correlation (`5712`) → direct POST** — no VT (the brute-force source is a
+  private IP).
+- **Everything else (`60115`, `92657`, `92900`) → a `Severity` node → POST.** A
+  small `execute_python` step sets the TheHive severity by rule ID
+  (`{60115: Medium, 92657: High, 92900: Critical}`), so the cred-dump lands
+  **Critical** and the RDP logon **High** — impact-based, not the detecting rule's
+  level.
+
+All three paths are **raw HTTP nodes** POSTing a hand-built JSON body to TheHive's
+`/api/v1/alert`, each with an explicit `Content-Type: application/json` and an
+`Authorization: Bearer` header whose key is pulled from Shuffle's cache
+(`$shuffle_cache.hive-key.val`), never hardcoded. The exported workflow (secrets
+scrubbed) is at [`config/shuffle-workflow.json`](../config/shuffle-workflow.json).
 
 **Why a raw HTTP node instead of the TheHive app node:** the native app node
 proved unreliable (empty body, content-type mismatch). A plain HTTP node — with

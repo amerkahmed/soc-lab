@@ -14,14 +14,14 @@
 
 A self-built Security Operations Center lab demonstrating **end-to-end threat
 detection across host and network layers, threat-intel-driven detection, and
-SOAR automation** — from attack, to detection, to enrichment, to a case landing
+SOAR automation** — from attack, to detection, to enrichment, to an alert landing
 in front of an analyst.
 
 ---
 
 ## What This Lab Demonstrates
 
-- **End-to-end SOC workflow** — attack → detection → enrichment → case creation,
+- **End-to-end SOC workflow** — attack → detection → enrichment → alert creation,
   not just tool deployment.
 - **Defense in depth (HIDS + NIDS)** — host-based detection (Wazuh agents) *and*
   network-based detection (Suricata), covering attacks that one layer alone
@@ -29,7 +29,7 @@ in front of an analyst.
 - **Threat-intel-driven detection** — phishing email analyzed, IOCs extracted and
   operationalized into a Wazuh watchlist that fires on any connection to known
   infrastructure.
-- **SOAR automation** — Wazuh → Shuffle → VirusTotal enrichment → TheHive case,
+- **SOAR automation** — Wazuh → Shuffle → VirusTotal enrichment → TheHive alert,
   fully automated.
 - **Automated response** — a brute-force source is auto-blocked by a Wazuh
   `firewall-drop` active response (temporary iptables ban), validated end to end
@@ -51,7 +51,7 @@ in front of an analyst.
 | SOAR / automation | Shuffle (SOAR workflows, webhook integration, API) |
 | Threat intelligence | VirusTotal enrichment, abuse.ch feeds, IOC watchlists |
 | Case management | TheHive (alerts, cases, observables) |
-| Adversary simulation | Hydra, ncrack, xfreerdp, Nmap, phishing analysis (emlAnalyzer) |
+| Adversary simulation | Hydra, xfreerdp, Nmap, phishing analysis (emlAnalyzer) |
 | Frameworks | MITRE ATT&CK mapping |
 
 ---
@@ -92,7 +92,7 @@ in front of an analyst.
                                                            ▼
                                           ┌────────────────────────────────┐
                                           │           TheHive               │
-                                          │   alert / case for analyst      │
+                                          │   alert for analyst             │
                                           └────────────────────────────────┘
 ```
 

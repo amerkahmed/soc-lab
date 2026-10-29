@@ -5,7 +5,7 @@ reproducible. Secrets and public cloud IPs are redacted.
 
 | File | What it is | Deploy to |
 |---|---|---|
-| `local_rules.xml` | Custom Wazuh rules (SSH example, Mimikatz, phishing IOC 100100) | `/var/ossec/etc/rules/local_rules.xml` (manager) |
+| `local_rules.xml` | Custom Wazuh rules (Mimikatz 100002, phishing IOC 100100) | `/var/ossec/etc/rules/local_rules.xml` (manager) |
 | `phishing-iocs` | CDB threat-intel watchlist (IOC IPs) | `/var/ossec/etc/lists/phishing-iocs` (manager) |
 | `ossec-ruleset-list.xml` | Snippet to register the CDB list | inside `<ruleset>` in `ossec.conf` (manager) |
 | `ossec-integration.xml` | Wazuh → Shuffle integration block (group-filtered) | inside `<ossec_config>` in `ossec.conf` (manager) |
