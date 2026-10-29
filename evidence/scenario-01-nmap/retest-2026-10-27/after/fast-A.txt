@@ -1,0 +1,45 @@
+10/27/2026-21:02:14.021194  [**] [1:2010937:3] ET SCAN Suspicious inbound to mySQL port 3306 [**] [Classification: Potentially Bad Traffic] [Priority: 2] {TCP} 192.168.56.10:53985 -> 192.168.56.20:3306
+10/27/2026-21:02:14.032209  [**] [1:2002910:6] ET SCAN Potential VNC Scan 5800-5820 [**] [Classification: Attempted Information Leak] [Priority: 2] {TCP} 192.168.56.10:53985 -> 192.168.56.20:5800
+10/27/2026-21:02:14.039924  [**] [1:2010939:3] ET SCAN Suspicious inbound to PostgreSQL port 5432 [**] [Classification: Potentially Bad Traffic] [Priority: 2] {TCP} 192.168.56.10:53985 -> 192.168.56.20:5432
+10/27/2026-21:02:14.041543  [**] [1:2010935:3] ET SCAN Suspicious inbound to MSSQL port 1433 [**] [Classification: Potentially Bad Traffic] [Priority: 2] {TCP} 192.168.56.10:53985 -> 192.168.56.20:1433
+10/27/2026-21:02:14.041146  [**] [1:2010936:3] ET SCAN Suspicious inbound to Oracle SQL port 1521 [**] [Classification: Potentially Bad Traffic] [Priority: 2] {TCP} 192.168.56.10:53985 -> 192.168.56.20:1521
+10/27/2026-21:02:14.146478  [**] [1:2001219:20] ET SCAN Potential SSH Scan [**] [Classification: Attempted Information Leak] [Priority: 2] {TCP} 192.168.56.10:39563 -> 192.168.56.20:22
+10/27/2026-21:02:14.807280  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.10:8 -> 192.168.56.20:9
+10/27/2026-21:02:14.807294  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.20:0 -> 192.168.56.10:9
+10/27/2026-21:02:14.858441  [**] [1:2018489:4] ET SCAN NMAP OS Detection Probe [**] [Classification: Attempted Information Leak] [Priority: 2] {UDP} 192.168.56.10:62006 -> 192.168.56.20:43498
+10/27/2026-21:02:16.960503  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.10:8 -> 192.168.56.20:9
+10/27/2026-21:02:16.960513  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.20:0 -> 192.168.56.10:9
+10/27/2026-21:02:17.011308  [**] [1:2018489:4] ET SCAN NMAP OS Detection Probe [**] [Classification: Attempted Information Leak] [Priority: 2] {UDP} 192.168.56.10:62262 -> 192.168.56.20:43498
+10/27/2026-21:02:17.214876  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.10:8 -> 192.168.56.20:9
+10/27/2026-21:02:17.214889  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.20:0 -> 192.168.56.10:9
+10/27/2026-21:02:17.316119  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.10:8 -> 192.168.56.20:9
+10/27/2026-21:02:17.316130  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.20:0 -> 192.168.56.10:9
+10/27/2026-21:02:17.424482  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.10:8 -> 192.168.56.20:9
+10/27/2026-21:02:17.424494  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.20:0 -> 192.168.56.10:9
+10/27/2026-21:02:19.162160  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.10:8 -> 192.168.56.20:9
+10/27/2026-21:02:19.162173  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.20:0 -> 192.168.56.10:9
+10/27/2026-21:02:19.224208  [**] [1:2018489:4] ET SCAN NMAP OS Detection Probe [**] [Classification: Attempted Information Leak] [Priority: 2] {UDP} 192.168.56.10:62518 -> 192.168.56.20:43498
+10/27/2026-21:02:19.461080  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.10:8 -> 192.168.56.20:9
+10/27/2026-21:02:19.461093  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.20:0 -> 192.168.56.10:9
+10/27/2026-21:02:19.569392  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.10:8 -> 192.168.56.20:9
+10/27/2026-21:02:19.569406  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.20:0 -> 192.168.56.10:9
+10/27/2026-21:02:19.676763  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.10:8 -> 192.168.56.20:9
+10/27/2026-21:02:19.676777  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.20:0 -> 192.168.56.10:9
+10/27/2026-21:02:22.999183  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.10:8 -> 192.168.56.20:9
+10/27/2026-21:02:22.999196  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.20:0 -> 192.168.56.10:9
+10/27/2026-21:02:23.210608  [**] [1:2018489:4] ET SCAN NMAP OS Detection Probe [**] [Classification: Attempted Information Leak] [Priority: 2] {UDP} 192.168.56.10:62774 -> 192.168.56.20:43498
+10/27/2026-21:02:23.686794  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.10:8 -> 192.168.56.20:9
+10/27/2026-21:02:23.686802  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.20:0 -> 192.168.56.10:9
+10/27/2026-21:02:23.829076  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.10:8 -> 192.168.56.20:9
+10/27/2026-21:02:23.829090  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.20:0 -> 192.168.56.10:9
+10/27/2026-21:02:23.982927  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.10:8 -> 192.168.56.20:9
+10/27/2026-21:02:23.982934  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.20:0 -> 192.168.56.10:9
+10/27/2026-21:02:25.754605  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.10:8 -> 192.168.56.20:9
+10/27/2026-21:02:25.754618  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.20:0 -> 192.168.56.10:9
+10/27/2026-21:02:25.816664  [**] [1:2018489:4] ET SCAN NMAP OS Detection Probe [**] [Classification: Attempted Information Leak] [Priority: 2] {UDP} 192.168.56.10:63030 -> 192.168.56.20:43498
+10/27/2026-21:02:26.052990  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.10:8 -> 192.168.56.20:9
+10/27/2026-21:02:26.053013  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.20:0 -> 192.168.56.10:9
+10/27/2026-21:02:26.172311  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.10:8 -> 192.168.56.20:9
+10/27/2026-21:02:26.172322  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.20:0 -> 192.168.56.10:9
+10/27/2026-21:02:26.288033  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.10:8 -> 192.168.56.20:9
+10/27/2026-21:02:26.288046  [**] [1:2200025:2] SURICATA ICMPv4 unknown code [**] [Classification: Generic Protocol Command Decode] [Priority: 3] {ICMP} 192.168.56.20:0 -> 192.168.56.10:9

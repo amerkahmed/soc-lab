@@ -1,0 +1,27 @@
+Per-scan signature counts — AFTER the HOME_NET fix (HOME_NET=[192.168.56.20,192.168.56.30])
+Derived directly from the fast.log extracts in this folder.
+
+-sS (SYN scan)             : 5 alerts
+           1 [1:2010939:3] ET SCAN Suspicious inbound to PostgreSQL port 5432
+           1 [1:2010937:3] ET SCAN Suspicious inbound to mySQL port 3306
+           1 [1:2010936:3] ET SCAN Suspicious inbound to Oracle SQL port 1521
+           1 [1:2010935:3] ET SCAN Suspicious inbound to MSSQL port 1433
+           1 [1:2002910:6] ET SCAN Potential VNC Scan 5800-5820
+
+-sV (service/version scan) : 4 alerts
+           1 [1:2010939:3] ET SCAN Suspicious inbound to PostgreSQL port 5432
+           1 [1:2010937:3] ET SCAN Suspicious inbound to mySQL port 3306
+           1 [1:2010936:3] ET SCAN Suspicious inbound to Oracle SQL port 1521
+           1 [1:2010935:3] ET SCAN Suspicious inbound to MSSQL port 1433
+
+-A  (aggressive + OS)      : 45 alerts across 8 signatures
+          34 [1:2200025:2] SURICATA ICMPv4 unknown code
+           5 [1:2018489:4] ET SCAN NMAP OS Detection Probe
+           1 [1:2010939:3] ET SCAN Suspicious inbound to PostgreSQL port 5432
+           1 [1:2010937:3] ET SCAN Suspicious inbound to mySQL port 3306
+           1 [1:2010936:3] ET SCAN Suspicious inbound to Oracle SQL port 1521
+           1 [1:2010935:3] ET SCAN Suspicious inbound to MSSQL port 1433
+           1 [1:2002910:6] ET SCAN Potential VNC Scan 5800-5820
+           1 [1:2001219:20] ET SCAN Potential SSH Scan
+
+-p1000 (SYN ports 1-1000)  : 0 alerts   [fast-p1000.txt is empty — the §6 blind spot]

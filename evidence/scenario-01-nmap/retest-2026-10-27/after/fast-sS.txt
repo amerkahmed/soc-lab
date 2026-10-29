@@ -1,0 +1,5 @@
+10/27/2026-21:00:59.603445  [**] [1:2010937:3] ET SCAN Suspicious inbound to mySQL port 3306 [**] [Classification: Potentially Bad Traffic] [Priority: 2] {TCP} 192.168.56.10:36447 -> 192.168.56.20:3306
+10/27/2026-21:00:59.608568  [**] [1:2010935:3] ET SCAN Suspicious inbound to MSSQL port 1433 [**] [Classification: Potentially Bad Traffic] [Priority: 2] {TCP} 192.168.56.10:36447 -> 192.168.56.20:1433
+10/27/2026-21:00:59.608750  [**] [1:2010936:3] ET SCAN Suspicious inbound to Oracle SQL port 1521 [**] [Classification: Potentially Bad Traffic] [Priority: 2] {TCP} 192.168.56.10:36447 -> 192.168.56.20:1521
+10/27/2026-21:00:59.610522  [**] [1:2010939:3] ET SCAN Suspicious inbound to PostgreSQL port 5432 [**] [Classification: Potentially Bad Traffic] [Priority: 2] {TCP} 192.168.56.10:36447 -> 192.168.56.20:5432
+10/27/2026-21:00:59.614233  [**] [1:2002910:6] ET SCAN Potential VNC Scan 5800-5820 [**] [Classification: Attempted Information Leak] [Priority: 2] {TCP} 192.168.56.10:36447 -> 192.168.56.20:5802

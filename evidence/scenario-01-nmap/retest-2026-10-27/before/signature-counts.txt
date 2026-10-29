@@ -1,0 +1,7 @@
+Per-scan signature counts — BEFORE the HOME_NET fix (default HOME_NET)
+Derived directly from the fast.log extracts in this folder.
+
+-sS (SYN scan)             : 0 alerts   [fast-sS.txt is empty]
+-sV (service/version scan) : 0 alerts   [fast-sV.txt is empty]
+-A  (aggressive + OS)      : 34 alerts
+          34 [1:2200025:2] SURICATA ICMPv4 unknown code

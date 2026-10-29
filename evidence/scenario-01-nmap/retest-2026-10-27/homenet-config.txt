@@ -1,0 +1,22 @@
+# Suricata HOME_NET / EXTERNAL_NET — captured live from the Ubuntu sensor
+# File: /etc/suricata/suricata.yaml   (mtime 2026-10-27 20:59 UTC)
+# The mtime is the HOME_NET edit itself: between the before-fix scans (20:47 UTC)
+# and the ~21:00 UTC rule reload that activated the change.
+#
+# ACTIVE line 18 is the FIX ("after"). The default that counted Kali (192.168.56.10)
+# as "home" — and so suppressed the EXTERNAL_NET->HOME_NET ET SCAN rules — is the
+# stock Suricata default (a list including 192.168.0.0/16), shown commented below.
+# NOTE: no pre-edit backup of suricata.yaml was retained, so the exact prior string
+# cannot be re-read; it was a stock default including 192.168.0.0/16 (see README).
+
+vars:
+  # more specific is better for alert accuracy and performance
+  address-groups:
+    HOME_NET: "[192.168.56.20,192.168.56.30]"
+    #HOME_NET: "[192.168.0.0/16]"
+    #HOME_NET: "[10.0.0.0/8]"
+    #HOME_NET: "[172.16.0.0/12]"
+    #HOME_NET: "any"
+
+    EXTERNAL_NET: "!$HOME_NET"
+    #EXTERNAL_NET: "any"

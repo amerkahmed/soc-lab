@@ -72,7 +72,7 @@ and surfaced on the manager under rule **86601** (Wazuh's rule for any Suricata
 
 > _Evidence: `evidence/scenario-01-nmap/retest-2026-10-27/` — `before/` and
 > `after/` (Nmap output, per-scan `fast.log` extract, per-signature counts),
-> `homenet-change.diff`. Original 2026-10-22 capture:
+> `homenet-config.txt`. Original 2026-10-22 capture:
 > `suricata-fast-log.txt` (last 20 lines only), `wazuh-suricata-alert.json`,
 > `wazuh-suricata.png`._
 
