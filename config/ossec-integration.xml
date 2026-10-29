@@ -12,8 +12,8 @@
                      92657 (RDP compromise)
 
   The LSASS cred-dump (92900) is forwarded by its specific RULE_ID, not via the
-  sysmon_eid10_detections group: that group also carries benign Event-ID-10 rules
-  (e.g. 92910) that would reach the SOAR as noise. Forwarding the one malicious
+  sysmon_eid10_detections group: that group also carries other Event-ID-10
+  process-access events (benign OneDrive activity) that would reach the SOAR as noise. Forwarding the one malicious
   rule keeps the case queue clean - the same "signal, not noise" tuning as the
   rest of this filter.
 

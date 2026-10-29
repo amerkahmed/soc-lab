@@ -115,6 +115,9 @@ not forwarded to the SOAR layer (see the forwarding note in the README).
   for Medium, since a watchlist hit proves the connection occurred but not that
   credentials were submitted (see Scenario 02 §6).
 
-This is the mapping TheHive severity should be set to **dynamically** (by the
-Shuffle integration, from the alert's rule ID), rather than the current fixed
-default of Medium.
+This mapping is set **dynamically** by the Shuffle integration: a `Severity` node
+(`execute_python`) reads the alert's rule ID and sets the TheHive severity —
+`{60115: Medium, 92657: High, 92900: Critical}` — so the cred-dump lands Critical and
+the RDP logon High, matching impact rather than a fixed default. The phishing
+(`100100`) and SSH (`5712`) branches post their own fixed severities (High and
+Medium) on their own paths.

@@ -10,7 +10,7 @@ reproducible. Secrets and public cloud IPs are redacted.
 | `ossec-ruleset-list.xml` | Snippet to register the CDB list | inside `<ruleset>` in `ossec.conf` (manager) |
 | `ossec-integration.xml` | Wazuh → Shuffle integration block (group-filtered) | inside `<ossec_config>` in `ossec.conf` (manager) |
 | `local_internal_options.conf` | JSON decoder field-limit fix | append to `/var/ossec/etc/local_internal_options.conf` (manager) |
-| `thehive-http-body.json` | Reference body for the Shuffle HTTP → TheHive node | Shuffle workflow |
+| `thehive-http-body.json` | TheHive alert body for the **enriched (phishing) path** — severity, tags, VT fields, IOC observable (the `Hive_Enriched` node). The SSH and RDP/cred-dump paths post their own bodies; see `shuffle-workflow.json` | Shuffle workflow |
 | `paypal_phish.eml` | The crafted phishing sample for analysis | analyze on Kali with `emlAnalyzer` |
 | `shuffle-workflow.json` | Exported Shuffle SOAR workflow (webhook, cloud IPs, and API keys scrubbed) | import into Shuffle |
 

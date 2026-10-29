@@ -24,7 +24,7 @@ detection — with both firing live on the same run.
 
 This scenario runs **inside the foothold from Scenario 04**: the `Client` account
 was compromised via RDP brute force, and the Type-10 interactive session
-(`92653`, `02:34:00 UTC`) is a real desktop on `192.168.56.30`. The two actions
+(`92653`, `02:33:59 UTC`) is a real desktop on `192.168.56.30`. The two actions
 below are performed hands-on in that session — which is exactly why an interactive
 session, not just a credential check, mattered in Scenario 04.
 
@@ -99,7 +99,7 @@ This is **behavior-based**: it keys on *the act of reading LSASS memory*, not on
 filename, so the rename to `m.exe` is irrelevant — the access itself is the signal.
 
 ![Wazuh Discover rule.id:92900 scoped to the run — one LSASS-access hit, m.exe accessing lsass.exe, grantedAccess 0x1010, sourceUser Client, targetUser SYSTEM](../../evidence/scenario-05-creddump/wazuh-92900-alerts.png)
-*The LSASS-access alert for this run (event `1793241281.2094013`, `02:34:41 UTC`):
+*The LSASS-access alert for this run (event `1793241281.2094013`, `02:34:40 UTC`):
 `m.exe` accessing `lsass.exe`, `grantedAccess 0x1010`, `sourceUser
 DESKTOP-T0LOHB5\Client`.*
 
@@ -111,7 +111,7 @@ detection (§3 explains why forwarding keys on the specific rule ID, not this gr
 
 > _Evidence: `alert-92900-lsass.json`, `wazuh-92900-alerts.png`,
 > `wazuh-92900-detail.png`. Authoritative time is the UTC `systemTime
-> 02:34:40.228Z`; on cross-host clocks see the
+> 02:34:40.242Z`; on cross-host clocks see the
 > [README](../../README.md#honesty--scope-notes) convention._
 
 ### 2b. Name-based custom rule — rule 100002 (fixed, now fires live)
@@ -175,14 +175,16 @@ T1003) — the process-creation of `m.exe`, ~40 ms before 92900 saw it touch LSA
 ### 2c. Ingress-tool-transfer detection — rule 92075 (certutil)
 
 The `certutil` download is caught by Wazuh's built-in **rule 92075** (level 12,
-**T1105**), which matches `certutil.exe` with a `-urlcache … -f` download of an
-executable payload — driven by **Sysmon Event ID 1**. This is the T1105 half of the
-chain **detected**, not merely observed in telemetry:
+**T1105**), which matches `certutil.exe` performing a `-urlcache` download of a
+`.dll`/`.exe` payload — **regardless of the `-f` flag** — driven by **Sysmon Event
+ID 1**. This is the T1105 half of the chain **detected**, not merely observed in
+telemetry:
 
 ```
 rule.id            92075   (level 12)
 rule.mitre.id      T1105   (Command and Control / Ingress Tool Transfer)
-image              C:\Windows\System32\certutil.exe
+originalFileName   (?i)certutil\.exe
+commandLine        (?i)\-urlcache.+\.(dll|exe)     ← -f is NOT required to match
 eventID            1       (Sysmon process creation)
 ```
 
@@ -190,7 +192,7 @@ So the full chain is alerted at every stage: **92075** (tool pulled in) → **92
 100002** (tool runs and dumps LSASS).
 
 > _Evidence: `alert-92075-certutil.json` (event `1793241263.2077496`,
-> `02:34:23 UTC`) — the certutil process-creation with the
+> `02:34:22 UTC`) — the certutil process-creation with the
 > `http://192.168.56.10/...` command line._
 
 ---
@@ -201,7 +203,8 @@ The manager's Shuffle integration forwards rule **92900** by its specific rule I
 (the rule-ID block in
 [`config/ossec-integration.xml`](../../config/ossec-integration.xml)) — **not** via
 the `sysmon_eid10_detections` group it belongs to, because that group also carries
-benign Event-ID-10 rules (e.g. 92910) that would reach the SOAR as noise. `92900`
+other Event-ID-10 process-access events — in this lab, benign OneDrive executions —
+that would reach the SOAR as noise. `92900`
 is the **headline** credential-dump alert; `92075` and `100002` are supporting
 evidence that stay out of the SOAR queue (one headline alert per incident). The
 forwarded alert becomes a Shuffle run and a TheHive alert — the same path phishing
@@ -323,14 +326,15 @@ noted as a possible extension rather than a gap.
 ## 8. Validation & evidence capture
 
 Validated live in one pass — all three rules fired on the same host under the same
-`Client` session, and every artifact in `evidence/scenario-05-creddump/` carries
-its event ID:
+`Client` logon session, and every artifact in
+`evidence/scenario-05-creddump/` carries its event ID. Times below are the event
+`systemTime`; the Discover screenshots show the manager-receipt time (~1 s later):
 
-| Rule | Event ID | UTC | What fired |
+| Rule | Event ID | systemTime (UTC) | What fired |
 |---|---|---|---|
-| 92075 | `1793241263.2077496` | `02:34:23` | certutil ingress transfer (T1105) |
-| 100002 | `1793241281.2087863` | `02:34:41` | Mimikatz PE OriginalFileName (T1003) |
-| 92900 | `1793241281.2094013` | `02:34:41` | LSASS read, forwarded → TheHive (T1003.001) |
+| 92075 | `1793241263.2077496` | `02:34:22` | certutil ingress transfer (T1105) |
+| 100002 | `1793241281.2087863` | `02:34:40` | Mimikatz PE OriginalFileName (T1003) |
+| 92900 | `1793241281.2094013` | `02:34:40` | LSASS read, forwarded → TheHive (T1003.001) |
 
 To reproduce and capture on the manager:
 

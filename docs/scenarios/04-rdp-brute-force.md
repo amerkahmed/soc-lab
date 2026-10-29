@@ -22,9 +22,10 @@ same foothold the credential-dumping chain in
 
 ## 1. Attack
 
-Remote Desktop (RDP) is the most commonly brute-forced Windows service exposed to
-the internet — Sophos' 2024 Active Adversary Report put RDP in **84%** of the
-incident-response cases it reviewed. The attack targets `Client`, an existing
+Remote Desktop (RDP) is one of the most abused Windows services — Sophos' **2025**
+Active Adversary Report found it involved in **84%** of incident-response cases
+(predominantly internal lateral movement), and internet-facing RDP remains a top
+initial-access and brute-force target. The attack targets `Client`, an existing
 **local administrator** account on the host — a higher-value target than a
 purpose-made test account, since compromising an admin grants broad control.
 
@@ -90,11 +91,12 @@ the lockout, the co-located failure, and **both** successful-logon events — ap
 in one filtered view, every row a single source (`192.168.56.10`, workstation
 `kali`) against a single account (`Client`):
 
-![Wazuh Discover filtered on rule.id 60122/60115/92657/92653 and targetUserName Client — the failed-logon burst at 02:33:03, the 4740 lockout, then at 02:34:00 the Type-3 NLA success and the Type-10 RDP session, all from 192.168.56.10](../../evidence/scenario-04-rdp/wazuh-rdp-sequence.png)
-*One intrusion, end to end: the failed-logon burst (`4625`, Type 3) at `02:33:03`,
-the account lockout (`4740`) at `02:33:04`, then at `02:34:00` the successful NLA
-pre-auth (Type 3) and the interactive RDP session (Type 10) — 13 hits, one source,
-one account.*
+![Wazuh Discover filtered on rule.id 60122/60115/92657/92653 and targetUserName Client — the failed-logon burst and the 4740 lockout at 02:33:02, then at 02:33:59 the Type-3 NLA success and the Type-10 RDP session, all from 192.168.56.10](../../evidence/scenario-04-rdp/wazuh-rdp-sequence.png)
+*One intrusion, end to end (event `systemTime`): the failed-logon burst (`4625`,
+Type 3) and the account lockout (`4740`) at `02:33:02`, then at `02:33:59` the
+successful NLA pre-auth (Type 3) and the interactive RDP session (Type 10) — 13
+hits, one source, one account. (The screenshot's `@timestamp` column is the Wazuh
+manager-receipt time, ~1 s later than each event's `systemTime`.)*
 
 Four rules carry the story. The first two are the brute force; the second two are
 the single successful RDP login, which — with NLA — records **two** 4624s:
@@ -117,7 +119,7 @@ the single successful RDP login, which — with NLA — records **two** 4624s:
 
 **Why two success events for one login.** An RDP logon with NLA authenticates over
 the network first (a Type 3 logon → `92657`) and then creates the interactive
-session (a Type 10 logon → `92653`), ~0.2 s apart in the capture. The failed
+session (a Type 10 logon → `92653`), ~0.9 s apart by event `systemTime`. The failed
 attempts only ever reach the Type 3 stage, which is why every 4625 above is
 `logonType 3`. The pair together is the signature of a **completed interactive RDP
 login**, not merely a credential check.
@@ -196,8 +198,8 @@ precursor to the logon.
 **Alert summary**
 Successful RDP logon (rules 92657 + 92653) to the local administrator account
 `Client` on DESKTOP-T0LOHB5, preceded by a burst of failed logons and an account
-lockout — all from a single source. Timeline (UTC): failed logons `02:33:03`,
-account lockout `02:33:04`, successful interactive session `02:34:00`.
+lockout — all from a single source. Timeline (UTC, event `systemTime`): failed
+logons + account lockout `02:33:02`, successful interactive session `02:33:59`.
 
 **Observations**
 - **Source** — `192.168.56.10` (workstation name `kali`), consistent across every

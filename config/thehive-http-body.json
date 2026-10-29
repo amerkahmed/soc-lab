@@ -1,9 +1,12 @@
 {
   "title": "$exec.title",
-  "description": "Rule $exec.rule_id | VT malicious: $virustotal-ip.body.data.attributes.last_analysis_stats.malicious | VT harmless: $virustotal-ip.body.data.attributes.last_analysis_stats.harmless | Owner: $virustotal-ip.body.data.attributes.as_owner | Country: $virustotal-ip.body.data.attributes.country",
+  "description": "Rule $exec.rule_id | VT malicious: $virustotal.body.data.attributes.last_analysis_stats.malicious | VT harmless: $virustotal.body.data.attributes.last_analysis_stats.harmless | VT reputation: $virustotal.body.data.attributes.reputation",
   "type": "wazuh",
   "source": "wazuh",
   "sourceRef": "$exec.id",
-  "severity": 2,
-  "tags": ["wazuh", "phishing", "vt-enriched"]
+  "severity": 3,
+  "tags": ["wazuh", "phishing", "vt-enriched"],
+  "observables": [
+    {"dataType": "ip", "data": "$exec.text.dest_ip", "tags": ["ioc", "phishing-infrastructure"], "message": "Destination IP matched phishing IOC watchlist (rule 100100)"}
+  ]
 }

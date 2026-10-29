@@ -279,6 +279,13 @@ The known-bad IP used here (`1.92.135.168`) is a **real abuse.ch
 (`threatfox-1.92.135.168.png`). No traffic is ever sent to it; only its reputation
 is looked up.
 
+For rule 100100 to match the injected event, the known-bad IP is **temporarily added
+to the CDB watchlist** (`config/phishing-iocs`) for this one test and removed
+afterward — the committed list keeps only the lab's own phishing server
+(`192.168.56.99`). So this is a one-off validation run, not a permanent watchlist
+entry. (The false-positive capture `wazuh-100100-FALSE-POSITIVE-icmp.json` is likewise
+a labeled reproduction of the tuning case, not from the live phishing run.)
+
 This follows the detection-engineering convention of validating an alert with a
 representative, labeled test input (cf.
 [Palantir's ADS framework](https://github.com/palantir/alerting-detection-strategy-framework),

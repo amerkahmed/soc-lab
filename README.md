@@ -149,8 +149,8 @@ The most complete automation path, end to end:
 > `60115`, `92900`, `92657`) — so SSH (03), RDP (04) and the credential dump (05)
 > are all raised as alerts too (RDP raises two: the lockout and the successful logon). The
 > cred-dump is forwarded by its specific rule ID (`92900`), not the
-> `sysmon_eid10_detections` group, which also carries benign Event-ID-10 rules
-> (e.g. `92910`) that would be noise. The Nmap recon alerts (01) and per-attempt
+> `sysmon_eid10_detections` group, which also carries other Event-ID-10 process-access
+> events (benign OneDrive activity in this lab) that would be noise. The Nmap recon alerts (01) and per-attempt
 > brute-force noise (`5710`, `60122`) are
 > held back. Phishing is where **VirusTotal enrichment** is showcased: the lab IOC is
 > a private IP (so VT returns nothing on the live run), and the enrichment capability
@@ -176,9 +176,13 @@ docs/
   challenges-and-resolutions.md    ← engineering problems solved
   mitre-coverage.md                ← ATT&CK mapping
 config/                            ← reproducible configs (sanitized)
-  local_rules.xml                  ← custom Wazuh rules
-  phishing-iocs                    ← CDB threat-intel list
-  ossec-integration.xml            ← Shuffle integration block
+  local_rules.xml                  ← custom Wazuh rules (100002 Mimikatz, 100100 phishing IOC)
+  phishing-iocs                    ← CDB threat-intel watchlist
+  ossec-ruleset-list.xml           ← registers the CDB list in ossec.conf
+  ossec-integration.xml            ← Shuffle integration block (forwarding filter)
+  local_internal_options.conf      ← JSON decoder field-limit fix
+  thehive-http-body.json           ← TheHive alert body (enriched / phishing path)
+  paypal_phish.eml                 ← phishing sample for emlAnalyzer
   shuffle-workflow.json            ← exported SOAR workflow (secrets scrubbed)
 evidence/                          ← screenshots + raw alert JSON per scenario
 ```

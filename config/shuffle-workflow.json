@@ -1759,12 +1759,12 @@
   "name": "Project-SOC-Auto-Update",
   "description": "",
   "start": "63ca88e8-6a79-4ff8-83bf-5420d3361537",
-  "owner": "9744cc2d-f10a-44cc-8b99-e51f0e404d1f",
+  "owner": "00000000-0000-0000-0000-000000000000",
   "sharing": "private",
   "image": "",
   "execution_org": {
     "name": "redacted@example.com",
-    "id": "918e222c-8134-4a24-b038-f522a56521ea",
+    "id": "00000000-0000-0000-0000-000000000000",
     "users": null,
     "role": "admin",
     "child_orgs": null,
@@ -1784,7 +1784,7 @@
       "brand_name": ""
     }
   },
-  "org_id": "918e222c-8134-4a24-b038-f522a56521ea",
+  "org_id": "00000000-0000-0000-0000-000000000000",
   "workflow_variables": null,
   "execution_environment": "",
   "previously_saved": true,

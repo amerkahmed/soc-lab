@@ -146,8 +146,8 @@ The manager forwards curated alerts to a Shuffle webhook — filtered to the
 actionable alerts, never a broad level: by rule **group** (`phishing`) and by rule
 **ID** (`5712` SSH correlation, `60115` RDP lockout, `92657` RDP logon, `92900`
 LSASS access). The cred-dump is forwarded by its specific rule ID rather than the
-`sysmon_eid10_detections` group, which also carries benign Event-ID-10 rules (e.g.
-`92910`) that would be noise. Per-attempt rules (`5710`, `60122`) and the Suricata
+`sysmon_eid10_detections` group, which also carries other Event-ID-10 process-access
+events (benign OneDrive activity in this lab) that would be noise. Per-attempt rules (`5710`, `60122`) and the Suricata
 flood are deliberately excluded.
 
 Inside Shuffle the workflow is **not linear — a `Branch` node routes on

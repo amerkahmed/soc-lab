@@ -41,8 +41,8 @@ scenario that exercises it and the detection source that catches it.
   Phishing (02), SSH (03), RDP (04), and credential dumping (05) are all forwarded
   and raised as alerts in TheHive — RDP raises two (the lockout and the successful
   logon), and the cred-dump (rule 92900) is forwarded by its specific rule ID,
-  not the `sysmon_eid10_detections` group (which also carries benign Event-ID-10
-  rules such as 92910). The Nmap/Suricata recon alerts (01) and the
+  not the `sysmon_eid10_detections` group (which also carries other Event-ID-10
+  process-access events, e.g. benign OneDrive activity). The Nmap/Suricata recon alerts (01) and the
   per-attempt brute-force
   rules (`5710`, `60122`) are deliberately held back to keep noise off the SOAR
   layer. Phishing is the scenario where **VirusTotal enrichment** is showcased —
