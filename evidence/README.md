@@ -7,7 +7,8 @@ tie together. (Scenarios 04 and 05 are a single multi-stage incident captured in
 ~98-second window — each forwarded detection still chains by its own event ID, and
 the stages share one source/host/account. Scenario 02 additionally carries a
 *separate, clearly labeled* synthetic enrichment event — see its entry below.) Cross-host clocks are reconciled
-by event ID + UTC (see the
+by event ID + UTC — for host events the authoritative UTC is the event
+`systemTime`, ~1 s before the manager-receipt `@timestamp` (see the
 [README](../README.md#honesty--scope-notes)); the exact capture commands are in
 [CAPTURE-COMMANDS.md](CAPTURE-COMMANDS.md).
 

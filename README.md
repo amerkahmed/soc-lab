@@ -210,5 +210,9 @@ evidence/                          ← screenshots + raw alert JSON per scenario
 - Cloud backend IPs and credentials are redacted in this public repo.
 - **Timestamps:** lab hosts run different local timezones, so wall-clock values
   differ between attacker and analyst screenshots. Correlate all evidence by
-  Wazuh **event ID** and the **UTC timestamp** in each alert — never by local
-  clock.
+  Wazuh **event ID** and **UTC** — never by local clock. A host-event alert
+  carries two UTC times: the event's own **`systemTime`** (when it fired on the
+  endpoint — the authoritative time used in Scenarios 04–05) and the
+  manager-receipt **`@timestamp`** shown in Discover, which runs **~1 s later**.
+  The event ID keys to that manager-receipt instant, so sub-second causal
+  ordering uses `systemTime`.
