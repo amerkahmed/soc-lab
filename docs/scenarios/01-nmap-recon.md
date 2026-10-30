@@ -21,9 +21,10 @@ sudo nmap -n -A 192.168.56.20     # aggressive: version + OS detection + scripts
 ```
 
 The aggressive scan (`-A`) adds service-version probes, OS-fingerprinting packets
-and script traffic on top of the port scan. `-n` disables reverse-DNS lookups
-(added in the 2026-10-27 re-test after Nmap 7.991 aborted in its DNS resolver; it
-does not change the traffic sent to the target).
+and script traffic on top of the port scan. `-n` disables reverse-DNS lookups — it
+avoids a crash in Nmap 7.991's bundled DNS resolver and does **not** change the
+traffic sent to the target (reverse DNS is a lookup against the DNS server, not
+packets to the target, so the detection results are identical with or without it).
 
 > _Evidence: `evidence/scenario-01-nmap/attack-output.txt` (original run,
 > 2026-10-22) and `evidence/scenario-01-nmap/retest-2026-10-27/` (re-test)_
@@ -58,10 +59,11 @@ by running three scan types and counting alerts per signature in `fast.log`:
 
 **The `HOME_NET` fix.** Suricata's default `HOME_NET`
 (`[192.168.0.0/16,10.0.0.0/8,172.16.0.0/12]`) included the Kali attacker, and
-`EXTERNAL_NET` is `!$HOME_NET`. Of the 274 enabled ET SCAN rules, 237 only match
-traffic *from* `$EXTERNAL_NET` — including the OS Detection Probe rule
-(`alert udp $EXTERNAL_NET 10000: -> $HOME_NET 10000:`) — so they could never fire
-on Kali. Scoping `HOME_NET` to the victim hosts
+`EXTERNAL_NET` is `!$HOME_NET`. Of the 274 enabled ET SCAN rules (ET Open, as of
+Oct 2026), 232 are sourced from `$EXTERNAL_NET` and so match only traffic *from*
+outside `HOME_NET` — including the OS Detection Probe rule
+(`alert udp $EXTERNAL_NET 10000: -> $HOME_NET 10000:`, SID 2018489 rev 4) — so they
+could never fire on Kali. (Counts are from the loaded ruleset, by rule source zone.) Scoping `HOME_NET` to the victim hosts
 (`[192.168.56.20,192.168.56.30]`) models Kali as an outside attacker and
 activates them. See
 [challenges-and-resolutions.md](../challenges-and-resolutions.md), item 15.
@@ -123,8 +125,8 @@ response model in [architecture.md §7](../architecture.md#7-response-strategy-t
 - **HIDS and NIDS see different things.** Scanning is invisible to Wazuh's host
   agents; only the network sensor can see it — the clearest justification in the
   lab for running both (defense-in-depth).
-- **A loaded rule is not a working rule.** 237 enabled ET SCAN rules could never
-  fire because `HOME_NET` included the attacker. Test detections with real
+- **A loaded rule is not a working rule.** 232 of the 274 enabled ET SCAN rules
+  could never fire because `HOME_NET` included the attacker. Test detections with real
   traffic — the original claim ("Suricata catches the scan") was only partly true
   until it was measured.
 - **Sensor placement determines visibility.** Suricata only sees traffic on the

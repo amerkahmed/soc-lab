@@ -126,10 +126,10 @@ A re-test of Scenario 01 found plain SYN (`-sS`) and version (`-sV`) scans produ
 **zero** Suricata alerts; only Nmap's OS-detection ICMP probe tripped Suricata's
 built-in decoder rule (SID 2200025). The cause: Suricata's default `HOME_NET`
 (`[192.168.0.0/16,10.0.0.0/8,172.16.0.0/12]`) included Kali, and `EXTERNAL_NET`
-is `!$HOME_NET`. Of 274 enabled ET SCAN rules, 237 match only traffic from
-`$EXTERNAL_NET` — e.g. `ET SCAN NMAP OS Detection Probe` is
-`alert udp $EXTERNAL_NET 10000: -> $HOME_NET 10000:` — so they were loaded but
-could never match the attacker.
+is `!$HOME_NET`. Of 274 enabled ET SCAN rules (ET Open, as of Oct 2026), 232 match
+only traffic from `$EXTERNAL_NET` — e.g. `ET SCAN NMAP OS Detection Probe` is
+`alert udp $EXTERNAL_NET 10000: -> $HOME_NET 10000:` (SID 2018489 rev 4) — so they
+were loaded but could never match the attacker.
 **Fix:** scope `HOME_NET` to the victim hosts (`[192.168.56.20,192.168.56.30]`),
 modeling Kali as external. After the fix: `-sS` 5 alerts, `-sV` 4, `-A` 45 across
 8 signatures (including SID 2018489).
