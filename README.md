@@ -8,7 +8,7 @@
 > **92653** (the interactive session). I confirmed the source as `192.168.56.10`
 > across every 4625 event, correlated the lockout with the subsequent 4624s, and
 > traced the full sequence from first failure to interactive foothold — then on into
-> a hands-on LSASS credential dump (Scenario 05), all in one ~98-second pass. That
+> a hands-on LSASS credential dump (Scenario 05), all in one 97.5-second pass. That
 > workflow — detect, correlate, decide — is what this lab is built to practice,
 > automate, and document.
 

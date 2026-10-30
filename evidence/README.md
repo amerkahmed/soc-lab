@@ -4,7 +4,7 @@ Captured proof that each scenario fired end to end — raw alert JSON and
 screenshots, one folder per scenario. Within a scenario, the artifacts share a
 single Wazuh **event ID**, so each detection, its SOAR run, and its TheHive alert
 tie together. (Scenarios 04 and 05 are a single multi-stage incident captured in one
-~98-second window — each forwarded detection still chains by its own event ID, and
+97.5-second window — each forwarded detection still chains by its own event ID, and
 the stages share one source/host/account. Scenario 02 additionally carries a
 *separate, clearly labeled* synthetic enrichment event — see its entry below.) Cross-host clocks are reconciled
 by event ID + UTC — for host events the authoritative UTC is the event
@@ -25,7 +25,7 @@ by event ID + UTC — for host events the authoritative UTC is the event
 - **Synthetic enrichment demo — a separate event `1793219216.47653`, IOC `1.92.135.168` (a ThreatFox-listed Cobalt Strike C2) (§5b):** `threatfox-1.92.135.168.png` (the abuse.ch ThreatFox entry) · `shuffle-run-synthetic.png` · `thehive-alert-synthetic.png` (`VT malicious: 20`) · `thehive-observable-synthetic.png` · `virustotal-enrichment.png` (manual VT lookup — 20/92 — corroborating the fields). No traffic is ever sent to the known-bad IP.
 - `shuffle-workflow.png` (the Shuffle workflow itself).
 
-**`scenario-03-ssh/`** — SSH brute force → auto-block, event `1793228621.106252` (one event ties the whole chain).
+**`scenario-03-ssh/`** — SSH brute force → auto-block. The 5712 correlation `1793228621.106252` ties the detection → SOAR → TheHive alert; the per-attempt 5710 and the auto-block 651/652 are separate alerts with their own IDs.
 - `attack-output.txt` (Hydra, 25 guesses) · `alert-5712.json` (correlation, `frequency 8` threshold) · `alert-5710.json` (per-attempt, `firedtimes 13`)
 - **Auto-block:** `alert-651-block.json` (firewall-drop `add` 192.168.56.10) · `alert-652-unblock.json` (`delete` after the 300 s timeout) · `active-response-block.txt` (the `active-responses.log` add/delete + the `iptables` DROP)
 - `wazuh-5712-alerts.png` · `wazuh-5712-detail.png` · `shuffle-aggregated.png` · `thehive-alert.png` (description shows `Correlation threshold: 8 failed logins / 120s`) · `thehive-observable.png` (attacker IP)

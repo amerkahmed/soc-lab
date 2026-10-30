@@ -54,7 +54,7 @@ Because lockout interrupts the attack, the actual access was performed as a
 real intrusion follows when lockout defenses are in place. The host's policy is
 `net accounts` **10 / 10 / 10** (threshold 10, lockout duration 10 min, reset
 window 10 min), so in the wild the attacker waits out the 10-minute window. In the
-lab the account was cleared immediately with ADSI to keep the run tight (~98 s end
+lab the account was cleared immediately with ADSI to keep the run tight (97.5 s end
 to end):
 
 ```powershell

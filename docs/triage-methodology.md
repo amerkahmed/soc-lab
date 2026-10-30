@@ -93,7 +93,7 @@ steps; *Medium* = some effect, limited in scope; *High* = wide-ranging access) a
 the functional/information-impact prioritization in NIST SP 800-61.
 
 In TheHive (severity 1–4 = Low / Medium / High / Critical), the alerts that are
-forwarded and raised as cases map as follows:
+forwarded and raised as alerts map as follows:
 
 | Rule | What it means | Stage / impact | Severity |
 |---|---|---|---|

@@ -54,8 +54,10 @@ agent, and matched on the manager. Two rules do the work:
   brute-force detection.
 
 The single hydra run produced exactly one 5712 correlation event —
-`1793228621.106252` — and the raw alert, the auto-block, the SOAR run, and the case
-below all carry that same ID.
+`1793228621.106252` — and that detection, its SOAR run, and the TheHive alert below
+all carry that ID. The per-attempt **5710** and the auto-block (**651**/**652**) are
+separate alerts with their own event IDs, tied to this run by source IP and the UTC
+window.
 
 ![Wazuh Discover filtered on rule.id:5712, time scoped to the run — one correlation hit for the brute-force burst](../../evidence/scenario-03-ssh/wazuh-5712-alerts.png)
 *One 5712 hit for the run (`event 1793228621.106252`). The burst of failed logins is
@@ -74,10 +76,11 @@ Access → Brute Force).*
 > `alert-5710.json` (per-attempt sample — `firedtimes: 13`, i.e. 13 failed-login
 > events reached sshd this run before the block)._
 >
-> _All artifacts here share event ID `1793228621.106252` (UTC `23:03:41.524Z`). The
-> attacker's host clock is offset from the backend, so evidence is correlated by
-> event ID + UTC, never wall-clock — see the note in the
-> [README](../../README.md#honesty--scope-notes)._
+> _The 5712 detection, its SOAR run, and its TheHive alert all carry event ID
+> `1793228621.106252` (UTC `23:03:41.524Z`); the per-attempt 5710 and the auto-block
+> 651/652 are separate alerts with their own IDs. The attacker's host clock is offset
+> from the backend, so evidence is correlated by event ID + UTC, never wall-clock —
+> see the note in the [README](../../README.md#honesty--scope-notes)._
 
 ---
 
@@ -140,7 +143,7 @@ receives **one** event for the whole run rather than one per failed login.
 `rule_id: 5712`, the sshd title, and `id: 1793228621.106252` — one actionable
 event, not many.*
 
-Shuffle then opens a case in TheHive. This is the same path phishing (Scenario
+Shuffle then opens an alert in TheHive. This is the same path phishing (Scenario
 02) takes — **SSH brute force reaches alert creation too**; phishing is simply the
 scenario where VirusTotal enrichment is showcased.
 
@@ -148,8 +151,9 @@ scenario where VirusTotal enrichment is showcased.
 *TheHive alert: `SEVERITY:MEDIUM`, tagged brute-force / ssh / wazuh, description
 `SSH brute force | Source: 192.168.56.10 | Target user: fakeuser | Correlation
 threshold: 8 failed logins / 120s | MITRE T1110 | Rule 5712`. The `Reference` is
-`1793228621.106252` — the same event as the alert, the auto-block, and the Shuffle
-run. The attacker IP is attached as an observable (tagged attacker / source).*
+`1793228621.106252` — the same event as the 5712 detection and the Shuffle run (the
+auto-block 651/652 are separate alerts with their own IDs). The attacker IP is
+attached as an observable (tagged attacker / source).*
 
 ![TheHive observable for event 1793228621.106252 — ip 192.168.56.10 tagged attacker/source](../../evidence/scenario-03-ssh/thehive-observable.png)
 
@@ -163,7 +167,7 @@ run. The attacker IP is attached as an observable (tagged attacker / source).*
   is the core of brute-force detection — a single failure is noise; the
   *pattern* is the alert, and only the pattern should reach the analyst.
 - Correlation also does the SOAR a favor: because 5712 collapses the burst, the
-  case queue sees one case per campaign, not one per guess.
+  alert queue sees one alert per campaign, not one per guess.
 - **`frequency` is a threshold, not a tally.** 5712's `frequency="8"` is how many
   5710 events trip it, not how many passwords the attacker tried (25 here) — and
   because one invalid-user attempt logs multiple failure lines, the threshold is
