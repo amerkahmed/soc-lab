@@ -5,20 +5,22 @@ scenario that exercises it and the detection source that catches it.
 
 | Tactic | Technique | ID | Detection | Scenario |
 |---|---|---|---|---|
-| Reconnaissance | Active Scanning | T1595 | Suricata — Nmap OS-detection probes (SID 2200025, ET 2018489) | [01](scenarios/01-nmap-recon.md) |
-| Discovery | Network Service Discovery | T1046 | Suricata — ET SCAN port rules (database/VNC/SSH ports); generic port scans not detected | [01](scenarios/01-nmap-recon.md) |
-| Credential Access | Brute Force | T1110 | Wazuh 5710 / 5712 (SSH) | [03](scenarios/03-ssh-brute-force.md) |
-| Credential Access | Brute Force: Password Guessing | T1110.001 | Wazuh 60122 / 60115 (RDP failures + lockout) | [04](scenarios/04-rdp-brute-force.md) |
+| Reconnaissance | Active Scanning | T1595 | Suricata — Nmap OS-detection probes (SID 2200025, ET 2018489) | [01](scenarios/01-nmap-recon.md) ✅ |
+| Discovery | Network Service Discovery | T1046 | Suricata — ET SCAN port rules (database/VNC/SSH ports); generic port scans not detected | [01](scenarios/01-nmap-recon.md) ✅ |
+| Credential Access | Brute Force | T1110 | Wazuh 5710 / 5712 (SSH) | [03](scenarios/03-ssh-brute-force.md) ✅ |
+| Credential Access | Brute Force: Password Guessing | T1110.001 | Wazuh 60122 / 60115 (RDP failures + lockout) | [04](scenarios/04-rdp-brute-force.md) ✅ |
 | Lateral Movement | Remote Services: RDP | T1021.001 | Wazuh 92657 / 92653 (successful RDP logon) | [04](scenarios/04-rdp-brute-force.md) ✅ |
-| Defense Evasion | Valid Accounts: Local Accounts | T1078.003 | Wazuh 92657 / 92653 — local admin `Client` logon (built-in rule mis-tags T1078.002; §2) | [04](scenarios/04-rdp-brute-force.md) |
+| Defense Evasion | Valid Accounts: Local Accounts | T1078.003 | Wazuh 92657 / 92653 — local admin `Client` logon (built-in rule mis-tags T1078.002; §2) | [04](scenarios/04-rdp-brute-force.md) ✅ |
 | Initial Access | Phishing: Spearphishing Link | T1566.002 | Email analysis (emlAnalyzer) of the crafted sample | [02](scenarios/02-phishing-ioc.md) · analyzed sample |
-| Execution | User Execution: Malicious Link | T1204.001 | Wazuh 100100 — Suricata **http** event to the phishing server (curl = simulated click) | [02](scenarios/02-phishing-ioc.md) · simulated |
+| Execution | User Execution: Malicious Link | T1204.001 | Wazuh 100100 — Suricata **http** event to the phishing server (curl = simulated click) | [02](scenarios/02-phishing-ioc.md) · simulated ✅ |
 | Discovery | Account Discovery | T1087 | Sysmon (net.exe) | — (seen, not captured) |
 | Discovery | Remote System Discovery | T1018 | Sysmon | — (seen, not captured) |
 | Execution | Scheduled Task/Job | T1053 | Sysmon (taskschd.dll load) | — (seen, not captured) |
 | Credential Access | OS Credential Dumping: LSASS Memory | T1003.001 | Wazuh 92900 (LSASS access, behavioral) — fired live | [05](scenarios/05-credential-dumping.md) ✅ |
 | Credential Access | OS Credential Dumping | T1003 | Custom 100002 (Mimikatz PE OriginalFileName) — fired live | [05](scenarios/05-credential-dumping.md) ✅ |
 | Command & Control | Ingress Tool Transfer | T1105 | Wazuh 92075 (certutil `-urlcache` download) — fired live | [05](scenarios/05-credential-dumping.md) ✅ |
+
+> **✅ = detection validated** — a rule fired and its alert is captured in `evidence/`. Rows without ✅ are observed-only: telemetry **visibility** with no captured detection (T1087 / T1018 / T1053), or an **analyzed sample** with no detection rule (T1566.002). (The visibility-vs-detection distinction, per DeTT&CT.)
 
 ---
 
