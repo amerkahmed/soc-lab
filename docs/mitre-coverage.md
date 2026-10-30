@@ -3,6 +3,10 @@
 How the lab's detections map to the ATT&CK framework. Each technique is tied to the
 scenario that exercises it and the detection source that catches it.
 
+_Mapped to **MITRE ATT&CK v20 (Enterprise)**. ATT&CK **v19** (Apr 2026) split the
+former *Defense Evasion* tactic: **TA0005 was renamed → _Stealth_** and a new
+**TA0112 _Defense Impairment_** was added — this table uses the current naming._
+
 | Tactic | Technique | ID | Detection | Scenario |
 |---|---|---|---|---|
 | Reconnaissance | Active Scanning | T1595 | Suricata — Nmap OS-detection probes (SID 2200025, ET 2018489) | [01](scenarios/01-nmap-recon.md) ✅ |
@@ -10,7 +14,7 @@ scenario that exercises it and the detection source that catches it.
 | Credential Access | Brute Force | T1110 | Wazuh 5710 / 5712 (SSH) | [03](scenarios/03-ssh-brute-force.md) ✅ |
 | Credential Access | Brute Force: Password Guessing | T1110.001 | Wazuh 60122 / 60115 (RDP failures + lockout) | [04](scenarios/04-rdp-brute-force.md) ✅ |
 | Lateral Movement | Remote Services: RDP | T1021.001 | Wazuh 92657 / 92653 (successful RDP logon) | [04](scenarios/04-rdp-brute-force.md) ✅ |
-| Defense Evasion | Valid Accounts: Local Accounts | T1078.003 | Wazuh 92657 / 92653 — local admin `Client` logon (built-in rule mis-tags T1078.002; §2) | [04](scenarios/04-rdp-brute-force.md) ✅ |
+| Stealth | Valid Accounts: Local Accounts | T1078.003 | Wazuh 92657 / 92653 — local admin `Client` logon (built-in rule mis-tags T1078.002; §2) | [04](scenarios/04-rdp-brute-force.md) ✅ |
 | Initial Access | Phishing: Spearphishing Link | T1566.002 | Email analysis (emlAnalyzer) of the crafted sample | [02](scenarios/02-phishing-ioc.md) · analyzed sample |
 | Execution | User Execution: Malicious Link | T1204.001 | Wazuh 100100 — Suricata **http** event to the phishing server (curl = simulated click) | [02](scenarios/02-phishing-ioc.md) · simulated ✅ |
 | Discovery | Account Discovery | T1087 | Sysmon (net.exe) | — (seen, not captured) |
