@@ -63,10 +63,10 @@ by running three scan types and counting alerts per signature in `fast.log`:
 Oct 2026), 232 are sourced from `$EXTERNAL_NET` and so match only traffic *from*
 outside `HOME_NET` — including the OS Detection Probe rule
 (`alert udp $EXTERNAL_NET 10000: -> $HOME_NET 10000:`, SID 2018489 rev 4) — so they
-could never fire on Kali. (Counts are from the loaded ruleset, by rule source zone.) Scoping `HOME_NET` to the victim hosts
+could never fire on Kali. Scoping `HOME_NET` to the victim hosts
 (`[192.168.56.20,192.168.56.30]`) models Kali as an outside attacker and
-activates them. See
-[challenges-and-resolutions.md](../challenges-and-resolutions.md), item 15.
+activates them. (Rule counts come from the loaded ruleset, counted by source
+zone.) See [challenges-and-resolutions.md](../challenges-and-resolutions.md), item 15.
 
 Alerts are written to `/var/log/suricata/eve.json`, forwarded by the Wazuh agent,
 and surfaced on the manager under rule **86601** (Wazuh's rule for any Suricata
