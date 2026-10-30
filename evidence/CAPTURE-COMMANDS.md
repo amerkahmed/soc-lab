@@ -7,7 +7,7 @@ can't produce the artifact.
 > **Before you start:** make sure the Wazuh agent is **Active**
 > (`sudo /var/ossec/bin/agent_control -l` on the manager) and, for JSON capture,
 > that JSON alert logging is on. If `/var/ossec/logs/alerts/alerts.json` doesn't
-> exist, enable it in `ossec.conf` under `<alerts>`:
+> exist, enable it in `ossec.conf` under `<global>`:
 > `<jsonout_output>yes</jsonout_output>`, then `systemctl restart wazuh-manager`.
 >
 > `jq` makes the JSON readable: `sudo apt install jq` (manager).

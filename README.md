@@ -217,3 +217,7 @@ evidence/                          ← screenshots + raw alert JSON per scenario
   manager-receipt **`@timestamp`** shown in Discover, which runs **~1 s later**.
   The event ID keys to that manager-receipt instant, so sub-second causal
   ordering uses `systemTime`.
+- **Windows version.** The victim endpoint runs **Windows 10**, which reached
+  end-of-support on **2025-10-14**. The telemetry this lab relies on — Sysmon
+  (Event ID 1 / 10) and the Security channel (4624 / 4625 / 4740) — is unchanged on
+  Windows 11 and Windows Server, so the detections and analysis transfer directly.
