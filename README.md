@@ -55,6 +55,12 @@ in front of an analyst.
 | Adversary simulation | Hydra, xfreerdp, Nmap, phishing analysis (emlAnalyzer) |
 | Frameworks | MITRE ATT&CK mapping |
 
+> **SIEM-agnostic by design.** Wazuh is the SIEM here, but the workflow — log
+> ingestion, parsing, detection rules, correlation, alerting, and SOAR-driven
+> response — and the triage reasoning behind each alert are not vendor-specific.
+> The same detection logic and analysis map directly to Splunk (SPL), Microsoft
+> Sentinel (KQL), or Elastic; the concepts, not the tool, are what transfer.
+
 ---
 
 ## Architecture
