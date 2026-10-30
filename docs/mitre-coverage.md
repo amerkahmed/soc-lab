@@ -11,7 +11,6 @@ scenario that exercises it and the detection source that catches it.
 | Credential Access | Brute Force: Password Guessing | T1110.001 | Wazuh 60122 / 60115 (RDP failures + lockout) | [04](scenarios/04-rdp-brute-force.md) |
 | Lateral Movement | Remote Services: RDP | T1021.001 | Wazuh 92657 / 92653 (successful RDP logon) | [04](scenarios/04-rdp-brute-force.md) ✅ |
 | Defense Evasion | Valid Accounts: Local Accounts | T1078.003 | Wazuh 92657 / 92653 — local admin `Client` logon (built-in rule mis-tags T1078.002; §2) | [04](scenarios/04-rdp-brute-force.md) |
-| Impact | Account Access Removal | T1531 | Wazuh 60115 / 60122 — the lockout denies the account | [04](scenarios/04-rdp-brute-force.md) |
 | Initial Access | Phishing: Spearphishing Link | T1566.002 | Email analysis (emlAnalyzer) of the crafted sample | [02](scenarios/02-phishing-ioc.md) · analyzed sample |
 | Execution | User Execution: Malicious Link | T1204.001 | Wazuh 100100 — Suricata **http** event to the phishing server (curl = simulated click) | [02](scenarios/02-phishing-ioc.md) · simulated |
 | Discovery | Account Discovery | T1087 | Sysmon (net.exe) | — (seen, not captured) |

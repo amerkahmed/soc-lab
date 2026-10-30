@@ -90,7 +90,8 @@ Severity is **impact-based** — the effect if the alert is a true positive — 
 detecting rule's Wazuh level. This follows the standard analytics-rule convention
 (e.g. Microsoft Sentinel: *Low* = minimal immediate effect, the attacker needs more
 steps; *Medium* = some effect, limited in scope; *High* = wide-ranging access) and
-the functional/information-impact prioritization in NIST SP 800-61.
+the impact-based incident prioritization in NIST SP 800-61 Rev 3 (functional impact
+and data impact are among its risk factors).
 
 In TheHive (severity 1–4 = Low / Medium / High / Critical), the alerts that are
 forwarded and raised as alerts map as follows:
@@ -98,8 +99,8 @@ forwarded and raised as alerts map as follows:
 | Rule | What it means | Stage / impact | Severity |
 |---|---|---|---|
 | 5712 — SSH brute-force correlation | repeated failures from one source | attempts only, no access | **Medium** |
-| 60115 — RDP account lockout | sustained brute force crossed the lockout threshold | no access gained; also a DoS on the account (T1531) | **Medium** |
-| 92657 — RDP successful logon (possible pass-the-hash) | admin logon from the attacking host | wide-ranging access to the host | **High** |
+| 60115 — RDP account lockout | sustained brute force crossed the lockout threshold | no access gained; the lockout is also a temporary DoS on the account | **Medium** |
+| 92657 — RDP successful logon (built-in "pass-the-hash" tag is a false lead; see Scn 04) | admin logon from the attacking host | wide-ranging access to the host | **High** |
 | 100100 — phishing IOC callback | internal host reached known-bad infrastructure | strong compromise indicator | **High** |
 | 92900 — LSASS access (credential dump) | a process read LSASS memory | credential theft on a compromised admin host | **Critical** |
 
@@ -109,7 +110,8 @@ not forwarded to the SOAR layer (see the forwarding note in the README).
 **Two deliberate calls:**
 - **92900 is rated Critical on an impact basis** — a confirmed dump means every
   credential cached on the host is stolen. Vendor *detection* rules rate the LSASS
-  access itself **High** (e.g. Elastic, risk score 73); the step up to Critical
+  access itself only **Medium** — a noisy standalone signal (Elastic's *LSASS Memory
+  Dump Handle Access* rule is `risk_score 47` / Medium); the step up to Critical
   reflects the confirmed-incident impact, not the detection in isolation.
 - **100100 is High** as contact with known-bad infrastructure; a case could be made
   for Medium, since a watchlist hit proves the connection occurred but not that
