@@ -40,9 +40,8 @@ Domain            : DESKTOP-T0LOHB5
   msv:      * NTLM : <REDACTED>   * SHA1 : <REDACTED>   * DPAPI : <REDACTED>
   wdigest:  * Password : (null)          kerberos: * Password : (null)
 
-# (Also present: the older RDP session 0x174a28 / 0x174a7c "RemoteInteractive from 2", plus
-#  local service / DWM / UMFD sessions — all hashes redacted. Note wdigest cleartext = (null):
-#  modern Windows did not cache a plaintext password in memory.)
+# (Mimikatz also enumerated the host's other logon sessions — all hashes redacted.
+#  Note wdigest cleartext = (null): modern Windows did not cache a plaintext password in memory.)
 
 mimikatz(commandline) # exit
 Bye!
