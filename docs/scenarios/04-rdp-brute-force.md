@@ -14,9 +14,9 @@ access into a confirmed foothold — the foothold the credential-dumping chain i
 | **Target** | Windows 10 — DESKTOP-T0LOHB5 (192.168.56.30) |
 | **Target account** | `Client` — a **local administrator** account |
 | **Detection source** | Wazuh agent → Windows Security event channel |
-| **Rules fired** | 60122 (logon failure, 4625 type 3) · 60115 (account lockout, 4740) · 92657 (successful NLA pre-auth, 4624 type 3) · 92653 (interactive RDP session, 4624 type 10) |
+| **Rules fired** | 60122 (logon failure, 4625 type 3) · 60204 (brute-force correlation, 8 / 240 s) · 60115 (account lockout, 4740) · 92657 (successful NLA pre-auth, 4624 type 3) · 92653 (interactive RDP session, 4624 type 10) |
 | **Reaches** | Detection → SOAR → **two** TheHive alerts (lockout `60115` + successful logon `92657`) |
-| **Status** | ✅ Validated — single live pass, all four rules, `2026-10-29 02:33–02:34 UTC` |
+| **Status** | ✅ Validated — single live pass, all five rules (incl. 60204), `2026-11-01 02:22–02:34 UTC` |
 
 ---
 
@@ -37,7 +37,6 @@ desktop, so every wrong password is a clean, fast 4625:
 
 ```bash
 for pass in $(cat ~/winpass.txt); do
-  echo "=== Trying: $pass ==="
   xfreerdp3 /u:Client /p:"$pass" /v:192.168.56.30 /cert:ignore +auth-only
 done
 ```
@@ -55,86 +54,88 @@ session with a valid credential** — in a real intrusion obtained out-of-band
 (password spray, credential reuse, or phishing); in this lab the account's own
 password stands in, to exercise the successful-logon detection path. The host's
 policy is `net accounts` **10 / 10 / 10** (threshold 10, lockout duration 10 min,
-reset window 10 min), so in the wild the attacker waits out the 10-minute lockout;
-in the lab the account was cleared immediately with ADSI to keep the run tight. The
-captured incident spans 97.5 s, from the lockout at `02:33:02` to the Scenario 05
-dump at `02:34:40` UTC:
+reset window 10 min), so in the wild the attacker waits out the 10-minute lockout.
+This run did exactly that: the brute force and lockout happened at `02:22:04` UTC,
+the lockout **auto-expired after ~10 minutes** (no admin unlock needed), and the
+foothold logon followed at `02:34:04` UTC. The two phases are deliberately separate
+— the online guessing never got in; the access used a valid credential.
 
-```powershell
-# Clear the lockout (lab shortcut for "wait out the 10-minute window")
-$u = [ADSI]"WinNT://$env:COMPUTERNAME/Client,user"
-$u.IsAccountLocked = $false
-$u.SetInfo()
-```
-
-The post-clear access was a **real RDP session** (not `+auth-only`) — the attacker
-logging in interactively with the valid credential (here the account's own password):
+The access was a **real RDP session** (not `+auth-only`) — the attacker logging in
+interactively with the valid credential (here the account's own password):
 
 ```bash
 # Kali: a genuine interactive RDP session (no +auth-only) → Type-10 logon
-xfreerdp3 /u:Client /p:"<known-good>" /v:192.168.56.30 /cert:ignore -clipboard
+xfreerdp3 /u:Client /p:"<valid-password>" /v:192.168.56.30 /cert:ignore
 ```
 
 That genuine desktop session is what makes the foothold usable for Scenario 05's
 hands-on credential dump.
 
 > _Evidence: `evidence/scenario-04-rdp/attack-output.txt` — the brute-force console
-> from this run (no password values are echoed). Its clock (`22:33:02–22:33:03`
-> Kali local = **`02:33 UTC`**) lines up with the manager events below: ten
-> `LOGON_FAILURE` results, then `ACCOUNT_LOCKED_OUT` once the lockout threshold is
-> crossed._
+> from this run (no password values echoed; the valid credential is redacted). Its
+> clock (`22:22:04` Kali local = **`02:22 UTC`**) lines up with the manager events
+> below: nine `LOGON_FAILURE` results, then `ACCOUNT_LOCKED_OUT` once the lockout
+> threshold is crossed._
 
 ---
 
 ## 2. Detection
 
 The attempts generated Windows Security events on the `Client` account, collected
-by the Wazuh agent and matched on the manager. The whole arc — the failure burst,
-the lockout, the co-located failure, and **both** successful-logon events — appears
-in one filtered view, every row a single source (`192.168.56.10`, workstation
-`kali`) against a single account (`Client`):
+by the Wazuh agent and matched on the manager. The arc splits into two filtered
+views — the brute force (failure burst → correlation → lockout), then the
+valid-credential logon ~12 minutes later — every row a single source
+(`192.168.56.10`, workstation `kali`) against a single account (`Client`):
 
-![Wazuh Discover filtered on rule.id 60122/60115/92657/92653 and targetUserName Client — the failed-logon burst and the 4740 lockout at 02:33:02, then at 02:33:59 the Type-3 NLA success and the Type-10 RDP session, all from 192.168.56.10](../../evidence/scenario-04-rdp/wazuh-rdp-sequence.png)
-*One intrusion, end to end (event `systemTime`): the failed-logon burst (`4625`,
-Type 3) and the account lockout (`4740`) at `02:33:02`, then at `02:33:59` the
-successful NLA pre-auth (Type 3) and the interactive RDP session (Type 10) — 13
-hits, one source, one account. (The screenshot's `@timestamp` column is the Wazuh
-manager-receipt time, ~1 s later than each event's `systemTime`.)*
+![Wazuh Discover filtered on rule.id 60122/60204/60115 and targetUserName Client — nine failed-logon 4625s from 192.168.56.10, the 60204 brute-force correlation, and the 4740 account lockout, all at 02:22:04 UTC](../../evidence/scenario-04-rdp/wazuh-rdp-bruteforce.png)
+*Phase 1 — brute force (`@timestamp`): nine `60122` failures from `192.168.56.10`
+→ `60204` "Multiple Windows Logon Failures" (8 in 240 s) → `60115` account lockout,
+all on `Client`. Eleven hits, one source, one account.*
 
-Four rules carry the story. The first two are the brute force; the second two are
+![Wazuh Discover filtered on rule.id 92657/92653 and targetUserName Client — the Type-3 NLA success 0x33f676 and the Type-10 linked pair 0x34af4d/0x34af73, from 192.168.56.10 at 02:34:04](../../evidence/scenario-04-rdp/wazuh-rdp-logon.png)
+*Phase 2 — the valid-credential logon ~12 minutes later (after the lockout
+expired): the Type-3 NLA pre-auth (`92657`, `targetLogonId 0x33f676`) and the
+Type-10 linked token pair (`92653`, `0x34af4d` ↔ `0x34af73`), all from
+`192.168.56.10`. (The `@timestamp` column is the Wazuh manager-receipt time, ~1.3 s
+after each event's `systemTime`.)*
+
+Five rules carry the story. The first three are the brute force; the last two are
 the single successful RDP login, which — with NLA — records **two** 4624s:
 
 - **Rule 60122** (level 5) — "Logon Failure - Unknown user or bad password," from
   **Event ID 4625** (`logonType 3`, `NtLmSsp` / NTLM, `status 0xC000006D` — bad
   password), source `192.168.56.10`. One per failed attempt.
-  _(event `1793241184.1944794`)_
+  _(event `1793499725.17888467`)_
+- **Rule 60204** (level 10) — "Multiple Windows Logon Failures," the built-in
+  **brute-force correlation** (8 failures from one source IP within 240 s), fired at
+  the 8th failure. _(event `1793499725.17930964`)_
 - **Rule 60115** (level 9) — "User account locked out (multiple login errors),"
   from **Event ID 4740**; the lockout names the caller: `Caller Computer Name:
-  kali`. _(event `1793241183.1942214`)_
+  kali`. _(event `1793499725.17962730`)_
 - **Rule 92657** (level 6) — "Successful Remote Logon Detected … possible
   pass-the-hash attack," from **Event ID 4624**, `logonType 3`, `NTLM`. This is the
   **NLA network pre-authentication** of the successful login.
-  _(event `1793241240.1979272`)_
+  _(event `1793500446.18627628`)_
 - **Rule 92653** (level 3) — "User: WORKGROUP\Client logged using Remote Desktop
   Connection (RDP) from ip:192.168.56.10," from **Event ID 4624**, `logonType 10`
   (RemoteInteractive), `Negotiate`. This is the **genuine interactive desktop
-  session** — the real foothold. _(event `1793241240.2020471`)_
+  session** — the real foothold. _(event `1793500446.18661096`)_
 
 **Why two success events for one login.** An RDP logon with NLA authenticates over
 the network first (a Type 3 logon → `92657`) and then creates the interactive
-session (a Type 10 logon → `92653`), ~0.9 s apart by event `systemTime`. The failed
+session (a Type 10 logon → `92653`), ~0.7 s apart by event `systemTime`. The failed
 attempts only ever reach the Type 3 stage, which is why every 4625 above is
 `logonType 3`. The pair together is the signature of a **completed interactive RDP
 login**, not merely a credential check.
 
-![Expanded 92653 event 1793241240.2020471 — eventID 4624, logonType 10, Negotiate, rule 92653 level 3, description "User: WORKGROUP\Client logged using Remote Desktop Connection (RDP) from ip:192.168.56.10", logonProcessName User32 / svchost.exe, MITRE T1021.001](../../evidence/scenario-04-rdp/wazuh-92653-detail.png)
+![Expanded 92653 event 1793500446.18661096 — eventID 4624, logonType 10, Negotiate, rule 92653 level 3, targetLogonId 0x34af4d, targetLinkedLogonId 0x34af73, elevated token, MITRE T1021.001](../../evidence/scenario-04-rdp/wazuh-92653-detail.png)
 *The genuine interactive session expanded — the same event as
-`alert-92653-type10-session.json` (`1793241240.2020471`): `logonType 10`,
-`Negotiate`, `logonProcessName User32`, Wazuh's 92653 stating it plainly, "logged
-using Remote Desktop Connection (RDP) from ip:192.168.56.10." (A local-admin RDP
-logon under UAC records a **linked pair** of Type-10 logons — a filtered standard
-token and a full elevated token, their logon IDs cross-referenced — so 92653 fires
-more than once; this is the standard-token session.)*
+`alert-92653-type10-session.json` (`1793500446.18661096`): `logonType 10`,
+`Negotiate`, `targetLogonId 0x34af4d` linked to `0x34af73`. (A local-admin RDP
+logon under UAC records a **linked pair** of Type-10 logons — a full **elevated**
+token and a filtered standard token, their logon IDs cross-referenced — so 92653
+fires twice. This is the **elevated-token** session `0x34af4d`, the one the
+Scenario 05 dump runs under.)*
 
 **ATT&CK mapping note — the pass-the-hash tag is a false lead here.** Built-in rule
 92657 is titled "possible pass-the-hash" and tags **T1550.002**, because it sees a
@@ -153,11 +154,11 @@ for the **Security** event channel was added to the Windows agent's `ossec.conf`
 By default the agent collected Sysmon but not the Security log — two different
 sensors. See [challenges-and-resolutions.md](../challenges-and-resolutions.md), item 5.
 
-> _Evidence: `alert-60122-failure.json`, `alert-60115-lockout.json`,
-> `alert-92657-type3-nla.json`, `alert-92653-type10-session.json`. The lockout
-> (`4740`, record 18641) and its co-located failure (`4625`, record 18642) share
-> `systemTime 02:33:02.774Z` — consecutive event records, correct causal order.
-> Match artifacts by event ID; on cross-host clocks see the
+> _Evidence: `alert-60122-failure.json`, `alert-60204-correlation.json`,
+> `alert-60115-lockout.json`, `alert-92657-type3-nla.json`,
+> `alert-92653-type10-session.json` (+ `alert-92653-type10-linked.json`). The
+> brute-force burst, the 60204 correlation, and the 4740 lockout all carry
+> `systemTime 02:22:04Z`. Match artifacts by event ID; on cross-host clocks see the
 > [README](../../README.md#honesty--scope-notes) convention._
 
 ---
@@ -172,17 +173,17 @@ evidence** (it confirms a true interactive session) but is also not forwarded �
 one headline alert per decision point, not four. Each forwarded alert produces its
 own Shuffle run and its own TheHive alert:
 
-![Shuffle run for the successful logon — $exec FINISHED, rule_id 92657, id 1793241240.1979272, the successful-remote-logon title](../../evidence/scenario-04-rdp/shuffle-rdp-compromise.png)
+![Shuffle run for the successful logon — $exec FINISHED, rule_id 92657, id 1793500446.18627628, the successful-remote-logon title](../../evidence/scenario-04-rdp/shuffle-rdp-compromise.png)
 *Shuffle run for the successful logon: `FINISHED`, `rule_id 92657`,
-`id 1793241240.1979272` — the webhook received the Wazuh alert and posted to TheHive.*
+`id 1793500446.18627628` — the webhook received the Wazuh alert and posted to TheHive.*
 
-![TheHive alert for the successful logon — SEVERITY HIGH, tags 92657/wazuh, Reference 1793241240.1979272, description naming rule 92657, Client, possible pass-the-hash](../../evidence/scenario-04-rdp/thehive-compromise.png)
+![TheHive alert for the successful logon — SEVERITY HIGH, tags 92657/wazuh, Reference 1793500446.18627628, description naming rule 92657, Client, possible pass-the-hash](../../evidence/scenario-04-rdp/thehive-compromise.png)
 *TheHive alert: `SEVERITY:HIGH`, tagged `92657` / wazuh, description `Rule 92657 |
 Agent: Project-Windows | Successful Remote Logon Detected - User: \Client …`.
-`Reference 1793241240.1979272` ties the alert to the exact Wazuh event.*
+`Reference 1793500446.18627628` ties the alert to the exact Wazuh event.*
 
-The lockout raises a **parallel alert** a minute earlier (`shuffle-rdp-lockout.png`
-+ `thehive-lockout.png`, `Reference 1793241183.1942214`, rule `60115`,
+The lockout raised a **parallel alert** ~12 minutes earlier (`shuffle-rdp-lockout.png`
++ `thehive-lockout.png`, `Reference 1793499725.17962730`, rule `60115`,
 `SEVERITY:MEDIUM`) — a valuable mid-attack signal in its own right, not just a
 precursor to the logon.
 
@@ -202,7 +203,8 @@ precursor to the logon.
 Successful RDP logon (rules 92657 + 92653) to the local administrator account
 `Client` on DESKTOP-T0LOHB5, preceded by a burst of failed logons and an account
 lockout — all from a single source. Timeline (UTC, event `systemTime`): failed
-logons + account lockout `02:33:02`, successful interactive session `02:33:59`.
+logons + 60204 correlation + account lockout `02:22:04`, then the successful
+interactive session `02:34:04` (after the ~10-minute lockout expired).
 
 **Observations**
 - **Source** — `192.168.56.10` (workstation name `kali`), consistent across every

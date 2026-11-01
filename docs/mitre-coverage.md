@@ -12,7 +12,7 @@ former *Defense Evasion* tactic: **TA0005 was renamed → _Stealth_** and a new
 | Reconnaissance | Active Scanning | T1595 | Suricata — Nmap OS-detection probes (SID 2200025, ET 2018489) | [01](scenarios/01-nmap-recon.md) ✅ |
 | Discovery | Network Service Discovery | T1046 | Suricata — ET SCAN port rules (database/VNC/SSH ports); generic port scans not detected | [01](scenarios/01-nmap-recon.md) ✅ |
 | Credential Access | Brute Force | T1110 | Wazuh 5710 / 5712 (SSH) | [03](scenarios/03-ssh-brute-force.md) ✅ |
-| Credential Access | Brute Force: Password Guessing | T1110.001 | Wazuh 60122 / 60115 (RDP failures + lockout) | [04](scenarios/04-rdp-brute-force.md) ✅ |
+| Credential Access | Brute Force: Password Guessing | T1110.001 | Wazuh 60122 / 60204 / 60115 (RDP failures, correlation, lockout) | [04](scenarios/04-rdp-brute-force.md) ✅ |
 | Lateral Movement | Remote Services: RDP | T1021.001 | Wazuh 92657 / 92653 (successful RDP logon) | [04](scenarios/04-rdp-brute-force.md) ✅ |
 | Stealth | Valid Accounts: Local Accounts | T1078.003 | Wazuh 92657 / 92653 — local admin `Client` logon (built-in rule mis-tags T1078.002; §2) | [04](scenarios/04-rdp-brute-force.md) ✅ |
 | Initial Access | Phishing: Spearphishing Link | T1566.002 | Email analysis (emlAnalyzer) of the crafted sample | [02](scenarios/02-phishing-ioc.md) · analyzed sample |

@@ -3,12 +3,13 @@
 Captured proof that each scenario fired end to end — raw alert JSON and
 screenshots, one folder per scenario. Within a scenario, the artifacts share a
 single Wazuh **event ID**, so each detection, its SOAR run, and its TheHive alert
-tie together. (Scenarios 04 and 05 are a single multi-stage incident captured in one
-97.5-second window — each forwarded detection still chains by its own event ID, and
-the stages share one source/host/account. Scenario 02 additionally carries a
+tie together. (Scenarios 04 and 05 are a single multi-stage incident across two phases — the
+brute force and lockout at `02:22:04`, then the valid-credential logon and the LSASS
+dump at `02:34` once the ~10-minute lockout expired — each forwarded detection still
+chains by its own event ID, and the stages share one source/host/account. Scenario 02 additionally carries a
 *separate, clearly labeled* synthetic enrichment event — see its entry below.) Cross-host clocks are reconciled
 by event ID + UTC — for host events the authoritative UTC is the event
-`systemTime`, ~1 s before the manager-receipt `@timestamp` (see the
+`systemTime`, ~1.3 s before the manager-receipt `@timestamp` (see the
 [README](../README.md#honesty--scope-notes)); the exact capture commands are in
 [CAPTURE-COMMANDS.md](CAPTURE-COMMANDS.md).
 
@@ -30,16 +31,16 @@ by event ID + UTC — for host events the authoritative UTC is the event
 - **Auto-block:** `alert-651-block.json` (firewall-drop `add` 192.168.56.10) · `alert-652-unblock.json` (`delete` after the 300 s timeout) · `active-response-block.txt` (the `active-responses.log` add/delete + the `iptables` DROP)
 - `wazuh-5712-alerts.png` · `wazuh-5712-detail.png` · `shuffle-aggregated.png` · `thehive-alert.png` (description shows `Correlation threshold: 8 failed logins / 120s`) · `thehive-observable.png` (attacker IP)
 
-**`scenario-04-rdp/`** — RDP brute force → lockout → interactive session, one live pass **2026-10-29 02:33–02:34 UTC** (lockout `1793241183.1942214`, NLA logon `1793241240.1979272`, Type-10 session `1793241240.2020471`).
+**`scenario-04-rdp/`** — RDP brute force → lockout → interactive session, one live pass **2026-11-01 02:22–02:34 UTC** (correlation `1793499725.17930964`, lockout `1793499725.17962730`, NLA logon `1793500446.18627628`, Type-10 session `1793500446.18661096`).
 - `attack-output.txt` (xfreerdp3 brute-force method — winning password redacted; Kali's local clock, authoritative timeline is the JSONs)
-- `alert-60122-failure.json` (failed logon, Type 3) · `alert-60115-lockout.json` (account lockout, 4740) · `alert-92657-type3-nla.json` (NLA pre-auth, Type 3 — the forwarded headline) · `alert-92653-type10-session.json` (genuine interactive RDP session, Type 10)
-- `wazuh-rdp-sequence.png` (the full arc in one Discover view) · `wazuh-92653-detail.png` (the Type-10 interactive session expanded)
+- `alert-60122-failure.json` (failed logon, Type 3) · `alert-60204-correlation.json` (brute-force correlation, 8/240s) · `alert-60115-lockout.json` (account lockout, 4740) · `alert-92657-type3-nla.json` (NLA pre-auth, Type 3 — the forwarded headline) · `alert-92653-type10-session.json` (genuine interactive RDP session, Type 10, `0x34af4d`) · `alert-92653-type10-linked.json` (the linked filtered token, `0x34af73`)
+- `wazuh-rdp-bruteforce.png` (failures → correlation → lockout) · `wazuh-rdp-logon.png` (the valid-credential logon) · `wazuh-92653-detail.png` (the Type-10 interactive session expanded)
 - `shuffle-rdp-lockout.png` · `shuffle-rdp-compromise.png` · `thehive-lockout.png` · `thehive-compromise.png`
 
-**`scenario-05-creddump/`** — certutil ingress → Mimikatz LSASS dump, one live pass **2026-10-29 02:34 UTC**; all three rules fired (certutil `1793241263.2077496`, Mimikatz name `1793241281.2087863`, LSASS access `1793241281.2094013`).
+**`scenario-05-creddump/`** — certutil ingress → Mimikatz LSASS dump, one live pass **2026-11-01 02:34 UTC**; all three rules fired (certutil `1793500460.18757741`, Mimikatz name `1793500464.18771518`, LSASS access `1793500465.18783498`).
 - `attack-output.txt` (certutil + Mimikatz — dumped credentials redacted)
 - `alert-92075-certutil.json` (ingress transfer, T1105) · `alert-92900-lsass.json` (LSASS access, forwarded, T1003.001) · `alert-100002-mimikatz.json` (PE OriginalFileName, T1003)
-- `wazuh-92900-alerts.png` · `wazuh-92900-detail.png`
+- `wazuh-92900-alerts.png` (the certutil → Mimikatz → LSASS dump chain, under `0x34af4d`)
 - `shuffle-creddump.png` · `thehive-creddump.png`
 
 ## Provenance & integrity

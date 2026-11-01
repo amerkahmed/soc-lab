@@ -247,6 +247,9 @@ xfreerdp3 /u:Client /p:"<known-good>" /v:192.168.56.30 /cert:ignore -clipboard
 **Capture the alerts (manager).** The successful RDP login records two 4624s — a
 Type-3 NLA pre-auth (92657) and a Type-10 interactive session (92653):
 ```bash
+# brute-force correlation (60204, 8 failures / 240 s) — detected, not forwarded
+sudo grep '"id":"60204"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
+  > evidence/scenario-04-rdp/alert-60204-correlation.json
 # account lockout (60115, EID 4740)
 sudo grep '"id":"60115"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
   > evidence/scenario-04-rdp/alert-60115-lockout.json
@@ -267,9 +270,10 @@ sudo jq -c "select(.rule.id==\"60122\" and (.id|tonumber < ($LOCK|tonumber)+2))"
 ```
 
 **Screenshots:**
-- Wazuh Discover, the full arc filtered to `rule.id:(60122 or 60115 or 92657 or 92653)`
-  and `targetUserName: Client` → `evidence/scenario-04-rdp/wazuh-rdp-sequence.png`
-- the Type-10 session event expanded (`logonType 10`, `Negotiate`, the RDP description)
+- Wazuh Discover, Phase 1 filtered to `rule.id:(60122 or 60204 or 60115)` and
+  `targetUserName: Client` → `evidence/scenario-04-rdp/wazuh-rdp-bruteforce.png`;
+  Phase 2 `rule.id:(92657 or 92653)` → `evidence/scenario-04-rdp/wazuh-rdp-logon.png`
+- the Type-10 session event expanded (`logonType 10`, `Negotiate`, `0x34af4d`)
   → `evidence/scenario-04-rdp/wazuh-92653-detail.png`
 - Shuffle runs for the lockout and the logon →
   `shuffle-rdp-lockout.png`, `shuffle-rdp-compromise.png`
@@ -305,10 +309,10 @@ sudo grep '"id":"92075"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
   > evidence/scenario-05-creddump/alert-92075-certutil.json
 ```
 
-**Screenshots:** the 92900 alert list and the detail showing
-`sourceImage: m.exe → targetImage: lsass.exe`, `grantedAccess: 0x1010`, and MITRE
-T1003.001 (`wazuh-92900-alerts.png`, `wazuh-92900-detail.png`), plus the Shuffle run
-and the TheHive alert (`shuffle-creddump.png`, `thehive-creddump.png`) →
+**Screenshots:** the dump-chain alert list showing `92075` / `100002` under
+`logonId 0x34af4d` and `92900` with `grantedAccess: 0x1010` / MITRE T1003.001
+(`wazuh-92900-alerts.png`), plus the Shuffle run and the TheHive alert
+(`shuffle-creddump.png`, `thehive-creddump.png`) →
 `evidence/scenario-05-creddump/`.
 
 ---

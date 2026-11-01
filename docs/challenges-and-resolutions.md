@@ -174,7 +174,7 @@ group. That was wrong — built-in rule **61603** decodes Sysmon EID 1 and **doe
 assign the `sysmon_event1` group.
 **Fix:** anchor the rule with `<if_group>sysmon_event1</if_group>` so it becomes a
 child of the Sysmon process-creation tree and is evaluated on every EID-1 event.
-After the fix, 100002 fired live (event `1793241281.2087863`, level 15, T1003)
+After the fix, 100002 fired live (event `1793500464.18771518`, level 15, T1003)
 alongside the behavioral LSASS rule 92900 — see Scenario 05 §2b.
 **Lesson:** `logtest` success ≠ live detection (again) — logtest tests a rule in
 isolation; the live pipeline only tests it where its decoding phase places it.

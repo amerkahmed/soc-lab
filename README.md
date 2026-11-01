@@ -1,19 +1,21 @@
 # SOC Home Lab — Detection, Enrichment & Automated Response
 
-> At 02:33 UTC, a brute-force run from the lab's Kali host hammered the Windows
+> At 02:22 UTC, a brute-force run from the lab's Kali host hammered the Windows
 > target's `Client` account with failed RDP logons until Windows **locked the
 > account** — the lockout control working as designed, with no access gained by
 > guessing. Separately, with a valid credential — in a real intrusion obtained
 > out-of-band (password spray, reuse, or phishing); here the account's own password,
 > used to exercise the successful-logon detection path — the attacker opened a real
-> **Type-10 RDP session** from the same host once the lockout cleared. Wazuh fired
-> **60122** (failed logons) and **60115** (account lockout) on the brute force, then
-> **92657** (NLA pre-auth) and **92653** (the interactive session) on the
-> valid-credential logon. I confirmed the source as `192.168.56.10` across every
-> 4625 event, correlated the lockout with the subsequent 4624s, and traced the arc
-> from first failure to interactive foothold — then on into a hands-on LSASS
-> credential dump (Scenario 05). The captured events span **97.5 s**,
-> from the lockout at `02:33:02` to the dump at `02:34:40` UTC. That
+> **Type-10 RDP session** from the same host once the lockout expired. Wazuh fired
+> **60122** (failed logons), **60204** (brute-force correlation) and **60115**
+> (account lockout) on the brute force, then **92657** (NLA pre-auth) and **92653**
+> (the interactive session) on the valid-credential logon. I confirmed the source as
+> `192.168.56.10` across every 4625 event, correlated the lockout with the
+> subsequent 4624s, and traced the arc from first failure to interactive foothold —
+> then on into a hands-on LSASS credential dump (Scenario 05). The brute force and
+> lockout landed at `02:22:04` UTC; after the ~10-minute lockout expired, the
+> foothold logon followed at `02:34:04` and the hands-on dump chain ran in **~5.3 s**
+> (certutil → LSASS). That
 > workflow — detect, correlate, decide — is what this lab is built to practice,
 > automate, and document.
 
@@ -130,8 +132,8 @@ a **NAT** adapter (lets agents reach the cloud backend). See
 | 01 | [Nmap Recon](docs/scenarios/01-nmap-recon.md) | Low | T1046 / T1595 | Suricata SID 2200025 + ET SCAN (e.g. 2018489) → Wazuh 86601 | Suricata NIDS | ~1.3 s | ✅ Validated (gaps documented) |
 | 02 | [Phishing Investigation → SOAR](docs/scenarios/02-phishing-ioc.md) | High | T1566.002 (email) / T1204.001 (click) | Wazuh 100100 (CDB http match) | Suricata NIDS → Wazuh | ~1–2 s² | ✅ Validated |
 | 03 | [SSH Brute Force](docs/scenarios/03-ssh-brute-force.md) | Medium | T1110 | Wazuh 5710 / 5712 | journald (Ubuntu agent) | ~1–2 s¹ | ✅ Validated |
-| 04 | [RDP Brute Force → Lockout → Session](docs/scenarios/04-rdp-brute-force.md) | High | T1110.001 → T1021.001 / T1078.003 | Wazuh 60122 / 60115 / 92657 / 92653 | Windows Security (agent) | ~1.1–1.3 s | ✅ Validated |
-| 05 | [Credential Dumping (Mimikatz / LSASS)](docs/scenarios/05-credential-dumping.md) | Critical | T1105 → T1003.001 / T1003 | Wazuh 92075 + 92900 + custom 100002 | Sysmon EID 1 / 10 (agent) | ~1.3 s | ✅ Validated |
+| 04 | [RDP Brute Force → Lockout → Session](docs/scenarios/04-rdp-brute-force.md) | High | T1110.001 → T1021.001 / T1078.003 | Wazuh 60122 / 60204 / 60115 / 92657 / 92653 | Windows Security (agent) | ~1.1–1.5 s | ✅ Validated |
+| 05 | [Credential Dumping (Mimikatz / LSASS)](docs/scenarios/05-credential-dumping.md) | Critical | T1105 → T1003.001 / T1003 | Wazuh 92075 + 92900 + custom 100002 | Sysmon EID 1 / 10 (agent) | ~0.75–1.35 s | ✅ Validated |
 
 ¹ **Time to alert** = event time → Wazuh alert, measured from the captured evidence (see each scenario doc). The SSH figure is approximate: 5712 is a correlation rule and journald is second-resolution.
 ² Phishing (100100) matches a Suricata **http** transaction event (logged per request), so it fires in ~1–2 s. (Matching a `flow` record instead would add ~60 s of flow-timeout latency; `http` is used for near-real-time detection of the HTTP callback — a deliberate specificity-vs-coverage call, see Scenario 02 §10.)
