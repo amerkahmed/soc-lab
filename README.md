@@ -1,14 +1,18 @@
 # SOC Home Lab — Detection, Enrichment & Automated Response
 
-> At 02:33 UTC, a brute-force run from the lab's Kali host locked out the Windows
-> target's `Client` account after a burst of failed RDP logons. The lockout stopped
-> the loop cold — so the account was cleared and the attacker logged in with the
-> now-known password, opening a real Type-10 RDP session. Wazuh fired **60115**
-> (account lockout) and, on the successful login, **92657** (NLA pre-auth) and
-> **92653** (the interactive session). I confirmed the source as `192.168.56.10`
-> across every 4625 event, correlated the lockout with the subsequent 4624s, and
-> traced the full sequence from first failure to interactive foothold — then on into
-> a hands-on LSASS credential dump (Scenario 05). The captured events span **97.5 s**,
+> At 02:33 UTC, a brute-force run from the lab's Kali host hammered the Windows
+> target's `Client` account with failed RDP logons until Windows **locked the
+> account** — the lockout control working as designed, with no access gained by
+> guessing. Separately, with a valid credential — in a real intrusion obtained
+> out-of-band (password spray, reuse, or phishing); here the account's own password,
+> used to exercise the successful-logon detection path — the attacker opened a real
+> **Type-10 RDP session** from the same host once the lockout cleared. Wazuh fired
+> **60122** (failed logons) and **60115** (account lockout) on the brute force, then
+> **92657** (NLA pre-auth) and **92653** (the interactive session) on the
+> valid-credential logon. I confirmed the source as `192.168.56.10` across every
+> 4625 event, correlated the lockout with the subsequent 4624s, and traced the arc
+> from first failure to interactive foothold — then on into a hands-on LSASS
+> credential dump (Scenario 05). The captured events span **97.5 s**,
 > from the lockout at `02:33:02` to the dump at `02:34:40` UTC. That
 > workflow — detect, correlate, decide — is what this lab is built to practice,
 > automate, and document.

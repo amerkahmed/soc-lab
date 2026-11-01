@@ -55,7 +55,8 @@ on top of the detections.
   task with an old password) can generate repeated 4625s from a *known internal*
   host and end benignly. The source IP and whether it ends in a legitimate success
   are what separate them.
-- **Escalate immediately when:** rule 92657 fires — attempt has become compromise.
+- **Escalate immediately when:** rule 92657 fires — a valid-credential logon from
+  the attacking source; attempted access has become a confirmed compromise.
 
 ### Credential dumping (Scenario 05)
 - **Malicious indicators:** a process reading **LSASS** memory (`grantedAccess 0x1010`),

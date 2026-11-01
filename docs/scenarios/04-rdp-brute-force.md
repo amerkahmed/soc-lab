@@ -3,8 +3,8 @@
 Runs the full arc from the first failed logon to a confirmed **interactive RDP
 session** on a local **administrator** account, written as an analyst would hand
 it off — in ticket form. The successful-logon alerts (rules 92657 + 92653) are the
-escalation trigger: the moment a wall of failures becomes a real foothold — the
-same foothold the credential-dumping chain in
+escalation trigger: the point at which a valid-credential logon turns attempted
+access into a confirmed foothold — the foothold the credential-dumping chain in
 [Scenario 05](05-credential-dumping.md) runs inside.
 
 | | |
@@ -43,18 +43,20 @@ done
 ```
 
 Each wrong password returned `ERRCONNECT_LOGON_FAILURE [0x00020014]`. Once the
-failures crossed the account's lockout threshold, **every** further attempt —
-including the one with the correct password — returned
-`ERRCONNECT_ACCOUNT_LOCKED_OUT [0x00020018]`. So the loop itself never produced a
-successful logon: **the account locked first**, which is exactly the realistic
-consequence of a sustained brute force against a lockout-protected system.
+failures crossed the account's lockout threshold, **every** further attempt
+returned `ERRCONNECT_ACCOUNT_LOCKED_OUT [0x00020018]`. So the loop never produced a
+successful logon: **the account locked first** — the lockout control working as
+designed, and the realistic consequence of a sustained single-account brute force
+(which is why real attackers spray one password across many accounts to avoid it —
+[T1110.003](https://attack.mitre.org/techniques/T1110/003/)).
 
-Because lockout interrupts the attack, the actual access was performed as a
-**separate interactive RDP session after the account was cleared** — the pattern a
-real intrusion follows when lockout defenses are in place. The host's policy is
-`net accounts` **10 / 10 / 10** (threshold 10, lockout duration 10 min, reset
-window 10 min), so in the wild the attacker waits out the 10-minute window. In the
-lab the account was cleared immediately with ADSI to keep the run tight — the
+The online guessing gained no access. The foothold was a **separate interactive RDP
+session with a valid credential** — in a real intrusion obtained out-of-band
+(password spray, credential reuse, or phishing); in this lab the account's own
+password stands in, to exercise the successful-logon detection path. The host's
+policy is `net accounts` **10 / 10 / 10** (threshold 10, lockout duration 10 min,
+reset window 10 min), so in the wild the attacker waits out the 10-minute lockout;
+in the lab the account was cleared immediately with ADSI to keep the run tight. The
 captured incident spans 97.5 s, from the lockout at `02:33:02` to the Scenario 05
 dump at `02:34:40` UTC:
 
@@ -66,7 +68,7 @@ $u.SetInfo()
 ```
 
 The post-clear access was a **real RDP session** (not `+auth-only`) — the attacker
-logging in interactively with the now-known password:
+logging in interactively with the valid credential (here the account's own password):
 
 ```bash
 # Kali: a genuine interactive RDP session (no +auth-only) → Type-10 logon
@@ -273,13 +275,14 @@ false-positive vs. benign-true-positive distinction in full.
   Type-10 interactive session (92653, the proof of a real foothold). Tying them
   back to the preceding failures and lockout is the analytic core.
 - **Lockout interrupts brute force — and that's realistic.** The account locked
-  before the correct password could be used, so the access came as a separate
-  session after the lockout cleared. A real intrusion against a lockout-protected
-  system behaves the same way; the lockout alert (60115) is itself a valuable
-  mid-attack signal.
+  during the run, so the online guessing never gained access; the foothold came as
+  a separate valid-credential session after the lockout cleared. A real intrusion
+  against a lockout-protected system behaves the same way; the lockout alert (60115)
+  is itself a valuable mid-attack signal.
 - **Read the technique tags critically.** 92657's "possible pass-the-hash"
-  (T1550.002) is a *false lead* here — this was a brute-forced password, not a
-  stolen hash, and the account is local (T1078.003), not domain (T1078.002). A good
+  (T1550.002) is a *false lead* here — this was an interactive logon with a valid
+  password, not a replayed hash, and the account is local (T1078.003), not domain
+  (T1078.002). A good
   analyst knows why a built-in mapping is wrong for the environment it fired in.
 - **Two alerts, one intrusion.** Forwarding by rule ID raises an alert for the
   lockout (60115) and another for the successful logon (92657), while the
