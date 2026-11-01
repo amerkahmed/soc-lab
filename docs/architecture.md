@@ -116,10 +116,14 @@ cloud manager, which applies detection rules.
 
 **Windows** — agent installed via MSI, pointed at the cloud manager; **Sysmon**
 installed for process/DLL/file telemetry. RDP brute force produces Security
-**Event ID 4625** (rule **60122**), lockout **4740** (rule **60115**), and a
-successful **4624** (rule **92657**, which the built-in rule flags as possible
-pass-the-hash — a *false lead* here: the attack brute-forced the password, it did
-not replay a stolen hash, see [Scenario 04 §2](scenarios/04-rdp-brute-force.md)). Sysmon
+**Event ID 4625** (rule **60122**), a brute-force **correlation** (rule **60204**,
+8 failures / 240 s), and account lockout **4740** (rule **60115**); then — after the
+~10-minute lockout expired — a valid-credential logon recorded as a Type-3 NLA
+**4624** (rule **92657**) and the interactive Type-10 session (rule **92653**). The
+built-in 92657 flags possible pass-the-hash — a *false lead* here: the logon used
+the actual **password**, not a replayed hash (the online guessing never got in; the
+credential was obtained out-of-band, see
+[Scenario 04 §2](scenarios/04-rdp-brute-force.md)). Sysmon
 also surfaced account-discovery (T1087), remote-system discovery (T1018), and
 scheduled-task DLL loads (T1053), plus a CIS benchmark (SCA) compliance scan.
 
@@ -202,7 +206,7 @@ it needs:
 All three paths are **raw HTTP nodes** POSTing a hand-built JSON body to TheHive's
 `/api/v1/alert`, each with an explicit `Content-Type: application/json` and an
 `Authorization: Bearer` header whose key is pulled from Shuffle's cache
-(`$shuffle_cache.hive-key.val`), never hardcoded. The exported workflow (secrets
+(`$shuffle_cache.hive-key.value`), never hardcoded. The exported workflow (secrets
 scrubbed) is at [`config/shuffle-workflow.json`](../config/shuffle-workflow.json).
 
 **Why a raw HTTP node instead of the TheHive app node:** the native app node

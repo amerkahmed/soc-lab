@@ -186,7 +186,7 @@ with an `Authorization: Bearer` header. On the isolated lab backend this is
 functional, but the API key travels **in cleartext** — if the pipeline were exposed
 beyond the host-only segment, the token could be sniffed.
 **Status:** accepted for the lab (traffic never leaves the isolated backend). The key
-is held in Shuffle's cache (`$shuffle_cache.hive-key.val`), not hardcoded in the
+is held in Shuffle's cache (`$shuffle_cache.hive-key.value`), not hardcoded in the
 exported workflow, so it is not in this repo. **Production hardening** would terminate
 TLS in front of TheHive (a reverse proxy on `:443`) and switch the node to `https://`,
 keeping the token off the wire.

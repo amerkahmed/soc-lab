@@ -49,14 +49,21 @@ on top of the detections.
 - **Escalate when:** correlation fires, or any success follows the failures.
 
 ### RDP brute force → compromise (Scenario 04)
-- **Malicious indicators:** consistent source IP across all 4625s, lockout (60115),
-  and — critically — a successful 4624 (rule 92657) from the attacking IP.
+- **Malicious indicators:** consistent source IP across all 4625s, a brute-force
+  correlation (60204), and an account lockout (60115) — then, separately, a
+  valid-credential logon (rule 92657) from that same attacking IP.
 - **Benign look-alike:** a stale cached credential (a mapped drive or scheduled
   task with an old password) can generate repeated 4625s from a *known internal*
   host and end benignly. The source IP and whether it ends in a legitimate success
   are what separate them.
+- **Two phases, not one crack.** The lockout (60115) shows the online guessing was
+  *blocked*, not that it succeeded. The later 92657 logon used a valid credential
+  obtained out-of-band (in this lab, the account's own password, ~12 min later once
+  the lockout expired — Scenario 04 §1), so a lockout and a success in the same
+  episode is expected, not contradictory.
 - **Escalate immediately when:** rule 92657 fires — a valid-credential logon from
-  the attacking source; attempted access has become a confirmed compromise.
+  the attacking source is a confirmed compromise (the interactive Type-10 session,
+  92653, confirms a real foothold), regardless of whether the guessing itself got in.
 
 ### Credential dumping (Scenario 05)
 - **Malicious indicators:** a process reading **LSASS** memory (`grantedAccess 0x1010`),

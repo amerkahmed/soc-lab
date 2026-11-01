@@ -140,7 +140,8 @@ Scenario 05 dump runs under.)*
 **ATT&CK mapping note — the pass-the-hash tag is a false lead here.** Built-in rule
 92657 is titled "possible pass-the-hash" and tags **T1550.002**, because it sees a
 successful *NTLM* remote logon. But pass-the-hash means authenticating with a
-stolen **hash** — and this attack brute-forced the actual **password**, so it is
+stolen **hash** — and this logon used the actual **password** (the online guessing
+itself never got in; the credential was obtained out-of-band — §1), so it is
 **not** PtH. The NTLM package appears simply because the `Client` account is local
 on a WORKGROUP host (no Kerberos/AD), so NTLM is the default. The accurate
 techniques are **T1021.001 (RDP)** + **T1078.003 (Local Accounts)**; 92657 also
@@ -167,10 +168,11 @@ sensors. See [challenges-and-resolutions.md](../challenges-and-resolutions.md), 
 
 The manager's Shuffle integration forwards the two **headline** RDP alerts — the
 lockout (`60115`) and the successful NLA logon (`92657`) — by **rule ID**. The
-per-attempt `60122` is deliberately *not* forwarded, so failed-logon noise never
-reaches the SOAR layer; and the Type-10 session rule `92653` is rich **supporting
-evidence** (it confirms a true interactive session) but is also not forwarded —
-one headline alert per decision point, not four. Each forwarded alert produces its
+per-attempt `60122` and the brute-force correlation `60204` are deliberately *not*
+forwarded, so failed-logon noise never reaches the SOAR layer; and the Type-10
+session rule `92653` is rich **supporting evidence** (it confirms a true interactive
+session) but is also not forwarded — one headline alert per decision point, not one
+per rule. Each forwarded alert produces its
 own Shuffle run and its own TheHive alert:
 
 ![Shuffle run for the successful logon — $exec FINISHED, rule_id 92657, id 1793500446.18627628, the successful-remote-logon title](../../evidence/scenario-04-rdp/shuffle-rdp-compromise.png)
@@ -288,8 +290,9 @@ false-positive vs. benign-true-positive distinction in full.
   analyst knows why a built-in mapping is wrong for the environment it fired in.
 - **Two alerts, one intrusion.** Forwarding by rule ID raises an alert for the
   lockout (60115) and another for the successful logon (92657), while the
-  per-attempt failures (60122) and the supporting Type-10 event (92653) stay out of
-  the queue — the analyst sees the two decision points, not the noise.
+  per-attempt failures (60122), the brute-force correlation (60204), and the
+  supporting Type-10 event (92653) stay out of the queue — the analyst sees the two
+  decision points, not the noise.
 - **Sysmon ≠ Security log.** Deep process telemetry (Sysmon) does not include
   authentication events. Collecting the Windows **Security** channel is required to
   see RDP brute force.
