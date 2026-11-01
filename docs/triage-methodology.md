@@ -108,6 +108,22 @@ forwarded and raised as alerts map as follows:
 Recon (Nmap, rule 86601) and the per-attempt rules (5710, 60122) are **Low** and are
 not forwarded to the SOAR layer (see the forwarding note in the README).
 
+**Why 60204 (the Windows brute-force correlation) is detected but not forwarded.**
+Wazuh's built-in rule **60204** ("Multiple Windows Logon Failures", level 10,
+T1110) correlates **8 failed logons from one source IP within 240 s** — the Windows
+analogue of SSH's 5712, and it rates **Medium** on the same basis: repeated
+failures, no access gained (Elastic's equivalent *Multiple Logon Failure from the
+same Source Address* rule is `risk_score 47` / Medium). It is **not** forwarded in
+this lab. On a host with a lockout policy, the lockout (60115) already carries the
+Windows brute-force headline, and forwarding both would raise two Medium alerts for
+one episode — the duplicate-incident anti-pattern (one attack, one case, so related
+signals update one incident rather than spawning parallel ones). 60204 still fires
+and is captured as detection evidence; it simply doesn't get its own alert. On a
+host with **no lockout policy**, 60115 never fires, so 60204 should be forwarded in
+its place — it is also the only one of the two that catches an attacker pacing
+*below* the lockout threshold, since its 8-in-240 s window is independent of the
+account lockout counter.
+
 **Two deliberate calls:**
 - **92900 is rated Critical on an impact basis** — a confirmed dump means every
   credential cached on the host is stolen. Vendor *detection* rules rate the LSASS
