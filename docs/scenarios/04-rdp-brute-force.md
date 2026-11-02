@@ -9,7 +9,7 @@ access into a confirmed foothold — the foothold the credential-dumping chain i
 
 | | |
 |---|---|
-| **MITRE ATT&CK** | T1110.001 (Brute Force: Password Guessing) → T1021.001 (Remote Services: RDP) with T1078.003 (Valid Accounts: Local Accounts). The built-in success rule 92657 also tags T1550.002 (Pass the Hash) / T1078.002 (Domain Accounts) — §2 explains why neither is accurate for a password-guessing attack on a local account. |
+| **MITRE ATT&CK** | T1110.001 (Brute Force: Password Guessing) → T1021.001 (Remote Services: RDP) with T1078.003 (Valid Accounts: Local Accounts). The built-in success rules carry tags that are inexact here: 92657 tags T1550.002 (Pass the Hash) and T1078.002 (Domain Accounts), and 92653 also tags T1078.002 — §2 explains why neither is accurate for a password-guessing attack on a local account. |
 | **Attacker** | Kali — 192.168.56.10 (workstation `kali`) |
 | **Target** | Windows 10 — DESKTOP-T0LOHB5 (192.168.56.30) |
 | **Target account** | `Client` — a **local administrator** account |
@@ -119,7 +119,10 @@ the single successful RDP login, which — with NLA — records **two** 4624s:
 - **Rule 92653** (level 3) — "User: WORKGROUP\Client logged using Remote Desktop
   Connection (RDP) from ip:192.168.56.10," from **Event ID 4624**, `logonType 10`
   (RemoteInteractive), `Negotiate`. This is the **genuine interactive desktop
-  session** — the real foothold. _(event `1793500446.18661096`)_
+  session** — the real foothold. _(event `1793500446.18661096`)_ (The rule's
+  `WORKGROUP\Client` string mixes the **subject's** domain — `subjectDomainName`,
+  the workgroup of the requesting computer account — with the **target** user; the
+  account's actual scope is the local machine, `DESKTOP-T0LOHB5\Client`.)
 
 **Why two success events for one login.** An RDP logon with NLA authenticates over
 the network first (a Type 3 logon → `92657`) and then creates the interactive
@@ -133,7 +136,9 @@ login**, not merely a credential check.
 `alert-92653-type10-session.json` (`1793500446.18661096`): `logonType 10`,
 `Negotiate`, `targetLogonId 0x34af4d` linked to `0x34af73`. (A local-admin RDP
 logon under UAC records a **linked pair** of Type-10 logons — a full **elevated**
-token and a filtered standard token, their logon IDs cross-referenced — so 92653
+token and a filtered standard token, their logon IDs cross-referenced ([Microsoft:
+UAC creates two tokens](https://learn.microsoft.com/windows/security/identity-protection/user-account-control/how-user-account-control-works);
+the `Linked Logon ID` pairs them, per [Microsoft's 4624 reference](https://learn.microsoft.com/windows/security/threat-protection/auditing/event-4624)) — so 92653
 fires twice. This is the **elevated-token** session `0x34af4d`, the one the
 Scenario 05 dump runs under.)*
 
@@ -144,8 +149,8 @@ stolen **hash** — and this logon used the actual **password** (the online gues
 itself never got in; the credential was obtained out-of-band — §1), so it is
 **not** PtH. The NTLM package appears simply because the `Client` account is local
 on a WORKGROUP host (no Kerberos/AD), so NTLM is the default. The accurate
-techniques are **T1021.001 (RDP)** + **T1078.003 (Local Accounts)**; 92657 also
-tags **T1078.002 (Domain Accounts)**, which is likewise wrong for a local account.
+techniques are **T1021.001 (RDP)** + **T1078.003 (Local Accounts)**; 92657 and 92653
+both also tag **T1078.002 (Domain Accounts)**, which is likewise wrong for a local account.
 Built-in mappings are a useful starting point, not always exact for the environment
 they fire in — and knowing *why* a tag is wrong is the analyst skill the mismatch
 exercises.
@@ -177,7 +182,9 @@ own Shuffle run and its own TheHive alert:
 
 ![Shuffle run for the successful logon — $exec FINISHED, rule_id 92657, id 1793500446.18627628, the successful-remote-logon title](../../evidence/scenario-04-rdp/shuffle-rdp-compromise.png)
 *Shuffle run for the successful logon: `FINISHED`, `rule_id 92657`,
-`id 1793500446.18627628` — the webhook received the Wazuh alert and posted to TheHive.*
+`id 1793500446.18627628` — the webhook received the Wazuh alert and posted to TheHive.
+(The `$exec.severity` shown is Wazuh's integration value, 1–3 from the rule level, not
+the TheHive severity — the Severity node sets that to **High** downstream.)*
 
 ![TheHive alert for the successful logon — SEVERITY HIGH, tags 92657/wazuh, Reference 1793500446.18627628, description naming rule 92657, Client, possible pass-the-hash](../../evidence/scenario-04-rdp/thehive-compromise.png)
 *TheHive alert: `SEVERITY:HIGH`, tagged `92657` / wazuh, description `Rule 92657 |

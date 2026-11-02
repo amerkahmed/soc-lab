@@ -12,7 +12,7 @@ each step is mapped only to the technique its own evidence supports.
 > is real and reachable within the lab, replacing the earlier
 > documentation-IP-plus-attacker-IP stand-in. The pipeline (Wazuh → Shuffle →
 > VirusTotal → TheHive) was re-run end to end against the new design: the http rule
-> fired live (~0.8 s, `status 200`), Shuffle enriched a real known-bad IP via
+> fired live (~1.0 s measured, `status 200`), Shuffle enriched a real known-bad IP via
 > VirusTotal (20/92) and attached it as a TheHive observable, and the false-positive
 > tuning exercise was reproduced. Evidence in `evidence/scenario-02-phishing/` is the
 > 2026-10-28 recapture.
@@ -215,7 +215,8 @@ curl -m 5 http://192.168.56.99/paypal/login/verify.php
 
 That request produces a Suricata **http** transaction event, which Wazuh matches
 against the watchlist in near-real-time (~1–2 s). Captured alert (event
-`1793225059.80603`, ~1 s after the request, HTTP 200):
+`1793225059.80603`, ~1 s after the request, HTTP 200; **reformatted — fields
+condensed for readability**, the `<event-id>` placeholder is the id in this caption):
 
 ```
 ** Alert <event-id>:
@@ -291,7 +292,10 @@ representative, labeled test input (cf.
 [Palantir's ADS framework](https://github.com/palantir/alerting-detection-strategy-framework),
 which requires a true-positive validation step). The VirusTotal screenshot is a
 **manual web lookup** shown only to illustrate the enrichment fields — it is not
-output of the live pipeline.
+output of the live pipeline. (The synthetic observable inherits the phishing path's
+`phishing-infrastructure` tag, so this C2 IP shows up tagged that way in TheHive —
+expected, since the test exercises the Shuffle → VirusTotal → TheHive path itself, not
+the IOC's category.)
 
 > _Evidence (synthetic enrichment chain — a **separate**, clearly labeled event
 > `1793219216.47653`, IOC `1.92.135.168`, a ThreatFox-listed Cobalt Strike C2):
@@ -317,9 +321,10 @@ The analyst-ready alert lands in TheHive with the IOC attached:
 
 **Verdict:** True positive — confirmed contact with known-bad infrastructure.
 Confidence that the connection occurred: **High** (an exact CDB match). Confidence
-that it was malicious depends on the indicator's source and age — an IP is the
-[easiest indicator for an attacker to change](https://flashpoint.io/blog/the-pyramid-of-pain-and-cyber-threat-intelligence/),
-so a stale or shared IP could match benign traffic; here the IOC is freshly
+that it was malicious depends on the indicator's source and age — an IP is
+[among the easiest indicators for an attacker to change](https://detect-respond.blogspot.com/2013/03/the-pyramid-of-pain.html)
+(in David Bianco's Pyramid of Pain, **hash values** are the base — *trivial* to
+change — with IP addresses one level up), so a stale or shared IP could match benign traffic; here the IOC is freshly
 extracted from the analyzed sample, which is why confidence is high.
 
 > _Evidence: `thehive-alert-real.png`, `thehive-observable-real.png` (event

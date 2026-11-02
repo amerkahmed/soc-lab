@@ -33,7 +33,7 @@ on top of the detections.
   correlation is the value.
 
 ### Phishing IOC (Scenario 02)
-- **Malicious indicators:** any connection whose destination matches the IOC
+- **Malicious indicators:** an HTTP request whose destination matches the IOC
   watchlist (rule 100100). By definition the destination is known-bad.
 - **Enrichment:** VirusTotal detection count / hosting / country adds context for
   the analyst before they promote to a case.
@@ -69,8 +69,8 @@ on top of the detections.
 - **Malicious indicators:** a process reading **LSASS** memory (`grantedAccess 0x1010`),
   especially from a user-writable path (`C:\Users\Public\`) — rule 92900 (Sysmon
   Event ID 10). On an endpoint this has essentially no benign explanation.
-- **Correlation:** fires on the same host/account compromised in Scenario 04 — recon
-  → brute force → compromise → credential theft is one coherent progression.
+- **Correlation:** fires on the same host/account compromised in Scenario 04 —
+  brute force → compromise → credential theft is one coherent progression.
 - **Severity is impact-based:** the detecting rule is level 12, but the incident is
   Critical — every credential cached on the host must be treated as stolen.
 - **Escalate immediately:** this is post-compromise, so isolate the host and rotate

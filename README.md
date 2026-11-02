@@ -34,7 +34,7 @@ in front of an analyst.
   network-based detection (Suricata), covering attacks that one layer alone
   would miss.
 - **Threat-intel-driven detection** — phishing email analyzed, IOCs extracted and
-  operationalized into a Wazuh watchlist that fires on any connection to known
+  operationalized into a Wazuh watchlist that fires on an HTTP request to known
   infrastructure.
 - **SOAR automation** — Wazuh → Shuffle → VirusTotal enrichment → TheHive alert,
   fully automated.
@@ -58,7 +58,8 @@ in front of an analyst.
 | SOAR / automation | Shuffle (SOAR workflows, webhook integration, API) |
 | Threat intelligence | VirusTotal enrichment, [abuse.ch ThreatFox](https://threatfox.abuse.ch/) IOCs, IOC watchlists |
 | Case management | TheHive (alerts, cases, observables) |
-| Adversary simulation | Hydra, xfreerdp, Nmap, phishing analysis (emlAnalyzer) |
+| Adversary simulation | Hydra, xfreerdp, Nmap, certutil, Mimikatz |
+| Analysis tooling | emlAnalyzer (phishing email analysis) |
 | Frameworks | MITRE ATT&CK mapping |
 
 ---
@@ -131,7 +132,7 @@ a **NAT** adapter (lets agents reach the cloud backend). See
 |---|---|---|---|---|---|---|---|
 | 01 | [Nmap Recon](docs/scenarios/01-nmap-recon.md) | Low | T1046 / T1595 | Suricata SID 2200025 + ET SCAN (e.g. 2018489) → Wazuh 86601 | Suricata NIDS | ~1.3 s | ✅ Validated (gaps documented) |
 | 02 | [Phishing Investigation → SOAR](docs/scenarios/02-phishing-ioc.md) | High | T1566.002 (email) / T1204.001 (click) | Wazuh 100100 (CDB http match) | Suricata NIDS → Wazuh | ~1–2 s² | ✅ Validated |
-| 03 | [SSH Brute Force](docs/scenarios/03-ssh-brute-force.md) | Medium | T1110 | Wazuh 5710 / 5712 | journald (Ubuntu agent) | ~1–2 s¹ | ✅ Validated |
+| 03 | [SSH Brute Force](docs/scenarios/03-ssh-brute-force.md) | Medium | T1110.001 | Wazuh 5710 / 5712 | journald (Ubuntu agent) | ~1–2 s¹ | ✅ Validated |
 | 04 | [RDP Brute Force → Lockout → Session](docs/scenarios/04-rdp-brute-force.md) | High | T1110.001 → T1021.001 / T1078.003 | Wazuh 60122 / 60204 / 60115 / 92657 / 92653 | Windows Security (agent) | ~1.1–1.5 s | ✅ Validated |
 | 05 | [Credential Dumping (Mimikatz / LSASS)](docs/scenarios/05-credential-dumping.md) | Critical | T1105 → T1003.001 / T1003 | Wazuh 92075 + 92900 + custom 100002 | Sysmon EID 1 / 10 (agent) | ~0.75–1.35 s | ✅ Validated |
 
@@ -140,7 +141,7 @@ a **NAT** adapter (lets agents reach the cloud backend). See
 
 > **SOAR → alert creation.** Phishing (02), SSH (03), RDP (04) and credential
 > dumping (05) are forwarded to Shuffle and raised as alerts in TheHive — end to end,
-> a host event reaches an analyst-ready alert in **~5–7 s**, and the phishing alert
+> a host event reaches an analyst-ready alert in **a few seconds**, and the phishing alert
 > now lands in the same range because its detection matches a Suricata http event
 > rather than waiting on a flow record (footnote 2). Nmap (01) is detection-only,
 > deliberately held back from the SOAR layer as network-sensor noise.
@@ -174,7 +175,7 @@ The most complete automation path, end to end:
 > events (benign OneDrive activity in this lab) that would be noise. The Nmap recon alerts (01) and per-attempt
 > brute-force noise (`5710`, `60122`) are
 > held back. Phishing is where **VirusTotal enrichment** is showcased: the lab IOC is
-> a private IP (so VT returns nothing on the live run), and the enrichment capability
+> a private IP (so VT returns a non-informative result — 0 malicious / 56 harmless — on the live run), and the enrichment capability
 > is demonstrated with a clearly labeled synthetic test event (Scenario 02 §5b).
 
 Full walkthrough: [docs/scenarios/02-phishing-ioc.md](docs/scenarios/02-phishing-ioc.md).
@@ -215,7 +216,7 @@ evidence/                          ← screenshots + raw alert JSON per scenario
 - The lab is isolated; the phishing IOC is a **lab-owned phishing server**
   (`192.168.56.99`) with its own IP, so the IOC is real and reachable within the
   lab. "Known-bad" means known-bad *within this lab's threat list* — exactly how
-  real watchlists work. The IOC is a private IP, so VirusTotal returns nothing on
+  real watchlists work. The IOC is a private IP, so VirusTotal returns a non-informative result (0 malicious / 56 harmless) on
   the live run; the enrichment *capability* is demonstrated with a **clearly
   labeled synthetic test event** carrying a genuinely malicious IP (no traffic is
   ever sent to it) — documented in Scenario 02 §5b.
@@ -226,7 +227,8 @@ evidence/                          ← screenshots + raw alert JSON per scenario
   Wazuh **event ID** and **UTC** — never by local clock. A host-event alert
   carries two UTC times: the event's own **`systemTime`** (when it fired on the
   endpoint — the authoritative time used in Scenarios 04–05) and the
-  manager-receipt **`@timestamp`** shown in Discover, which runs **~1 s later**.
+  manager-receipt **`@timestamp`** shown in Discover, which runs **~1.3 s later**
+  (measured; the gap ranges ~0.75–1.5 s across Scenarios 04–05).
   The event ID keys to that manager-receipt instant, so sub-second causal
   ordering uses `systemTime`.
 - **Windows version.** The victim endpoint runs **Windows 10**, which reached

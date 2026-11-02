@@ -112,7 +112,8 @@ Wazuh agents on Ubuntu and Windows collect host telemetry and ship it to the
 cloud manager, which applies detection rules.
 
 **Linux (Ubuntu)** — SSH brute force via Hydra triggers Wazuh rules **5710**
-(invalid user) and **5712** (brute-force correlation). MITRE **T1110**.
+(invalid user) and **5712** (brute-force correlation). MITRE **T1110.001** (5710 tags
+T1110.001; 5712's built-in tag is the parent **T1110**).
 
 **Windows** — agent installed via MSI, pointed at the cloud manager; **Sysmon**
 installed for process/DLL/file telemetry. RDP brute force produces Security
@@ -170,7 +171,7 @@ Suricata emits an http transaction event that rule 100100 matches in near-real-t
 The lab IOC is a **lab-owned phishing server** (`192.168.56.99`) with its own IP, so
 the IOC is real and reachable within the lab. "Known-bad" means known-bad *within
 this lab's threat list*, exactly how real watchlists work. Because the IOC is a
-private IP, VirusTotal returns nothing on the live run; the enrichment *capability*
+private IP, VirusTotal returns a non-informative result (0 malicious / 56 harmless) on the live run; the enrichment *capability*
 is demonstrated with a clearly labeled synthetic test event (Scenario 02 §5b).
 
 ---
@@ -193,7 +194,7 @@ it needs:
   looked up (`get_an_ip_address_report`) and the malicious / harmless counts are
   embedded in the TheHive alert. VT is applied **only** on this path — the one IOC
   type that can carry an external IP. On the live run the lab IOC is a private
-  address, so VT returns nothing; the enrichment is demonstrated with a clearly
+  address, so VT returns a non-informative result (0/56); the enrichment is demonstrated with a clearly
   labeled synthetic external IP (Scenario 02 §5b).
 - **SSH correlation (`5712`) → direct POST** — no VT (the brute-force source is a
   private IP).

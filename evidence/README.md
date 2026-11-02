@@ -29,7 +29,7 @@ by event ID + UTC — for host events the authoritative UTC is the event
 **`scenario-03-ssh/`** — SSH brute force → auto-block. The 5712 correlation `1793228621.106252` ties the detection → SOAR → TheHive alert; the per-attempt 5710 and the auto-block 651/652 are separate alerts with their own IDs.
 - `attack-output.txt` (Hydra, 25 guesses) · `alert-5712.json` (correlation, `frequency 8` threshold) · `alert-5710.json` (per-attempt, `firedtimes 13`)
 - **Auto-block:** `alert-651-block.json` (firewall-drop `add` 192.168.56.10) · `alert-652-unblock.json` (`delete` after the 300 s timeout) · `active-response-block.txt` (the `active-responses.log` add/delete + the `iptables` DROP)
-- `wazuh-5712-alerts.png` · `wazuh-5712-detail.png` · `shuffle-aggregated.png` · `thehive-alert.png` (description shows `Correlation threshold: 8 failed logins / 120s`) · `thehive-observable.png` (attacker IP)
+- `wazuh-5712-alerts.png` · `wazuh-5712-detail.png` · `shuffle-aggregated.png` · `thehive-alert.png` (description shows `Correlation threshold: 8 failed logins / 120s` — the 8 is rule 5712's `frequency` threshold, i.e. 8 matching 5710 events, not 8 password attempts) · `thehive-observable.png` (attacker IP)
 
 **`scenario-04-rdp/`** — RDP brute force → lockout → interactive session, one live pass **2026-11-01 02:22–02:34 UTC** (correlation `1793499725.17930964`, lockout `1793499725.17962730`, NLA logon `1793500446.18627628`, Type-10 session `1793500446.18661096`).
 - `attack-output.txt` (xfreerdp3 brute-force method — winning password redacted; Kali's local clock, authoritative timeline is the JSONs)

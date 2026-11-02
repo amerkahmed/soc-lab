@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **MITRE ATT&CK** | T1110 (Brute Force) |
+| **MITRE ATT&CK** | T1110.001 (Brute Force: Password Guessing) — 5710 tags T1110.001; 5712's built-in tag is the parent T1110 |
 | **Attacker** | Kali — 192.168.56.10 |
 | **Target** | Ubuntu — 192.168.56.20 |
 | **Detection source** | Wazuh agent → journald (sshd) |
@@ -117,8 +117,9 @@ best-practice shape (time-boxed and self-reversing, not a permanent deny-list).
 It fired and it worked: rule **651** "Host Blocked by firewall-drop Active Response"
 recorded the `add` for `192.168.56.10` (acting on event `1793228621.106252`), and
 `iptables -L` showed the live `DROP`. The block **cut the attack off mid-run** —
-hydra attempted 25 guesses, but only **13** reached sshd (`5710 firedtimes: 13`)
-before the source was dropped. Exactly 300 s later, rule **652** "Host Unblocked"
+hydra queued 25 guesses, and rule 5710 logged **13 matching auth-failure events**
+(`firedtimes: 13` — fewer distinct password attempts than that, since one
+invalid-user attempt logs several lines) before the source was dropped. Exactly 300 s later, rule **652** "Host Unblocked"
 recorded the `delete` — the ban auto-expired as configured.
 
 > **Caveat — why this is scoped, not universal.** Auto-blocking is safe *here*
@@ -150,7 +151,9 @@ scenario where VirusTotal enrichment is showcased.
 ![TheHive alert for event 1793228621.106252 — SEVERITY:MEDIUM, tags brute-force/ssh/wazuh, description with source, target user, correlation threshold, MITRE and rule](../../evidence/scenario-03-ssh/thehive-alert.png)
 *TheHive alert: `SEVERITY:MEDIUM`, tagged brute-force / ssh / wazuh, description
 `SSH brute force | Source: 192.168.56.10 | Target user: fakeuser | Correlation
-threshold: 8 failed logins / 120s | MITRE T1110 | Rule 5712`. The `Reference` is
+threshold: 8 failed logins / 120s | MITRE T1110 | Rule 5712`. (The "8 failed logins"
+is rule 5712's `frequency` threshold — 8 matching 5710 events, not 8 password
+attempts.) The `Reference` is
 `1793228621.106252` — the same event as the 5712 detection and the Shuffle run (the
 auto-block 651/652 are separate alerts with their own IDs). The attacker IP is
 attached as an observable (tagged attacker / source).*

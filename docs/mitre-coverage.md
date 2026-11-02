@@ -11,7 +11,7 @@ former *Defense Evasion* tactic: **TA0005 was renamed → _Stealth_** and a new
 |---|---|---|---|---|
 | Reconnaissance | Active Scanning | T1595 | Suricata — Nmap OS-detection probes (SID 2200025, ET 2018489) | [01](scenarios/01-nmap-recon.md) ✅ |
 | Discovery | Network Service Discovery | T1046 | Suricata — ET SCAN port rules (database/VNC/SSH ports); generic port scans not detected | [01](scenarios/01-nmap-recon.md) ✅ |
-| Credential Access | Brute Force | T1110 | Wazuh 5710 / 5712 (SSH) | [03](scenarios/03-ssh-brute-force.md) ✅ |
+| Credential Access | Brute Force: Password Guessing | T1110.001 | Wazuh 5710 / 5712 (SSH — 5710 tags .001; 5712's own tag is the parent T1110) | [03](scenarios/03-ssh-brute-force.md) ✅ |
 | Credential Access | Brute Force: Password Guessing | T1110.001 | Wazuh 60122 / 60204 / 60115 (RDP failures, correlation, lockout) | [04](scenarios/04-rdp-brute-force.md) ✅ |
 | Lateral Movement | Remote Services: RDP | T1021.001 | Wazuh 92657 / 92653 (successful RDP logon) | [04](scenarios/04-rdp-brute-force.md) ✅ |
 | Stealth | Valid Accounts: Local Accounts | T1078.003 | Wazuh 92657 / 92653 — local admin `Client` logon (built-in rule mis-tags T1078.002; §2) | [04](scenarios/04-rdp-brute-force.md) ✅ |
@@ -21,7 +21,7 @@ former *Defense Evasion* tactic: **TA0005 was renamed → _Stealth_** and a new
 | Discovery | Remote System Discovery | T1018 | Sysmon | — (seen, not captured) |
 | Execution | Scheduled Task/Job | T1053 | Sysmon (taskschd.dll load) | — (seen, not captured) |
 | Credential Access | OS Credential Dumping: LSASS Memory | T1003.001 | Wazuh 92900 (LSASS access, behavioral) — fired live | [05](scenarios/05-credential-dumping.md) ✅ |
-| Credential Access | OS Credential Dumping | T1003 | Custom 100002 (Mimikatz PE OriginalFileName) — fired live | [05](scenarios/05-credential-dumping.md) ✅ |
+| Credential Access | OS Credential Dumping | T1003 | Custom 100002 (Mimikatz PE OriginalFileName — name-based, so mapped to the parent; behavioral 92900 carries T1003.001) — fired live | [05](scenarios/05-credential-dumping.md) ✅ |
 | Command & Control | Ingress Tool Transfer | T1105 | Wazuh 92075 (certutil `-urlcache` download) — fired live | [05](scenarios/05-credential-dumping.md) ✅ |
 
 > **✅ = detection validated** — a rule fired and its alert is captured in `evidence/`. Rows without ✅ are observed-only: telemetry **visibility** with no captured detection (T1087 / T1018 / T1053), or an **analyzed sample** with no detection rule (T1566.002). (The visibility-vs-detection distinction, per DeTT&CT.)
@@ -51,7 +51,7 @@ former *Defense Evasion* tactic: **TA0005 was renamed → _Stealth_** and a new
   per-attempt brute-force
   rules (`5710`, `60122`) are deliberately held back to keep noise off the SOAR
   layer. Phishing is the scenario where **VirusTotal enrichment** is showcased —
-  its lab IOC is a private IP (so VT returns nothing on the live run), and the
+  its lab IOC is a private IP (so VT returns a non-informative result, 0/56, on the live run), and the
   enrichment *capability* is shown with a clearly labeled synthetic test event
   carrying a real known-bad IP (Scenario 02 §5b). Phishing maps to **two** techniques,
   each to its own evidence: **T1566.002** (the analyzed email) and **T1204.001**
@@ -61,3 +61,26 @@ former *Defense Evasion* tactic: **TA0005 was renamed → _Stealth_** and a new
   not captured** as alerts — they surfaced incidentally during Windows testing and
   show the depth of process-level data available for future detection work, not
   detections the lab currently fires.
+
+---
+
+## Built-in rule tag audit
+
+Wazuh's built-in rules ship generic ATT&CK tags that aren't always right for the event
+they fire on. Reading them critically is the skill; the mismatches this lab relies on
+(each checked against the technique's own ATT&CK page):
+
+| Rule | Built-in tag(s) | Accurate here | Why the built-in is off |
+|---|---|---|---|
+| 60122 (4625 fail) | **T1531** only | T1110.001 | [T1531](https://attack.mitre.org/techniques/T1531/) is *Impact* — an adversary deleting/locking others' accounts to deny access; a failed logon is the brute-force attempt, not access removal. |
+| 60115 (4740 lockout) | T1110 + **T1531** | T1110.001 | T1110 fits; **T1531 is wrong** — the lockout is the *defensive control* firing, not the adversary removing access. |
+| 92657 (Type-3 NLA) | **T1550.002** + **T1078.002** + T1021.001 | T1021.001 + T1078.003 | Pass-the-Hash needs a stolen **hash** (a real password was used); T1078.002 is **AD-domain** — `Client` is a local WORKGROUP account (→ T1078.003). |
+| 92653 (Type-10 RDP) | T1021.001 + **T1078.002** | T1021.001 + T1078.003 | T1021.001 correct; T1078.002 (domain) → **.003 (Local)**. |
+| 5710 (SSH invalid user) | T1110.001 + **T1021.004** | T1110.001 | T1021.004 (SSH *lateral movement*) needs a successful valid-account login; 5710 fires on an invalid-user **failure** — no session. |
+| 5712 (SSH correlation) | T1110 (parent) | T1110.001 | Parent is acceptable for a multi-method correlation; the exercised behavior is password guessing (.001). |
+| 100002 (custom) | T1003 (parent) | T1003 | Deliberate — a name match can't prove the LSASS sub-technique; behavioral 92900 carries T1003.001. |
+
+Accurate as tagged: 60204 (T1110), 92075 (T1105), 92900 (T1003.001).
+
+**Tactic naming.** Wazuh still emits the pre-v19 tactic name **Defense Evasion** on
+92657/92653; ATT&CK v19 renamed **TA0005 → _[Stealth](https://attack.mitre.org/tactics/TA0005/)_**.

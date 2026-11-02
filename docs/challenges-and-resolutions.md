@@ -62,7 +62,7 @@ RDP `4624`), and a **JSON object** when the source log is itself JSON (Suricata
 **Lesson:** SOAR templates must be resilient to differing alert schemas — the same
 field can be missing, a string, or a nested object depending on the rule and the log
 source. (It's the same mechanism behind the Shuffle `text` reading `NULL` for
-`60115`/`92900` while other alerts carry it — Scenario 04 §3.)
+`60115`/`92900` while other alerts carry it.)
 
 ### 9. Agent silently lost its manager connection
 Repeated manager restarts (during rule development) dropped the agent's

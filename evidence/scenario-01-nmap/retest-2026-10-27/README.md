@@ -25,6 +25,7 @@ is the cause, verifiable against the reload timestamp.
 before/   default HOME_NET (Kali counts as home)
   nmap-sS.txt  nmap-sV.txt  nmap-A.txt     attacker output, one per scan
   fast-sS.txt                              empty (0 alerts)
+  fast-sV.txt                              empty (0 alerts)
   fast-A.txt                               34 lines, all "SURICATA ICMPv4 unknown code"
   signature-counts.txt                     per-scan counts, derived from the fast extracts
 after/    HOME_NET = [192.168.56.20,192.168.56.30]

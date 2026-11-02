@@ -212,7 +212,10 @@ forwarded alert becomes a Shuffle run and a TheHive alert — the same path phis
 (02), SSH (03) and RDP (04) take:
 
 ![Shuffle run for the cred-dump — $exec FINISHED, rule_id 92900, id 1793500465.18783498, the LSASS-access title](../../evidence/scenario-05-creddump/shuffle-creddump.png)
-*Shuffle run: `FINISHED`, `rule_id 92900`, `id 1793500465.18783498`.*
+*Shuffle run: `FINISHED`, `rule_id 92900`, `id 1793500465.18783498`. (The
+`$exec.severity` in the payload is Wazuh's integration value — 1–3, derived from the
+rule level — **not** the TheHive severity; the Severity node remaps it to **4 /
+Critical** downstream.)*
 
 ![TheHive alert for the cred-dump — SEVERITY CRITICAL, tags 92900/wazuh, Reference 1793500465.18783498, description naming rule 92900 and the LSASS access](../../evidence/scenario-05-creddump/thehive-creddump.png)
 *TheHive alert: `SEVERITY:CRITICAL`, tagged `92900` / wazuh, description `Rule 92900

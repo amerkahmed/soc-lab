@@ -48,7 +48,7 @@ grep -n "HOME_NET:" /etc/suricata/suricata.yaml
 
 **Capture the Suricata alert as seen by Wazuh (manager):**
 ```bash
-# Suricata alerts surface under base rule 86601
+# Suricata alert events surface under rule 86601 (the 'alert' child of base rule 86600)
 sudo grep '"id":"86601"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
   > evidence/scenario-01-nmap/wazuh-suricata-alert.json
 ```
@@ -214,7 +214,7 @@ sudo iptables -L -n | grep 192.168.56.10
 - Wazuh Discover filtered to the 5712 → `evidence/scenario-03-ssh/wazuh-5712-alerts.png`
 - that alert expanded (`frequency`, `srcip`, `srcuser`, MITRE) → `evidence/scenario-03-ssh/wazuh-5712-detail.png`
 - the Shuffle run for the event → `evidence/scenario-03-ssh/shuffle-aggregated.png`
-- the TheHive case (`Reference` = the 5712 event id) → `evidence/scenario-03-ssh/thehive-alert.png`
+- the TheHive alert (`Reference` = the 5712 event id) → `evidence/scenario-03-ssh/thehive-alert.png`
 - the TheHive observable (attacker IP) → `evidence/scenario-03-ssh/thehive-observable.png`
 
 ---
