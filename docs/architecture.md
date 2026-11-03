@@ -25,7 +25,7 @@ VirtualBox VMs with a cloud-hosted backend.
 
 **Versions:** Wazuh 4.14.7 · Suricata 8.0.7 · FreeRDP 3.x (`xfreerdp3`) · Hydra 9.7
 · Nmap 7.991 · Mimikatz 2.2.0 · TheHive 5.8.0 · Shuffle Cloud (Scale tier) · Sysmon
-(Windows). Lab hosts use static IPs on an
+15.22 (Windows). Lab hosts use static IPs on an
 isolated `192.168.56.0/24` internal network (setup in §2).
 
 ### End-to-end flow

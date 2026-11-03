@@ -1,0 +1,18 @@
+# Windows account-lockout policy on the RDP target (DESKTOP-T0LOHB5).
+# Captured with `net accounts` on the host. Backs Scenario 04: rules 60204
+# (brute-force correlation) and 60115 (4740 account lockout), and the
+# ~10-minute auto-expiring lockout the two-phase incident relies on.
+#
+# The operative values are the three lockout lines: threshold 10, duration 10 min,
+# observation window 10 min (Wazuh's 60204 correlation threshold of 8/240s is a
+# separate counter and is not this policy).
+
+Force user logoff how long after time expires?:       Never
+Minimum password age (days):                          0
+Maximum password age (days):                          42
+Minimum password length:                              0
+Length of password history maintained:                None
+Lockout threshold:                                    10
+Lockout duration (minutes):                           10
+Lockout observation window (minutes):                 10
+Computer role:                                        WORKSTATION

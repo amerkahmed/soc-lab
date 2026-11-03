@@ -1,0 +1,25 @@
+<!--
+  Wazuh manager active response — SSH brute-force auto-block (Scenario 03).
+  Extracted from /var/ossec/etc/ossec.conf on the manager.
+
+  The <command> definition is a Wazuh default; only the <active-response> binding
+  below is lab-specific. On rule 5712 (SSH brute-force correlation) the manager runs
+  firewall-drop locally, dropping the source IP in iptables for 300 s, then
+  auto-unblocks. Evidence: alert-651-block.json / alert-652-unblock.json
+  (651 "Host Blocked", 652 "Host Unblocked" ~300 s later).
+-->
+
+<!-- command definition (Wazuh default) -->
+<command>
+  <name>firewall-drop</name>
+  <executable>firewall-drop</executable>
+  <timeout_allowed>yes</timeout_allowed>
+</command>
+
+<!-- active response binding (lab-specific) -->
+<active-response>
+  <command>firewall-drop</command>
+  <location>local</location>
+  <rules_id>5712</rules_id>
+  <timeout>300</timeout>
+</active-response>

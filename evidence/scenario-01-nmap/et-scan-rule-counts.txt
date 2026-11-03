@@ -1,0 +1,15 @@
+# ET SCAN rule counts — captured 2026-11-02T23:44:47Z on the Ubuntu sensor (192.168.56.20)
+# Backs the 274 / 232 / 53,123 figures in Scenario 01 §2, docs/architecture.md, and challenges #16.
+#
+# Commands (run on the sensor):
+#   RULES=/var/lib/suricata/rules/suricata.rules
+#   sudo grep -cE '^alert .*msg:"ET SCAN' "$RULES"                                               # enabled ET SCAN rules
+#   sudo grep -E  '^alert .*msg:"ET SCAN' "$RULES" | grep -cE '^alert [a-z-]+ \$EXTERNAL_NET'    # of those, $EXTERNAL_NET-sourced
+#   sudo grep -iE 'rules .*loaded' /var/log/suricata/suricata.log | tail -1                      # total rules loaded
+#
+# --- output ---
+This is Suricata version 8.0.7 RELEASE
+rules file: /var/lib/suricata/rules/suricata.rules
+enabled ET SCAN rules: 274
+of which sourced $EXTERNAL_NET: 232
+total rules loaded: [1887 - Suricata-Main] 2026-11-02 23:41:45 Info: detect: 1 rule files processed. 53123 rules successfully loaded, 0 rules failed, 0 rules skipped

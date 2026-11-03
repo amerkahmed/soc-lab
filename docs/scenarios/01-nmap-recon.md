@@ -128,7 +128,8 @@ response model in [architecture.md §7](../architecture.md#7-response-strategy-t
 - **A loaded rule is not a working rule.** 232 of the 274 enabled ET SCAN rules
   could never fire because `HOME_NET` included the attacker. Test detections with real
   traffic — the original claim ("Suricata catches the scan") was only partly true
-  until it was measured.
+  until it was measured. The live counts (274 / 232 / 53,123) are captured in
+  [`evidence/scenario-01-nmap/et-scan-rule-counts.txt`](../../evidence/scenario-01-nmap/et-scan-rule-counts.txt).
 - **Sensor placement determines visibility.** Suricata only sees traffic on the
   interface it monitors (`enp0s3`). Traffic on another path (e.g. the NAT adapter)
   is invisible to it. See [challenges-and-resolutions.md](../challenges-and-resolutions.md), item 1.

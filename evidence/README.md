@@ -17,6 +17,7 @@ by event ID + UTC — for host events the authoritative UTC is the event
 
 **`scenario-01-nmap/`** — Nmap recon caught by Suricata (rule 86601, an alert event).
 - Original run (2026-10-22): `attack-output.txt` · `suricata-fast-log.txt` (last 20 lines only) · `wazuh-suricata-alert.json` · `wazuh-suricata.png`
+- `et-scan-rule-counts.txt` — sensor-side counts (2026-11-02) backing the 274 / 232 / 53,123 figures: 274 enabled ET SCAN rules, 232 sourced from `$EXTERNAL_NET`, 53,123 total rules loaded (Suricata 8.0.7).
 - `retest-2026-10-27/` — per-scan-type re-test (`-sS`, `-sV`, `-A`, and `-sS -p 1-1000`), split into `before/` and `after/` the `HOME_NET` fix. Each phase holds the attacker output (`nmap-*.txt`), the per-scan Suricata `fast.log` extracts (`fast-*.txt`), and a derived `signature-counts.txt`. `homenet-config.txt` captures the `HOME_NET` change (live `vars{}` block + the Oct 27 20:59 edit mtime), and `README.md` gives the before/after timeline (pinned to the ~21:00 UTC rule reload) and how the counts map to Scenario 01 §2.
 
 **`scenario-02-phishing/`** — reframed as an L1 phishing investigation (redesigned + re-validated 2026-10-28): email analysis (T1566.002) → IOC → http-event match on the lab phishing server `192.168.56.99` (rule 100100, T1204.001) → Shuffle → TheHive alert with IOC observable.

@@ -77,7 +77,8 @@ can see **both** approaches catch the same Mimikatz run.
 
 ### 2a. Behavioral detection — rule 92900 (LSASS access)
 
-Wazuh's built-in **rule 92900**, driven by **Sysmon Event ID 10 (process access)**.
+Wazuh's built-in **rule 92900**, driven by **Sysmon Event ID 10 (process access)**
+(Sysmon config: [`config/sysmon-config.md`](../../config/sysmon-config.md)).
 When Mimikatz opens a handle to LSASS to read its memory, Sysmon records the
 cross-process access and 92900 matches it:
 

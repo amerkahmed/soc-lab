@@ -54,7 +54,7 @@ session with a valid credential** — in a real intrusion obtained out-of-band
 (password spray, credential reuse, or phishing); in this lab the account's own
 password stands in, to exercise the successful-logon detection path. The host's
 policy is `net accounts` **10 / 10 / 10** (threshold 10, lockout duration 10 min,
-reset window 10 min), so in the wild the attacker waits out the 10-minute lockout.
+reset window 10 min; captured in [`config/lockout-policy.txt`](../../config/lockout-policy.txt)), so in the wild the attacker waits out the 10-minute lockout.
 This run did exactly that: the brute force and lockout happened at `02:22:04` UTC,
 the lockout **auto-expired after ~10 minutes** (no admin unlock needed), and the
 foothold logon followed at `02:34:04` UTC. The two phases are deliberately separate

@@ -110,7 +110,8 @@ compromise* — but the source is a clear candidate for blocking.
 A brute force in progress is a strong auto-block candidate: high confidence,
 time-sensitive (every minute is more guesses), **reversible**, and backed by a
 non-spoofable source IP (SSH needs a completed TCP handshake). So the 5712 alert
-triggers a Wazuh **`firewall-drop` active response** that drops the attacker on the
+triggers a Wazuh **`firewall-drop` active response** (manager block:
+[`config/active-response.xml`](../../config/active-response.xml)) that drops the attacker on the
 target's iptables — with a **`<timeout>300</timeout>` temporary ban**, the
 best-practice shape (time-boxed and self-reversing, not a permanent deny-list).
 
