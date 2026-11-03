@@ -59,7 +59,7 @@ all carry that ID. The per-attempt **5710** and the auto-block (**651**/**652**)
 separate alerts with their own event IDs, tied to this run by source IP and the UTC
 window.
 
-![Wazuh Discover filtered on rule.id:5712, time scoped to the run — one correlation hit for the brute-force burst](../../evidence/scenario-03-ssh/wazuh-5712-alerts.png)
+![Wazuh Discover filtered on rule.id:5712 — the 24-hour view returns a single correlation hit, the brute-force burst](../../evidence/scenario-03-ssh/wazuh-5712-alerts.png)
 *One 5712 hit for the run (`event 1793228621.106252`). The burst of failed logins is
 collapsed into this single alert, so the per-attempt 5710 events never reach the
 analyst as individual noise.*

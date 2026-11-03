@@ -52,8 +52,8 @@ and watch the manager startup log after every rule change.
 ### 8. SOAR body broke on a field that changes type between sources
 The Shuffle→TheHive JSON body referenced `$exec.text`, which maps from Wazuh's
 **`full_log`** — and `full_log` is not consistently typed. It is **absent/empty**
-when a rule emits no log text (e.g. the 4740 lockout `60115` and the LSASS-access
-`92900` carry none), a **plain string** for ordinary syslog-style alerts (sshd, the
+for some rules (e.g. the 4740 lockout `60115` and the LSASS-access `92900` carry
+none), a **plain string** for ordinary syslog-style alerts (sshd, the
 RDP `4624`), and a **JSON object** when the source log is itself JSON (Suricata
 `eve.json`). Inserting the object form shattered the hand-built JSON body
 (`invalid decimal literal`).
@@ -118,7 +118,7 @@ callback. (The naive rule also *misses* the http callback — built-in 86602 pre
 it, see item 16 — so it is both noisy and blind; Scenario 02 §3a.)
 **Lesson:** a rule can fire on the right indicator and still be scoped wrong — scope
 to the event type that represents what you mean, and validate with a deterministic
-test. Evidence: `evidence/scenario-02-phishing/wazuh-100100-FALSE-POSITIVE-icmp.json`
+test. Evidence: `evidence/scenario-02-phishing/wazuh-100100-FP-synthetic.json`
 vs `wazuh-100100-alert.json` (recapture).
 
 ### 15. Enabled ET SCAN rules could never fire on the attacker (`HOME_NET` scope)

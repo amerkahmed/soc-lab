@@ -192,6 +192,16 @@ eventID            1       (Sysmon process creation)
 So the full chain is alerted at every stage: **92075** (tool pulled in) → **92900 /
 100002** (tool runs and dumps LSASS).
 
+> **Network blind spot — why this is host-detected, not NIDS-detected.** The certutil
+> pull is an HTTP GET from the Windows host (`.30`) to the attacker (`.10`), yet
+> **Suricata never sees it.** Suricata runs on the Ubuntu sensor (`.20`), and on a
+> VirtualBox **internal network** unicast traffic between `.10` and `.30` is not
+> mirrored to `.20`'s adapter unless its promiscuous mode is explicitly opened
+> (`VBoxManage modifyvm … --nicpromisc<N> allow-vms`). So the ingress transfer is
+> caught **host-side** (Sysmon EID 1 → 92075), never by the NIDS — the same reason no
+> Suricata alert in this lab involves `.30` at all. For the RDP brute force (Scenario
+> 04) the detection is likewise host-side (Windows Security eventchannel), not network.
+
 > _Evidence: `alert-92075-certutil.json` (event `1793500460.18757741`,
 > `02:34:18 UTC`) — the certutil process-creation with the
 > `http://192.168.56.10/...` command line._
@@ -333,6 +343,12 @@ Validated live in one pass — all three rules fired on the same host under the 
 `Client` logon session (`0x34af4d`), and every artifact in
 `evidence/scenario-05-creddump/` carries its event ID. Times below are the event
 `systemTime`; the Discover screenshots show the manager-receipt time (~1.3 s later):
+
+> _Disclosure: the alerts' `firedtimes` counters (e.g. 92653 reads 11) are per-hour
+> running totals, not per-incident — they reflect earlier Type-10 logons and dump runs
+> during that hour's troubleshooting to land a clean session. The captured chain is one
+> coherent pass: every forwarded event ID is unique and the dump rows all run under
+> `0x34af4d`; it simply wasn't the only activity on the host that hour._
 
 | Rule | Event ID | systemTime (UTC) | What fired |
 |---|---|---|---|

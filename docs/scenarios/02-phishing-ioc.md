@@ -153,8 +153,8 @@ alert, not just the connection that represents an actual callback.
 the Kali attacker's own IP. When the attacker scanned the victim, the target's
 **ICMP echo replies** (SID 2200025 — the same alert as Scenario 01) were addressed
 *to* that IP, so their top-level `dest_ip` matched the watchlist and fired the
-phishing rule (level 12) on scan traffic — a false positive captured in
-`wazuh-100100-FALSE-POSITIVE-icmp.json`. That specific trigger depended on the
+phishing rule (level 12) on scan traffic — the real false positive captured in
+`wazuh-100100-FP-original-2026-10-20.json` (`dest_ip 192.168.56.10`). That specific trigger depended on the
 attacker IP doubling as the IOC; with the phishing server on its own IP
 (`192.168.56.99`) it no longer recurs naturally, which is exactly why the fix is
 validated deterministically below rather than by waiting for it to happen again.
@@ -196,9 +196,10 @@ event type that represents what you actually mean, and validate the fix with a
 deterministic test rather than hoping the false positive recurs. See
 [challenges-and-resolutions.md](../challenges-and-resolutions.md), item 14.
 
-> _Evidence: `wazuh-100100-FALSE-POSITIVE-icmp.json` (over-match on an
-> alert event) vs `wazuh-100100-alert.json` (http-scoped match) — regenerated with
-> the two-event test above._
+> _Evidence: `wazuh-100100-FP-synthetic.json` (the synthetic reproduction — naive
+> rule over-matching an `alert` event against the current `.99` IOC) vs
+> `wazuh-100100-alert.json` (http-scoped match) — regenerated with the two-event test
+> above. The real historical misfire is `wazuh-100100-FP-original-2026-10-20.json`._
 
 ---
 
@@ -284,7 +285,7 @@ For rule 100100 to match the injected event, the known-bad IP is **temporarily a
 to the CDB watchlist** (`config/phishing-iocs`) for this one test and removed
 afterward — the committed list keeps only the lab's own phishing server
 (`192.168.56.99`). So this is a one-off validation run, not a permanent watchlist
-entry. (The false-positive capture `wazuh-100100-FALSE-POSITIVE-icmp.json` is likewise
+entry. (The false-positive capture `wazuh-100100-FP-synthetic.json` is likewise
 a labeled reproduction of the tuning case, not from the live phishing run.)
 
 This follows the detection-engineering convention of validating an alert with a

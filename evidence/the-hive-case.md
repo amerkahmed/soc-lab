@@ -7,6 +7,12 @@ this report presents how they are triaged and managed as a single case — its
 classification, observables, ATT&CK TTPs, and the NIST SP 800-61r3 Respond → Recover
 task flow.
 
+> **Note — substitute for a live TheHive case.** The lab's TheHive license expired,
+> putting the instance in read-only mode, so a case could not be created in the UI.
+> The forwarded **alerts** are captured in the screenshots above; this document is the
+> written case report standing in for the live case — the triage, classification,
+> tasks, observables, and TTPs as they would be managed in TheHive.
+
 | | |
 |---|---|
 | **Title** | RDP brute force → valid-credential logon → LSASS dump — DESKTOP-T0LOHB5 (Client) |
