@@ -85,10 +85,13 @@ Suricata emitted large `event_type: stats` records every few seconds, flooding
 logs and adding decoder load. Disabled via `stats: enabled: no`.
 
 ### 12. TheHive API key auth not enabled
-A valid API key still returned 401 because the `key` auth provider wasn't enabled
-on TheHive. The `WWW-Authenticate: Basic` response header was the tell.
-**Fix:** add `{name: key}` to `auth.providers` in `application.conf`. (Basic auth
-worked as an interim fallback.)
+On this instance (**TheHive 5.8.0**), a valid API key still returned 401 because the
+`key` auth provider wasn't active in `auth.providers`. The `WWW-Authenticate: Basic`
+response header was the tell.
+**Fix:** add `{name: key}` to `auth.providers` in `application.conf` (alongside
+`local`/`session`); Basic auth worked as an interim fallback.
+**Note:** whether `key` ships in the default `auth.providers` varies by version and
+install, so this is recorded as observed on our instance, not as a universal default.
 
 ### 13. HTTP node timeout bound to a variable
 The Shuffle HTTP node's connection-timeout field was accidentally set to a
@@ -185,9 +188,11 @@ The Shuffle HTTP node posts alerts to TheHive at `http://<THEHIVE_IP>:9000/api/v
 with an `Authorization: Bearer` header. On the isolated lab backend this is
 functional, but the API key travels **in cleartext** — if the pipeline were exposed
 beyond the host-only segment, the token could be sniffed.
-**Status:** accepted for the lab (traffic never leaves the isolated backend). The key
-is held in Shuffle's cache (`$shuffle_cache.hive-key.value`), not hardcoded in the
-exported workflow, so it is not in this repo. **Production hardening** would terminate
+**Status:** accepted as a known lab risk. The SOAR runs on **Shuffle Cloud** (SaaS),
+so the alert POST travels from Shuffle's cloud to the TheHive host across the public
+internet — the bearer token is exposed on that hop, not confined to a host-only
+segment. The key is held in Shuffle's cache (`$shuffle_cache.hive-key.value`), not
+hardcoded in the exported workflow, so it is not in this repo. **Production hardening** would terminate
 TLS in front of TheHive (a reverse proxy on `:443`) and switch the node to `https://`,
 keeping the token off the wire.
 **Lesson:** a working automation and a *secure* automation are different — transport
