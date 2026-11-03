@@ -14,17 +14,16 @@ former *Defense Evasion* tactic: **TA0005 was renamed → _Stealth_** and a new
 | Credential Access | Brute Force: Password Guessing | T1110.001 | Wazuh 5710 / 5712 (SSH — 5710 tags .001; 5712's own tag is the parent T1110) | [03](scenarios/03-ssh-brute-force.md) ✅ |
 | Credential Access | Brute Force: Password Guessing | T1110.001 | Wazuh 60122 / 60204 / 60115 (RDP failures, correlation, lockout) | [04](scenarios/04-rdp-brute-force.md) ✅ |
 | Lateral Movement | Remote Services: RDP | T1021.001 | Wazuh 92657 / 92653 (successful RDP logon) | [04](scenarios/04-rdp-brute-force.md) ✅ |
-| Stealth | Valid Accounts: Local Accounts | T1078.003 | Wazuh 92657 / 92653 — local admin `Client` logon (built-in rule mis-tags T1078.002; §2) | [04](scenarios/04-rdp-brute-force.md) ✅ |
+| Initial Access | Valid Accounts: Local Accounts | T1078.003 | Wazuh 92657 / 92653 — local admin `Client` logon (built-in rule mis-tags T1078.002; §2) | [04](scenarios/04-rdp-brute-force.md) ✅ |
 | Initial Access | Phishing: Spearphishing Link | T1566.002 | Email analysis (emlAnalyzer) of the crafted sample | [02](scenarios/02-phishing-ioc.md) · analyzed sample |
 | Execution | User Execution: Malicious Link | T1204.001 | Wazuh 100100 — Suricata **http** event to the phishing server (curl = simulated click) | [02](scenarios/02-phishing-ioc.md) · simulated ✅ |
 | Discovery | Account Discovery | T1087 | Sysmon (net.exe) | — (seen, not captured) |
 | Discovery | Remote System Discovery | T1018 | Sysmon | — (seen, not captured) |
-| Execution | Scheduled Task/Job | T1053 | Sysmon (taskschd.dll load) | — (seen, not captured) |
 | Credential Access | OS Credential Dumping: LSASS Memory | T1003.001 | Wazuh 92900 (LSASS access, behavioral) — fired live | [05](scenarios/05-credential-dumping.md) ✅ |
 | Credential Access | OS Credential Dumping | T1003 | Custom 100002 (Mimikatz PE OriginalFileName — name-based, so mapped to the parent; behavioral 92900 carries T1003.001) — fired live | [05](scenarios/05-credential-dumping.md) ✅ |
 | Command & Control | Ingress Tool Transfer | T1105 | Wazuh 92075 (certutil `-urlcache` download) — fired live | [05](scenarios/05-credential-dumping.md) ✅ |
 
-> **✅ = detection validated** — a rule fired and its alert is captured in `evidence/`. Rows without ✅ are observed-only: telemetry **visibility** with no captured detection (T1087 / T1018 / T1053), or an **analyzed sample** with no detection rule (T1566.002). (The visibility-vs-detection distinction, per DeTT&CT.)
+> **✅ = detection validated** — a rule fired and its alert is captured in `evidence/`. Rows without ✅ are observed-only: telemetry **visibility** with no captured detection (T1087 / T1018), or an **analyzed sample** with no detection rule (T1566.002). (The visibility-vs-detection distinction, per DeTT&CT.)
 
 ---
 
@@ -57,7 +56,7 @@ former *Defense Evasion* tactic: **TA0005 was renamed → _Stealth_** and a new
   each to its own evidence: **T1566.002** (the analyzed email) and **T1204.001**
   (the simulated-click connection that rule 100100 observes) — the single network
   event is not mapped to T1566 on its own.
-- The Sysmon-visible techniques (T1087, T1018, T1053) were **seen in telemetry but
+- The Sysmon-visible techniques (T1087, T1018) were **seen in telemetry but
   not captured** as alerts — they surfaced incidentally during Windows testing and
   show the depth of process-level data available for future detection work, not
   detections the lab currently fires.
@@ -82,5 +81,8 @@ they fire on. Reading them critically is the skill; the mismatches this lab reli
 
 Accurate as tagged: 60204 (T1110), 92075 (T1105), 92900 (T1003.001).
 
-**Tactic naming.** Wazuh still emits the pre-v19 tactic name **Defense Evasion** on
-92657/92653; ATT&CK v19 renamed **TA0005 → _[Stealth](https://attack.mitre.org/tactics/TA0005/)_**.
+**Tactic naming.** Wazuh emits the pre-v19 tactic name **Defense Evasion** on
+92657/92653 (ATT&CK v19 renamed **TA0005 → _[Stealth](https://attack.mitre.org/tactics/TA0005/)_**).
+T1078.003 is valid under several tactics (Stealth, Persistence, Privilege Escalation,
+Initial Access); this lab maps the local-account logon to **Initial Access** — the
+foothold reading that fits the intrusion story.

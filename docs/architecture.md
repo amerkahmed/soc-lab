@@ -126,8 +126,8 @@ built-in 92657 flags possible pass-the-hash — a *false lead* here: the logon u
 the actual **password**, not a replayed hash (the online guessing never got in; the
 credential was obtained out-of-band, see
 [Scenario 04 §2](scenarios/04-rdp-brute-force.md)). Sysmon
-also surfaced account-discovery (T1087), remote-system discovery (T1018), and
-scheduled-task DLL loads (T1053), plus a CIS benchmark (SCA) compliance scan.
+also surfaced account-discovery (T1087) and remote-system discovery (T1018), plus
+a CIS benchmark (SCA) compliance scan.
 
 **Key configuration lesson:** the Windows agent did not collect failed logons
 until a `<localfile>` block for the **Security** event channel was added. Sysmon
