@@ -64,6 +64,14 @@ field can be missing, a string, or a nested object depending on the rule and the
 source. (It's the same mechanism behind the Shuffle `text` reading `NULL` for
 `60115`/`92900` while other alerts carry it.)
 
+**One remaining `text` use (by design).** The phishing body still reads
+`$exec.text.dest_ip` for the IOC observable. It resolves there because rule 100100's
+`full_log` is the Suricata **http** event (a JSON object), so `dest_ip` is present in
+`text` — evidenced by the live VT lookup on `192.168.56.99` (`thehive-alert-real.png`).
+The SSH and other bodies already use `$exec.all_fields.*`; migrating the phishing body
+to `$exec.all_fields.data.dest_ip` is the robust follow-up, since `text` is empty when
+the node is run outside a real `100100` execution.
+
 ### 9. Agent silently lost its manager connection
 Repeated manager restarts (during rule development) dropped the agent's
 connection; it "set lock" and didn't auto-recover. Detection *appeared* broken —
@@ -150,8 +158,9 @@ After switching rule 100100 to match HTTP events, it was written as
 synthetic http event showed it matching **86602** ("Suricata: HTTP", level 0) — the
 custom rule never fired. Cause: Wazuh's Suricata ruleset has a specific built-in
 child of base rule 86600 for each event type (86601 alert, 86602 http, 86603 dns,
-86604 tls). For an http event the engine matches the specific child 86602, which
-pre-empts a custom rule hung off the same parent 86600. (The earlier flow-based
+86604 tls). Because 86602 is **level 0**, OSSEC evaluates it before higher-level rules
+(a level-0 match ends evaluation), so for an http event a custom rule hung off the same
+parent 86600 is never reached. (The earlier flow-based
 version worked only because there is **no** built-in flow rule, so the custom rule
 was the sole matching child.)
 **Fix:** chain the custom rule off the specific event-type rule —
@@ -164,14 +173,18 @@ rule that already matches your event, not the generic base — and confirm with
 like "my rule is broken." Non-HTTP IOC callbacks would chain off 86604 (tls) / 86603
 (dns) the same way.
 
-### 17. Custom Sysmon rule passed logtest but never fired live (parentless rule fell into the syslog phase)
+### 17. Custom Sysmon rule passed logtest but never fired live (parentless rule kept the default SYSLOG category)
 Custom rule 100002 (Mimikatz by PE `OriginalFileName`) passed `wazuh-logtest` but
 produced **no live alert** on real Sysmon Event ID 1 traffic. It was written
 **parentless** — matching `providerName` + `eventID` + `originalFileName` fields
-with no `<if_group>`/`<if_sid>`. A parentless custom rule is evaluated in Wazuh's
-default **syslog** decoding phase, so it was never tested against the
-`windows_eventchannel`-decoded Sysmon events, even though the fields decoded
-correctly and logtest (which evaluates a rule in isolation) passed.
+with no `<if_group>`/`<if_sid>`. analysisd routes events to rules by **category**: it
+only evaluates a top-level rule when the rule's category matches the event's decoder
+type (*"categories must match"*, `analysisd.c`). A parentless custom rule keeps the
+default category **SYSLOG**, while agent-forwarded Sysmon events decode as **windows**
+(`DECODER_WINDOWS`), so the rule was never reached on them — even though the fields
+decoded correctly. `wazuh-logtest` applies the **same** category gate (`logtest.c`), so
+a logtest pass reflects how the event decoded in that run, not a rule being exempt from
+the live routing.
 **Misdiagnosis corrected:** an earlier write-up blamed a *missing* `sysmon_event1`
 group. That was wrong — built-in rule **61603** decodes Sysmon EID 1 and **does**
 assign the `sysmon_event1` group.
@@ -179,9 +192,10 @@ assign the `sysmon_event1` group.
 child of the Sysmon process-creation tree and is evaluated on every EID-1 event.
 After the fix, 100002 fired live (event `1793500464.18771518`, level 15, T1003)
 alongside the behavioral LSASS rule 92900 — see Scenario 05 §2b.
-**Lesson:** `logtest` success ≠ live detection (again) — logtest tests a rule in
-isolation; the live pipeline only tests it where its decoding phase places it.
-Anchor custom Sysmon rules to the Sysmon tree, or they silently never fire.
+**Lesson:** `logtest` success ≠ live detection (again) — a parentless rule keeps
+category SYSLOG and is skipped by the top-level category gate on Windows events.
+Anchor custom Sysmon rules to the Sysmon tree (child of 61603 → `sysmon_event1`),
+or they silently never fire.
 
 ### 18. SOAR → TheHive runs over plaintext HTTP (lab limitation, flagged for hardening)
 The Shuffle HTTP node posts alerts to TheHive at `http://<THEHIVE_IP>:9000/api/v1/alert`

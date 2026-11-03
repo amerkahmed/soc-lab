@@ -49,6 +49,18 @@ designed, and the realistic consequence of a sustained single-account brute forc
 (which is why real attackers spray one password across many accounts to avoid it —
 [T1110.003](https://attack.mitre.org/techniques/T1110/003/)).
 
+> **Detection note — the locked attempts leave no `4625`.** The pre-lockout failures
+> each logged a `4625` (Sub Status `0xC000006A`, bad password) → Wazuh **60122** (nine
+> in this run), and the lockout itself logged a single `4740` → **60115**. The
+> *post-lockout* attempts wrote **no `4625` on the target**: with NLA the locked-account
+> check is rejected during CredSSP pre-auth, before the LSA audit path. Confirmed from
+> the target's Security log — 36 brute-force `4625`s across the dev runs, **all**
+> `0xC000006A`, **zero** `0xC0000234` ("account locked out")
+> ([`evidence/scenario-04-rdp/security-log-lockout-check.txt`](../../evidence/scenario-04-rdp/security-log-lockout-check.txt)).
+> Microsoft documents a locked account *can* log `4625/0xC0000234` in the interactive
+> case; this RDP + NLA path does not. Since 60122 matches any `4625`, the absence of
+> further 60122 means those attempts were never audited — not a detection gap.
+
 The online guessing gained no access. The foothold was a **separate interactive RDP
 session with a valid credential** — in a real intrusion obtained out-of-band
 (password spray, credential reuse, or phishing); in this lab the account's own

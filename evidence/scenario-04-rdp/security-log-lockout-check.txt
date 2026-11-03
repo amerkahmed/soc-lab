@@ -1,0 +1,23 @@
+# Target Security-log check — does a locked account log 4625 / 0xC0000234 over RDP + NLA?
+# Captured 2026-11-02 on DESKTOP-T0LOHB5 (the RDP target), elevated.
+# Settles the Scenario 04 open question: why no 60122 fires for attempts after the lockout.
+#
+# Command (elevated cmd):
+#   wevtutil qe Security "/q:*[System[(EventID=4625 or EventID=4740)]]" /rd:true /c:40 /f:text \
+#     | findstr /C:"Event ID" /C:"0xC0000234" /C:"0xC000006A" /C:"192.168.56.10"
+#
+# --- result (last 40 matching events; spans several dev-time brute-force runs) ---
+#   4625 (failed logon):                          36   — every one from 192.168.56.10
+#   4625 Sub Status 0xC000006A (bad password):    36   — ALL of them
+#   4625 Sub Status 0xC0000234 (account locked):   0   — NONE
+#   4740 (account lockout):                        4
+#   (the lone 0xC0000234 string in the raw capture is the findstr argument, not an event)
+#
+# Finding: the target writes 4625 ONLY for bad-password attempts (0xC000006A). The
+# post-lockout attempts — which the attacker saw as ERRCONNECT_ACCOUNT_LOCKED_OUT
+# (attack-output.txt) — produced no 4625 at all. With RDP + NLA, the locked-account
+# credential check is rejected at the CredSSP/NLA layer, before the LSA audit path, so
+# it is not audited as a 4625. Rule 60122 matches any 4625, so the absence of further
+# 60122 after the lockout means those attempts were simply never written — not a gap.
+# (Microsoft documents a locked account CAN log 4625/0xC0000234 in the interactive
+# case; this RDP+NLA path does not.)

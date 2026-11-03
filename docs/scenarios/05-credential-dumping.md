@@ -155,10 +155,12 @@ command-line match into 100002 would blur that contrast — matching on what the
 most useful as a clean pair (name **and** behavior), not as one hybrid rule.
 
 **The fix that made it fire — `if_group`, not field-matching.** The rule originally
-had **no parent dependency** (no `<if_group>`/`<if_sid>`). A parentless custom rule
-falls into Wazuh's default **syslog** evaluation phase, so it was never tested
-against the `windows_eventchannel`-decoded Sysmon events — and never fired, even
-though the fields decoded correctly and `wazuh-logtest` passed. Built-in rule
+had **no parent dependency** (no `<if_group>`/`<if_sid>`). analysisd evaluates a
+top-level rule only when its **category** matches the event's decoder type; a
+parentless rule keeps the default category **SYSLOG**, while `windows_eventchannel`
+Sysmon events decode as **windows** (`DECODER_WINDOWS`), so it was never reached —
+and never fired, even though the fields decoded correctly and `wazuh-logtest`
+(which applies the same gate) passed. Built-in rule
 **61603** decodes Sysmon Event ID 1 and assigns it the group **`sysmon_event1`**;
 anchoring 100002 with `<if_group>sysmon_event1</if_group>` makes it a child of that
 tree, so it is evaluated on every Sysmon process-creation event. With that one
@@ -167,7 +169,8 @@ T1003) — the process-creation of `m.exe`, **~478 ms** before 92900 saw it touc
 
 > _This corrects an earlier write-up that blamed a missing `sysmon_event1` group;
 > the group **is** produced (by 61603) — the real cause was the parentless rule
-> defaulting to the syslog phase. Logged as a challenge item in
+> keeping the default **SYSLOG** category, which the top-level category gate skips on
+> `windows`-typed events. Logged as a challenge item in
 > [challenges-and-resolutions.md](../challenges-and-resolutions.md)._
 >
 > _Evidence: `alert-100002-mimikatz.json` — `originalFileName: mimikatz.exe`,
@@ -318,9 +321,10 @@ noted as a possible extension rather than a gap.
   92900 is the primary/forwarded detection; 100002 is the complementary one.
 - **A parentless custom rule silently never fires.** 100002 passed `wazuh-logtest`
   yet produced nothing live until it was anchored with `<if_group>sysmon_event1</if_group>`.
-  `logtest` evaluates a rule in isolation; the live pipeline only tests it where its
-  decoding phase places it. Anchor custom Sysmon rules to the Sysmon tree (61603 →
-  `sysmon_event1`) or they fall into the syslog phase and are never reached.
+  analysisd evaluates a top-level rule only when its category matches the event's
+  decoder type; a parentless rule keeps the default **SYSLOG** category and is skipped
+  on `windows`-typed Sysmon events. Anchor custom Sysmon rules to the Sysmon tree
+  (child of 61603 → `sysmon_event1`) or they are never reached.
 - **Why LSASS?** The Local Security Authority Subsystem Service holds credential
   material for signed-in users in memory — password hashes, Kerberos tickets, and in
   some configurations plaintext. "Dumping LSASS" means reading that process's memory

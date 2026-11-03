@@ -116,9 +116,10 @@ Plain-English, line by line:
   by Suricata **per HTTP request**, so the rule fires in **near-real-time (~1–2 s)**
   rather than waiting ~60 s for a flow record. Chaining off 86602 (not 86600) is
   deliberate: Wazuh has a specific built-in child of 86600 per event type
-  (86601 alert / 86602 http / 86603 dns / 86604 tls), and the specific one pre-empts
-  a custom sibling hung off 86600 — so an `if_sid 86600 + event_type=http` rule never
-  fires on http events (it loses to 86602). This was found with `wazuh-logtest` and
+  (86601 alert / 86602 http / 86603 dns / 86604 tls). On an http event the **level-0**
+  child 86602 is evaluated first — OSSEC tries level-0 rules first, and a match there
+  ends evaluation — so an `if_sid 86600 + event_type=http` sibling never fires on http
+  events. This was found with `wazuh-logtest` and
   is written up in [challenges-and-resolutions.md](../challenges-and-resolutions.md),
   item 16. A per-packet alert produces no http event, so it can't trip the rule
   (see §3a); §10 covers the specificity-vs-coverage choice.
@@ -177,8 +178,9 @@ Result — confirmed with `wazuh-logtest`, then captured live:
 - **Naive rule** (`if_sid 86600`, `match_key`, no event-type scope) is **doubly
   wrong**: on the per-packet **alert** event it fires `100100` (level 12) — a false
   positive on scan/ICMP traffic — and on the real **http** callback it does **not**
-  fire at all, because Wazuh's built-in `86602` (http) pre-empts it (first matching
-  child wins; see item 16). So it alerts on the wrong thing *and* misses the right
+  fire at all, because Wazuh's built-in `86602` (http) is **level 0**, which OSSEC
+  evaluates first — a level-0 match ends evaluation, so the custom sibling off 86600 is
+  never reached (see item 16). So it alerts on the wrong thing *and* misses the right
   thing.
 - **Scoped rule** (`if_sid 86602`, child of Suricata's http rule, + `address_match_key`,
   as deployed) is correct on both: the alert event matches `86601` and never reaches

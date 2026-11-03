@@ -12,7 +12,9 @@
       ...   (9 failures from 192.168.56.10 — Wazuh 60122 x9; correlation 60204 at the 8th)
 [22:22:04:644] [ERROR][com.freerdp.core] - [nla_recv_pdu]: ERRCONNECT_ACCOUNT_LOCKED_OUT [0x00020018]
 [22:22:04:692] [ERROR][com.freerdp.core] - [nla_recv_pdu]: ERRCONNECT_ACCOUNT_LOCKED_OUT [0x00020018]
-      ...   (further attempts hit the locked account — Wazuh 60115. No access gained by guessing.)
+      ...   (further attempts hit the locked account: NLA returns ACCOUNT_LOCKED_OUT and
+      ...    the target writes NO 4625 for them — so no further 60122; the single 4740
+      ...    lockout is Wazuh 60115. No access gained by guessing.)
 
 # ── Lockout policy: net accounts 10 / 10 / 10 — waited out the ~10-minute window, then logged in ──
 
