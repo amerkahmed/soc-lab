@@ -18,7 +18,7 @@
 
 # ── Lockout policy: net accounts 10 / 10 / 10 — waited out the ~10-minute window, then logged in ──
 
-# ── T1078.003 / T1021.001 — valid-credential interactive logon (credential obtained out-of-band) ──
+# ── T1078.003 / T1021.001 (analyst also maps T1133 External Remote Services: external entry, no rule emits it) — valid-credential interactive logon (credential obtained out-of-band) ──
 # A real interactive session this time (no +auth-only) -> Type-10 logon.
 ┌──(kali㉿kali)-[~]
 └─$ xfreerdp3 /u:Client /p:"<REDACTED>" /v:192.168.56.30 /cert:ignore

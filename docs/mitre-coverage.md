@@ -15,6 +15,7 @@ former *Defense Evasion* tactic: **TA0005 was renamed → _Stealth_** and a new
 | Credential Access | Brute Force: Password Guessing | T1110.001 | Wazuh 60122 / 60204 / 60115 (RDP failures, correlation, lockout) | [04](scenarios/04-rdp-brute-force.md) ✅ |
 | Lateral Movement | Remote Services: RDP | T1021.001 | Wazuh 92657 / 92653 (successful RDP logon) | [04](scenarios/04-rdp-brute-force.md) ✅ |
 | Initial Access | Valid Accounts: Local Accounts | T1078.003 | Wazuh 92657 / 92653 — local admin `Client` logon (built-in rule mis-tags T1078.002; §2) | [04](scenarios/04-rdp-brute-force.md) ✅ |
+| Initial Access | External Remote Services | T1133 | **Analyst mapping** — Kali (modeled external, see the scanning note below) used internet-facing RDP as the entry vector; **no Wazuh rule emits T1133** (the firing rules tag T1021.001) | [04](scenarios/04-rdp-brute-force.md) · analyst mapping |
 | Initial Access | Phishing: Spearphishing Link | T1566.002 | Email analysis (emlAnalyzer) of the crafted sample | [02](scenarios/02-phishing-ioc.md) · analyzed sample |
 | Execution | User Execution: Malicious Link | T1204.001 | Wazuh 100100 — Suricata **http** event to the phishing server (curl = simulated click) | [02](scenarios/02-phishing-ioc.md) · simulated ✅ |
 | Discovery | Account Discovery | T1087 | Sysmon (net.exe) | — (seen, not captured) |
@@ -23,7 +24,7 @@ former *Defense Evasion* tactic: **TA0005 was renamed → _Stealth_** and a new
 | Credential Access | OS Credential Dumping | T1003 | Custom 100002 (Mimikatz PE OriginalFileName — name-based, so mapped to the parent; behavioral 92900 carries T1003.001) — fired live | [05](scenarios/05-credential-dumping.md) ✅ |
 | Command & Control | Ingress Tool Transfer | T1105 | Wazuh 92075 (certutil `-urlcache` download) — fired live | [05](scenarios/05-credential-dumping.md) ✅ |
 
-> **✅ = detection validated** — a rule fired and its alert is captured in `evidence/`. Rows without ✅ are observed-only: telemetry **visibility** with no captured detection (T1087 / T1018), or an **analyzed sample** with no detection rule (T1566.002). (The visibility-vs-detection distinction, per DeTT&CT.)
+> **✅ = detection validated** — a rule fired and its alert is captured in `evidence/`. Rows without ✅ are observed-only: telemetry **visibility** with no captured detection (T1087 / T1018), an **analyzed sample** with no detection rule (T1566.002), or an **analyst mapping** that no rule emits (T1133 — the external-access reading of the RDP foothold). (The visibility-vs-detection distinction, per DeTT&CT.)
 
 ---
 
@@ -86,3 +87,16 @@ Accurate as tagged: 92075 (T1105), 92900 (T1003.001).
 T1078.003 is valid under several tactics (Stealth, Persistence, Privilege Escalation,
 Initial Access); this lab maps the local-account logon to **Initial Access** — the
 foothold reading that fits the intrusion story.
+
+**External Remote Services (T1133) — analyst mapping, not a fired detection.** The
+same RDP logon can be read at the tactic level as *external entry*: Kali is modeled as
+an outside attacker (the scanning note above), and the session is the attacker's way
+*into* the environment — a foothold — rather than a pivot from an already-owned host.
+That reading is [T1133 External Remote Services](https://attack.mitre.org/techniques/T1133/)
+(Initial Access / Persistence; tactics confirmed against ATT&CK). **No Wazuh rule emits
+T1133**: the rules that fire (92657 / 92653) tag **T1021.001** (Remote Services: RDP),
+so T1021.001 is the evidenced, tool-captured technique and T1133 is an analyst mapping
+laid on the same event. Both are kept — T1021.001 as what the tooling captured, T1133 as
+the analyst's external-access reading — and T1133 carries no ✅ because nothing detects
+it. It does **not** displace the T1021.001 (Lateral Movement) row above; the two are
+complementary techniques for one event under different tactics.

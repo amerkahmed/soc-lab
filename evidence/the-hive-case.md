@@ -87,6 +87,7 @@ so contain the host and rotate every cached credential.
 | Brute Force: Password Guessing | T1110.001 | 10 RDP (NLA) guesses vs local admin `Client` from .10; correlated by 60204, stopped by 60115 |
 | Valid Accounts: Local Accounts | T1078.003 | interactive RDP logon with a valid credential obtained out-of-band (92653 interactive session `0x34af4d`; the Type-3 NLA pre-auth 92657 is `0x33f676`) |
 | Remote Services: RDP | T1021.001 | Type-10 interactive RDP session from .10 established the foothold |
+| External Remote Services | T1133 | Analyst mapping (tactic-level): .10 is an external attacker and the RDP session is the entry into the environment, not a pivot from an owned host. No Wazuh rule emits T1133 — the firing rules tag T1021.001; this row is the analyst's external-access reading, not a captured detection |
 | Ingress Tool Transfer | T1105 | certutil pulled Mimikatz (renamed m.exe) to C:\Users\Public (92075) |
 | OS Credential Dumping: LSASS Memory | T1003.001 | m.exe read LSASS, grantedAccess 0x1010 (92900; name match 100002) |
 

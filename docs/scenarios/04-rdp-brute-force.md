@@ -9,7 +9,7 @@ access into a confirmed foothold — the foothold the credential-dumping chain i
 
 | | |
 |---|---|
-| **MITRE ATT&CK** | T1110.001 (Brute Force: Password Guessing) → T1021.001 (Remote Services: RDP) with T1078.003 (Valid Accounts: Local Accounts). The built-in success rules carry tags that are inexact here: 92657 tags T1550.002 (Pass the Hash) and T1078.002 (Domain Accounts), and 92653 also tags T1078.002 — §2 explains why neither is accurate for a password-guessing attack on a local account. |
+| **MITRE ATT&CK** | T1110.001 (Brute Force: Password Guessing) → T1021.001 (Remote Services: RDP) with T1078.003 (Valid Accounts: Local Accounts). The built-in success rules carry tags that are inexact here: 92657 tags T1550.002 (Pass the Hash) and T1078.002 (Domain Accounts), and 92653 also tags T1078.002 — §2 explains why neither is accurate for a password-guessing attack on a local account. An analyst would additionally map the entry itself to T1133 (External Remote Services) — the external-access reading of the foothold; no rule emits it, so it is a mapping on top of the evidenced T1021.001, not a fired detection (§2). |
 | **Attacker** | Kali — 192.168.56.10 (workstation `kali`) |
 | **Target** | Windows 10 — DESKTOP-T0LOHB5 (192.168.56.30) |
 | **Target account** | `Client` — a **local administrator** account |
@@ -171,6 +171,14 @@ both also tag **T1078.002 (Domain Accounts)**, which is likewise wrong for a loc
 Built-in mappings are a useful starting point, not always exact for the environment
 they fire in — and knowing *why* a tag is wrong is the analyst skill the mismatch
 exercises.
+
+At the tactic level, because Kali is modeled as an external attacker and this RDP
+session is the entry *into* the environment rather than a pivot from an already-owned
+host, an analyst would also map it to **T1133 (External Remote Services** — Initial
+Access**)**. No built-in rule emits T1133, so it is an analyst mapping on top of the
+evidenced T1021.001, not a fired detection — it is listed in
+[mitre-coverage.md](../mitre-coverage.md) as an analyst mapping (no ✅), complementing
+the T1021.001 row rather than replacing it.
 
 **Configuration note:** these detections did not work until a `<localfile>` block
 for the **Security** event channel was added to the Windows agent's `ossec.conf`.
