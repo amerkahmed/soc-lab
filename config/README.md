@@ -18,7 +18,10 @@ reproducible. Secrets and public cloud IPs are redacted.
 | `lockout-policy.txt` | Windows account-lockout policy (`net accounts` 10 / 10 / 10) behind 60115 and the ~10-min auto-expiring lockout (Scenario 04); 60204 is a separate Wazuh correlation, not driven by this policy | reference (Windows endpoint) |
 
 ## Redactions
-- Shuffle webhook URL → `webhook_REDACTED`
+- Shuffle webhook URL → `webhook_REDACTED`. The webhook trigger's UUID — the secret
+  part of that URL — is also a placeholder (`WEBHOOK-TRIGGER-ID-REDACTED`) in the
+  trigger id and branch `source_id`. The webhook has since been **rotated** in
+  Shuffle, so any value in earlier history is dead.
 - Cloud IPs and API keys are not included.
 
 ## Not included here
