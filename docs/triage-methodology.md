@@ -48,7 +48,7 @@ on top of the detections.
   account, ends in success) — would *not* trip 5712 and would not come as a burst.
 - **Escalate when:** correlation fires, or any success follows the failures.
 
-### RDP brute force → compromise (Scenario 04)
+### RDP brute force → lockout → valid-credential foothold (Scenario 04)
 - **Malicious indicators:** consistent source IP across all 4625s, a brute-force
   correlation (60204), and an account lockout (60115) — then, separately, a
   valid-credential logon (rule 92657) from that same attacking IP.
@@ -70,7 +70,8 @@ on top of the detections.
   especially from a user-writable path (`C:\Users\Public\`) — rule 92900 (Sysmon
   Event ID 10). On an endpoint this has essentially no benign explanation.
 - **Correlation:** fires on the same host/account compromised in Scenario 04 —
-  brute force → compromise → credential theft is one coherent progression.
+  brute force (blocked by lockout) → out-of-band valid-credential foothold →
+  credential theft is one coherent progression.
 - **Severity is impact-based:** the detecting rule is level 12, but the incident is
   Critical — every credential cached on the host must be treated as stolen.
 - **Escalate immediately:** this is post-compromise, so isolate the host and rotate

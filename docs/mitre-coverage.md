@@ -76,10 +76,10 @@ they fire on. Reading them critically is the skill; the mismatches this lab reli
 | 92657 (Type-3 NLA) | **T1550.002** + **T1078.002** + T1021.001 | T1021.001 + T1078.003 | Pass-the-Hash needs a stolen **hash** (a real password was used); T1078.002 is **AD-domain** — `Client` is a local WORKGROUP account (→ T1078.003). |
 | 92653 (Type-10 RDP) | T1021.001 + **T1078.002** | T1021.001 + T1078.003 | T1021.001 correct; T1078.002 (domain) → **.003 (Local)**. |
 | 5710 (SSH invalid user) | T1110.001 + **T1021.004** | T1110.001 | T1021.004 (SSH *lateral movement*) needs a successful valid-account login; 5710 fires on an invalid-user **failure** — no session. |
-| 5712 (SSH correlation) | T1110 (parent) | T1110.001 | Parent is acceptable for a multi-method correlation; the exercised behavior is password guessing (.001). |
+| 5712 / 60204 (correlation) | T1110 (parent) | T1110.001 | Parent is acceptable for a multi-event correlation; the exercised behavior is password guessing (.001). |
 | 100002 (custom) | T1003 (parent) | T1003 | Deliberate — a name match can't prove the LSASS sub-technique; behavioral 92900 carries T1003.001. |
 
-Accurate as tagged: 60204 (T1110), 92075 (T1105), 92900 (T1003.001).
+Accurate as tagged: 92075 (T1105), 92900 (T1003.001).
 
 **Tactic naming.** Wazuh emits the pre-v19 tactic name **Defense Evasion** on
 92657/92653 (ATT&CK v19 renamed **TA0005 → _[Stealth](https://attack.mitre.org/tactics/TA0005/)_**).

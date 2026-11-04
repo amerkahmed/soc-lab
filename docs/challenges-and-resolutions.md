@@ -53,9 +53,10 @@ and watch the manager startup log after every rule change.
 The Shuffle→TheHive JSON body referenced `$exec.text`, which maps from Wazuh's
 **`full_log`** — and `full_log` is not consistently typed. It is **absent/empty**
 for some rules (e.g. the 4740 lockout `60115` and the LSASS-access `92900` carry
-none), a **plain string** for ordinary syslog-style alerts (sshd, the
-RDP `4624`), and a **JSON object** when the source log is itself JSON (Suricata
-`eve.json`). Inserting the object form shattered the hand-built JSON body
+none), a **plain string** only for journald/syslog alerts (sshd — `5712`), and a **JSON
+object** for JSON-sourced events: Suricata `eve.json` (`100100`) **and** the Windows
+eventchannel `4624` (`92657`/`92653`), which the SOAR parses to a nested
+`win.system`/`win.eventdata` object (`shuffle-rdp-compromise.png`). Inserting the object form shattered the hand-built JSON body
 (`invalid decimal literal`).
 **Fix:** build the body only from consistently-typed scalar fields (`title`,
 `rule_id`, `id`) and never the variable-shaped `full_log`/`text` blob.

@@ -126,8 +126,8 @@ built-in 92657 flags possible pass-the-hash — a *false lead* here: the logon u
 the actual **password**, not a replayed hash (the online guessing never got in; the
 credential was obtained out-of-band, see
 [Scenario 04 §2](scenarios/04-rdp-brute-force.md)). Sysmon
-also surfaced account-discovery (T1087) and remote-system discovery (T1018), plus
-a CIS benchmark (SCA) compliance scan.
+also surfaced account-discovery (T1087) and remote-system discovery (T1018);
+separately, Wazuh's **SCA module** ran a CIS-benchmark compliance scan.
 
 **Key configuration lesson:** the Windows agent did not collect failed logons
 until a `<localfile>` block for the **Security** event channel was added. Sysmon
@@ -209,7 +209,9 @@ All three paths are **raw HTTP nodes** POSTing a hand-built JSON body to TheHive
 `/api/v1/alert`, each with an explicit `Content-Type: application/json` and an
 `Authorization: Bearer` header whose key is pulled from Shuffle's cache
 (`$shuffle_cache.hive-key.value`), never hardcoded. The exported workflow (secrets
-scrubbed) is at [`config/shuffle-workflow.json`](../config/shuffle-workflow.json).
+scrubbed) is at [`config/shuffle-workflow.json`](../config/shuffle-workflow.json). The
+three POST nodes in the export are `Hive_Enriched` (phishing path), `Hive` (severity
+path — 60115/92657/92900), and `Hive_Auth` (SSH 5712).
 
 **Why a raw HTTP node instead of the TheHive app node:** the native app node
 proved unreliable (empty body, content-type mismatch). A plain HTTP node — with
