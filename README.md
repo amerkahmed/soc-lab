@@ -206,6 +206,10 @@ config/                            ← reproducible configs (sanitized)
   thehive-http-body.json           ← TheHive alert body (enriched / phishing path)
   paypal_phish.eml                 ← phishing sample for emlAnalyzer
   shuffle-workflow.json            ← exported SOAR workflow (secrets scrubbed)
+  active-response.xml              ← SSH brute-force auto-block (firewall-drop)
+  lockout-policy.txt               ← Windows account-lockout policy (net accounts)
+  sysmon-config.md                 ← Sysmon rules feeding Scenario 05
+  README.md                        ← config index
 evidence/                          ← screenshots + raw alert JSON per scenario
 ```
 

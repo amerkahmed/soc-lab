@@ -138,7 +138,7 @@ until a `<localfile>` block for the **Security** event channel was added. Sysmon
 ## 4. Network-based detection (Suricata NIDS)
 
 Suricata runs on the Ubuntu target, watching `enp0s3`, with the full Emerging
-Threats Open ruleset (**53,123** rules loaded, 0 failed — ET Open as of Oct 2026)
+Threats Open ruleset (**53,123** rules loaded, 0 failed — ET Open as captured 2026-11-02)
 plus Suricata's built-in decoder rules, and
 writes JSON to `/var/log/suricata/eve.json`, which the Wazuh agent forwards to the
 manager (built-in Suricata decoders).

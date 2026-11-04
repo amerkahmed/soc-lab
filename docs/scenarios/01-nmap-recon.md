@@ -59,8 +59,8 @@ by running three scan types and counting alerts per signature in `fast.log`:
 
 **The `HOME_NET` fix.** Suricata's default `HOME_NET`
 (`[192.168.0.0/16,10.0.0.0/8,172.16.0.0/12]`) included the Kali attacker, and
-`EXTERNAL_NET` is `!$HOME_NET`. Of the 274 enabled ET SCAN rules (ET Open, as of
-Oct 2026), 232 are sourced from `$EXTERNAL_NET` and so match only traffic *from*
+`EXTERNAL_NET` is `!$HOME_NET`. Of the 274 enabled ET SCAN rules (ET Open, as captured
+2026-11-02), 232 are sourced from `$EXTERNAL_NET` and so match only traffic *from*
 outside `HOME_NET` — including the OS Detection Probe rule
 (`alert udp $EXTERNAL_NET 10000: -> $HOME_NET 10000:`, SID 2018489 rev 4) — so they
 could never fire on Kali. Scoping `HOME_NET` to the victim hosts

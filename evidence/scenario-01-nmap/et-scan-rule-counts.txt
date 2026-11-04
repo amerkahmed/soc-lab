@@ -1,5 +1,5 @@
 # ET SCAN rule counts — captured 2026-11-02T23:44:47Z on the Ubuntu sensor (192.168.56.20)
-# Backs the 274 / 232 / 53,123 figures in Scenario 01 §2, docs/architecture.md, and challenges #16.
+# Backs the 53,123 figure in docs/architecture.md and the 274 / 232 / 53,123 figures in Scenario 01 §2 and challenges #15.
 #
 # Commands (run on the sensor):
 #   RULES=/var/lib/suricata/rules/suricata.rules

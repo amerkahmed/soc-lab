@@ -11,7 +11,7 @@ Each scan was run **twice** — once under the default config, once under the fi
 
 | Time (UTC) | Event |
 |---|---|
-| 20:44–20:47 | **before** scans: `-sS` (20:44 local 16:44), `-sV` (16:46), `-A` (16:47) |
+| 20:44–20:47 | **before** scans: `-sS` at 20:44 UTC (16:44 local), `-sV` (20:46), `-A` (20:47) |
 | ~20:59 | `suricata.yaml` edited — `HOME_NET` scoped to `[192.168.56.20,192.168.56.30]` (file mtime) |
 | ~21:00:25 / 21:00:43 | Suricata reload — "53123 rules successfully loaded" (from `suricata.log`) |
 | 21:00:59–21:05 | **after** scans: `-sS` (21:00:59), `-sV` (21:01:44), `-A` (21:02:14→21:02:26), `-p1000` (21:05) |
