@@ -60,6 +60,10 @@ designed, and the realistic consequence of a sustained single-account brute forc
 > Microsoft documents a locked account *can* log `4625/0xC0000234` in the interactive
 > case; this RDP + NLA path does not. Since 60122 matches any `4625`, the absence of
 > further 60122 means those attempts were never audited — not a detection gap.
+> **On the count:** the threshold is 10 but only nine `4625`s precede the lockout —
+> `badPwdCount` is cumulative across the 10-min observation window, so residual
+> failures from the prior burst most likely topped it to 10 (the exact pre-count
+> isn't isolated in this capture).
 
 The online guessing gained no access. The foothold was a **separate interactive RDP
 session with a valid credential** — in a real intrusion obtained out-of-band
@@ -99,12 +103,12 @@ views — the brute force (failure burst → correlation → lockout), then the
 valid-credential logon ~12 minutes later — every row a single source
 (`192.168.56.10`, workstation `kali`) against a single account (`Client`):
 
-![Wazuh Discover filtered on rule.id 60122/60204/60115 and targetUserName Client — nine failed-logon 4625s from 192.168.56.10, the 60204 brute-force correlation, and the 4740 account lockout, all at 02:22:04 UTC](../../evidence/scenario-04-rdp/wazuh-rdp-bruteforce.png)
+![Wazuh Discover filtered on rule.id 60122/60204/60115 (every row is targetUserName Client, the only targeted account) — nine failed-logon 4625s from 192.168.56.10, the 60204 brute-force correlation, and the 4740 account lockout, all at 02:22:04 UTC](../../evidence/scenario-04-rdp/wazuh-rdp-bruteforce.png)
 *Phase 1 — brute force (`@timestamp`): nine `60122` failures from `192.168.56.10`
 → `60204` "Multiple Windows Logon Failures" (8 in 240 s) → `60115` account lockout,
 all on `Client`. Eleven hits, one source, one account.*
 
-![Wazuh Discover filtered on rule.id 92657/92653 and targetUserName Client — the Type-3 NLA success 0x33f676 and the Type-10 linked pair 0x34af4d/0x34af73, from 192.168.56.10 at 02:34:04](../../evidence/scenario-04-rdp/wazuh-rdp-logon.png)
+![Wazuh Discover filtered on rule.id 92657/92653 (every row is targetUserName Client, the only targeted account) — the Type-3 NLA success 0x33f676 and the Type-10 linked pair 0x34af4d/0x34af73, from 192.168.56.10 at 02:34:04](../../evidence/scenario-04-rdp/wazuh-rdp-logon.png)
 *Phase 2 — the valid-credential logon ~12 minutes later (after the lockout
 expired): the Type-3 NLA pre-auth (`92657`, `targetLogonId 0x33f676`) and the
 Type-10 linked token pair (`92653`, `0x34af4d` ↔ `0x34af73`), all from
@@ -115,8 +119,9 @@ Five rules carry the story. The first three are the brute force; the last two ar
 the single successful RDP login, which — with NLA — records **two** 4624s:
 
 - **Rule 60122** (level 5) — "Logon Failure - Unknown user or bad password," from
-  **Event ID 4625** (`logonType 3`, `NtLmSsp` / NTLM, `status 0xC000006D` — bad
-  password), source `192.168.56.10`. One per failed attempt.
+  **Event ID 4625** (`logonType 3`, `NtLmSsp` / NTLM, `status 0xC000006D` generic
+  logon failure, sub-status `0xC000006A` = bad password), source `192.168.56.10`. One
+  per failed attempt.
   _(event `1793499725.17888467`)_
 - **Rule 60204** (level 10) — "Multiple Windows Logon Failures," the built-in
   **brute-force correlation** (8 failures from one source IP within 240 s), fired at
@@ -228,9 +233,11 @@ logons + 60204 correlation + account lockout `02:22:04`, then the successful
 interactive session `02:34:04` (after the ~10-minute lockout expired).
 
 **Observations**
-- **Source** — `192.168.56.10` (workstation name `kali`), consistent across every
-  4625, the 4740 lockout, and both final 4624s. A single source driving all stages
-  is the signature of a targeted brute force, not scattered user error.
+- **Source** — `192.168.56.10`, consistent across every 4625, the 4740 lockout, and
+  all three success 4624s (one Type-3, two Type-10). The caller workstation name
+  `kali` appears on the Type-3 event; the Type-10 events carry `DESKTOP-T0LOHB5`. A
+  single source driving all stages is the signature of a targeted brute force, not
+  scattered user error.
 - **Target** — `Client`, a **local administrator** account. High impact if
   compromised.
 - **Volume & timing** — a tight burst of failures inside one second (far faster

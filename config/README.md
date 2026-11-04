@@ -15,7 +15,7 @@ reproducible. Secrets and public cloud IPs are redacted.
 | `shuffle-workflow.json` | Exported Shuffle SOAR workflow (webhook, cloud IPs, and API keys scrubbed) | import into Shuffle |
 | `active-response.xml` | SSH brute-force auto-block — `firewall-drop` on rule 5712, 300 s timeout (Scenario 03) | inside `<ossec_config>` in `ossec.conf` (manager) |
 | `sysmon-config.md` | Sysmon version + the ProcessCreate/ProcessAccess rules that drive 92075 / 92900 / 100002 (Scenario 05) | reference (Windows endpoint `sysmonconfig.xml`) |
-| `lockout-policy.txt` | Windows account-lockout policy (`net accounts` 10 / 10 / 10) behind 60115 / 60204 (Scenario 04) | reference (Windows endpoint) |
+| `lockout-policy.txt` | Windows account-lockout policy (`net accounts` 10 / 10 / 10) behind 60115 and the ~10-min auto-expiring lockout (Scenario 04); 60204 is a separate Wazuh correlation, not driven by this policy | reference (Windows endpoint) |
 
 ## Redactions
 - Shuffle webhook URL → `webhook_REDACTED`

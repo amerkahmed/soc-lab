@@ -85,7 +85,7 @@ so contain the host and rotate every cached credential.
 | Technique | ID | Procedure |
 |---|---|---|
 | Brute Force: Password Guessing | T1110.001 | 9 RDP (NLA) guesses vs local admin `Client` from .10; correlated by 60204, stopped by 60115 |
-| Valid Accounts: Local Accounts | T1078.003 | interactive RDP logon with a valid credential obtained out-of-band (92657/92653, session 0x34af4d) |
+| Valid Accounts: Local Accounts | T1078.003 | interactive RDP logon with a valid credential obtained out-of-band (92653 interactive session `0x34af4d`; the Type-3 NLA pre-auth 92657 is `0x33f676`) |
 | Remote Services: RDP | T1021.001 | Type-10 interactive RDP session from .10 established the foothold |
 | Ingress Tool Transfer | T1105 | certutil pulled Mimikatz (renamed m.exe) to C:\Users\Public (92075) |
 | OS Credential Dumping: LSASS Memory | T1003.001 | m.exe read LSASS, grantedAccess 0x1010 (92900; name match 100002) |

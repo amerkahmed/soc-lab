@@ -73,8 +73,9 @@ Expanding that alert shows the fields triage actually uses — `data.srcip`,
 Access → Brute Force).*
 
 > _Evidence: `alert-5712.json` (event `…106252`, level 10 correlation),
-> `alert-5710.json` (per-attempt sample — `firedtimes: 13`, i.e. 13 failed-login
-> events reached sshd this run before the block)._
+> `alert-5710.json` (per-attempt sample — `firedtimes: 13` is the rule's running
+> counter, not a guaranteed per-run total; the per-run failures are better read from
+> `active-response-block.txt`'s `previous_output`)._
 >
 > _The 5712 detection, its SOAR run, and its TheHive alert all carry event ID
 > `1793228621.106252` (UTC `23:03:41.524Z`); the per-attempt 5710 and the auto-block
@@ -118,9 +119,10 @@ best-practice shape (time-boxed and self-reversing, not a permanent deny-list).
 It fired and it worked: rule **651** "Host Blocked by firewall-drop Active Response"
 recorded the `add` for `192.168.56.10` (acting on event `1793228621.106252`), and
 `iptables -L` showed the live `DROP`. The block **cut the attack off mid-run** —
-hydra queued 25 guesses, and rule 5710 logged **13 matching auth-failure events**
-(`firedtimes: 13` — fewer distinct password attempts than that, since one
-invalid-user attempt logs several lines) before the source was dropped. Exactly 300 s later, rule **652** "Host Unblocked"
+hydra queued 25 guesses, and rule 5710 logged multiple auth-failure events
+(`firedtimes: 13` is the rule's running counter, not a guaranteed per-run total —
+and one invalid-user attempt logs several lines, so distinct password attempts are
+fewer) before the source was dropped. Exactly 300 s later, rule **652** "Host Unblocked"
 recorded the `delete` — the ban auto-expired as configured.
 
 > **Caveat — why this is scoped, not universal.** Auto-blocking is safe *here*
