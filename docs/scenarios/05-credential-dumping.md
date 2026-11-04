@@ -101,7 +101,7 @@ filename, so the rename to `m.exe` is irrelevant — the access itself is the si
 
 ![Wazuh Discover rule.id:(92075 or 100002 or 92900) scoped to the dump — certutil 92075 and Mimikatz 100002 both under logonId 0x34af4d, then 92900 LSASS access grantedAccess 0x1010](../../evidence/scenario-05-creddump/wazuh-92900-alerts.png)
 *The dump chain for this run (`@timestamp`): `92075` certutil (`02:34:20`) and
-`100002` Mimikatz (`02:34:25`) both under **`logonId 0x34af4d`** — the Scenario 04
+`100002` Mimikatz (`02:34:24.98`) both under **`logonId 0x34af4d`** — the Scenario 04
 RDP session token — then `92900` LSASS access (`grantedAccess 0x1010`, `sourceUser
 DESKTOP-T0LOHB5\Client`). The matching logon ID is the proof the dump ran inside
 the foothold, not a separate session.*
@@ -294,7 +294,7 @@ not perimeter blocking.
 ```
 RDP brute force (Scenario 04, T1110 → T1078.003)  →  Client compromised, Type-10 session
    →  certutil pulls Mimikatz onto the host        (T1105, detected by 92075)
-   →  Mimikatz dumps credentials from LSASS memory  (T1003.001, detected by 92900 + 100002)
+   →  Mimikatz dumps credentials from LSASS memory  (T1003.001 by behavioral 92900; T1003 by name-based 100002)
 ```
 
 Every stage is alerted: the tool transfer (92075), the LSASS read (92900), and the
