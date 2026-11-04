@@ -1,0 +1,15 @@
+repos:
+  - repo: local
+    hooks:
+      - id: regressions
+        name: fixed claims must not return
+        language: unsupported          # named `system` before pre-commit 4.4.0
+        entry: python3 tools/check_regressions.py tools/regressions.tsv
+        pass_filenames: false
+        always_run: true
+  - repo: https://github.com/lycheeverse/lychee.git
+    rev: lychee-v0.24.2
+    hooks:
+      - id: lychee
+        args: ["--no-progress", "--offline", "."]
+        pass_filenames: false
