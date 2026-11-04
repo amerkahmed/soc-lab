@@ -2,6 +2,7 @@
 """Fail if a previously fixed claim reappears. Matches across line wraps.
 Usage: check_regressions.py regressions.tsv   (run from the repo root)"""
 import re, subprocess, sys
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # Windows pipes default to cp1252
 
 def tracked(exts=(".md", ".xml", ".txt", ".conf")):
     out = subprocess.run(["git", "ls-files"], capture_output=True, text=True, check=True).stdout
