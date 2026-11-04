@@ -33,8 +33,8 @@ RDP brute force from 192.168.56.10 against local admin `Client` on DESKTOP-T0LOH
 
 ### Timeline (UTC)
 
-- **02:22:04** — 9 failed RDP logons (Type 3) from .10 → **60122**; correlation **60204**
-  (8/240s) at :04.496; lockout **60115** at :04.594.
+- **02:22:04** — 10 failed RDP logons (Type 3) from .10 — nine as **60122**, the 8th
+  as the **60204** correlation (8/240s) at :04.496; lockout **60115** at :04.594.
 - **~02:32** — 10-minute lockout expired.
 - **02:34:04** — Successful NLA logon (Type 3) from .10 → **92657**.
 - **02:34:05** — Interactive Type-10 RDP session, logon `0x34af4d` → **92653**.
@@ -84,7 +84,7 @@ so contain the host and rotate every cached credential.
 
 | Technique | ID | Procedure |
 |---|---|---|
-| Brute Force: Password Guessing | T1110.001 | 9 RDP (NLA) guesses vs local admin `Client` from .10; correlated by 60204, stopped by 60115 |
+| Brute Force: Password Guessing | T1110.001 | 10 RDP (NLA) guesses vs local admin `Client` from .10; correlated by 60204, stopped by 60115 |
 | Valid Accounts: Local Accounts | T1078.003 | interactive RDP logon with a valid credential obtained out-of-band (92653 interactive session `0x34af4d`; the Type-3 NLA pre-auth 92657 is `0x33f676`) |
 | Remote Services: RDP | T1021.001 | Type-10 interactive RDP session from .10 established the foothold |
 | Ingress Tool Transfer | T1105 | certutil pulled Mimikatz (renamed m.exe) to C:\Users\Public (92075) |
@@ -104,8 +104,9 @@ so contain the host and rotate every cached credential.
 
 True positive. A valid-credential RDP logon from 192.168.56.10 followed a
 lockout-blocked brute force; the actor dumped LSASS on DESKTOP-T0LOHB5 as local admin
-`Client` (dump tied to RDP Type-10 session `0x34af4d`). Response: host isolated,
-`Client` reset, `m.exe` removed, host-cached credentials rotated. Residual risk: any
+`Client` (dump tied to RDP Type-10 session `0x34af4d`). Response (as it would be
+handled — containment is not captured in this lab): isolate the host, reset `Client`,
+rebuild/clean (remove `m.exe`), rotate host-cached credentials. Residual risk: any
 credential cached on the host prior to rotation. Lesson: lockout throttles but does not
 stop a valid-credential logon; ensure brute-force correlation (60204) coverage on hosts
 without a lockout policy.

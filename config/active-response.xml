@@ -3,8 +3,9 @@
   Extracted from /var/ossec/etc/ossec.conf on the manager.
 
   The <command> definition is a Wazuh default; only the <active-response> binding
-  below is lab-specific. On rule 5712 (SSH brute-force correlation) the manager runs
-  firewall-drop locally, dropping the source IP in iptables for 300 s, then
+  below is lab-specific. On rule 5712 (SSH brute-force correlation) the agent that
+  generated the event (the Ubuntu target) runs firewall-drop locally, dropping the
+  source IP in its iptables for 300 s, then
   auto-unblocks. Evidence: alert-651-block.json / alert-652-unblock.json
   (651 "Host Blocked", 652 "Host Unblocked" ~300 s later).
 -->

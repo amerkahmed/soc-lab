@@ -12,7 +12,7 @@ telemetry that Scenario 05 detects on. Captured from the live host with
   (`github.com/olafhartong/sysmon-modular`), identifiable by its
   `technique_id=…,technique_name=…` RuleNames carried in the evidence. The full ruleset
   is ~4,600 lines of `sysmon64 -c` output and is **not** reproduced here; the
-  detection-relevant rules are excerpted verbatim below.
+  detection-relevant rules are summarized below.
 
 ## ProcessCreate (Event ID 1) — feeds rules 92075 (certutil) and 100002 (Mimikatz)
 
@@ -38,7 +38,7 @@ m.exe     CommandLine contains 'ls'            → ruleName technique_id=T1083 (
 
 ## ProcessAccess (Event ID 10) — feeds rule 92900 (LSASS access)
 
-`onmatch: include`. The LSASS-targeting rules (Compound Rules 0117–0120, verbatim):
+`onmatch: include`. The LSASS-targeting rules (Compound Rules 0117–0120, summarized):
 
 ```
 TargetImage     filter: is   value: 'C:\Windows\system32\lsass.exe'

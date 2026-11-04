@@ -161,7 +161,7 @@ parentless rule keeps the default category **SYSLOG**, while `windows_eventchann
 Sysmon events decode as **windows** (`DECODER_WINDOWS`), so it was never reached —
 and never fired, even though the fields decoded correctly and `wazuh-logtest`
 (which applies the same gate) passed. Built-in rule
-**61603** decodes Sysmon Event ID 1 and assigns it the group **`sysmon_event1`**;
+**61603** matches Sysmon Event ID 1 and assigns it the group **`sysmon_event1`**;
 anchoring 100002 with `<if_group>sysmon_event1</if_group>` makes it a child of that
 tree, so it is evaluated on every Sysmon process-creation event. With that one
 line, 100002 **fired live** on this run (event `1793500464.18771518`, level 15,

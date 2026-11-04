@@ -1,5 +1,5 @@
 # Scenario 04 — attacker-side output (brute force -> lockout -> valid-credential logon)
-# Run 2026-11-01, Kali local timestamps shown (manager UTC is 02:22 / 02:34). Password REDACTED.
+# Run 2026-11-01 UTC (Kali local EDT: 2026-10-31 22:22 / 22:34). Kali local timestamps shown; manager UTC is 02:22 / 02:34. Password REDACTED.
 # Repeated FreeRDP "/p is insecure" + TLS/Kerberos realm warning lines trimmed for readability.
 # Attacker: Kali 192.168.56.10   Target: DESKTOP-T0LOHB5 192.168.56.30   Account: Client (local admin)
 
@@ -9,7 +9,7 @@
 [22:22:04:154] [ERROR][com.freerdp.core] - [nla_recv_pdu]: ERRCONNECT_LOGON_FAILURE [0x00020014]
 [22:22:04:202] [ERROR][com.freerdp.core] - [nla_recv_pdu]: ERRCONNECT_LOGON_FAILURE [0x00020014]
 [22:22:04:250] [ERROR][com.freerdp.core] - [nla_recv_pdu]: ERRCONNECT_LOGON_FAILURE [0x00020014]
-      ...   (9 failures from 192.168.56.10 — Wazuh 60122 x9; correlation 60204 at the 8th)
+      ...   (10 failures from 192.168.56.10 — nine as 60122, the 8th as the 60204 correlation; lockout on the 10th)
 [22:22:04:644] [ERROR][com.freerdp.core] - [nla_recv_pdu]: ERRCONNECT_ACCOUNT_LOCKED_OUT [0x00020018]
 [22:22:04:692] [ERROR][com.freerdp.core] - [nla_recv_pdu]: ERRCONNECT_ACCOUNT_LOCKED_OUT [0x00020018]
       ...   (further attempts hit the locked account: NLA returns ACCOUNT_LOCKED_OUT and

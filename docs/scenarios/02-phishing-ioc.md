@@ -13,8 +13,9 @@ each step is mapped only to the technique its own evidence supports.
 > documentation-IP-plus-attacker-IP stand-in. The pipeline (Wazuh → Shuffle →
 > VirusTotal → TheHive) was re-run end to end against the new design: the http rule
 > fired live (~1.0 s measured, `status 200`), VirusTotal returned a non-informative
-> `0/56` for the private `.99` IOC, the enrichment *capability* was re-validated
-> separately with a labeled synthetic known-bad IP (`20/92`, §5b), and the
+> `0 malicious / 56 harmless` for the private `.99` IOC, the enrichment *capability*
+> was re-validated separately with a labeled synthetic known-bad IP (`20 of 92`
+> vendors flagged it, §5b), and the
 > false-positive tuning exercise was reproduced. Evidence in `evidence/scenario-02-phishing/` is the
 > 2026-10-28 recapture.
 
@@ -118,11 +119,11 @@ Plain-English, line by line:
   by Suricata **per HTTP request**, so the rule fires in **near-real-time (~1–2 s)**
   rather than waiting ~60 s for a flow record. Chaining off 86602 (not 86600) is
   deliberate: Wazuh has a specific built-in child of 86600 per event type
-  (86601 alert / 86602 http / 86603 dns / 86604 tls). On an http event the **level-0**
-  child 86602 is evaluated first — OSSEC tries level-0 rules first, and a match there
-  ends evaluation — so an `if_sid 86600 + event_type=http` sibling never fires on http
-  events. This was found with `wazuh-logtest` and
-  is written up in [challenges-and-resolutions.md](../challenges-and-resolutions.md),
+  (86601 alert / 86602 http / 86603 dns / 86604 tls). A custom rule hung off the
+  generic 86600 competes with these event-type children; `wazuh-logtest` resolved the
+  `if_sid 86600 + event_type=http` form to 86602 instead of firing it, so binding to
+  the specific 86602 is the robust choice. This is written up in
+  [challenges-and-resolutions.md](../challenges-and-resolutions.md),
   item 16. A per-packet alert produces no http event, so it can't trip the rule
   (see §3a); §10 covers the specificity-vs-coverage choice.
 - `list field="dest_ip" lookup="address_match_key"` — checks the http event's
@@ -179,11 +180,9 @@ Result — confirmed with `wazuh-logtest`, then captured live:
 
 - **Naive rule** (`if_sid 86600`, `match_key`, no event-type scope) is **doubly
   wrong**: on the per-packet **alert** event it fires `100100` (level 12) — a false
-  positive on scan/ICMP traffic — and on the real **http** callback it does **not**
-  fire at all, because Wazuh's built-in `86602` (http) is **level 0**, which OSSEC
-  evaluates first — a level-0 match ends evaluation, so the custom sibling off 86600 is
-  never reached (see item 16). So it alerts on the wrong thing *and* misses the right
-  thing.
+  positive on scan/ICMP traffic — and on the real **http** callback `wazuh-logtest`
+  resolved it to the built-in `86602` (http) instead of firing `100100` (see item 16).
+  So it alerts on the wrong thing *and* misses the right thing.
 - **Scoped rule** (`if_sid 86602`, child of Suricata's http rule, + `address_match_key`,
   as deployed) is correct on both: the alert event matches `86601` and never reaches
   `100100` (no false positive), while the real http callback fires `100100`.

@@ -1,7 +1,7 @@
 # Windows account-lockout policy on the RDP target (DESKTOP-T0LOHB5).
-# Captured with `net accounts` on the host. Backs Scenario 04: rules 60204
-# (brute-force correlation) and 60115 (4740 account lockout), and the
-# ~10-minute auto-expiring lockout the two-phase incident relies on.
+# Captured with `net accounts` on the host. Backs Scenario 04: rule 60115
+# (4740 account lockout) and the ~10-minute auto-expiring lockout the two-phase
+# incident relies on. (60204 is a separate Wazuh correlation, not this policy.)
 #
 # The operative values are the three lockout lines: threshold 10, duration 10 min,
 # observation window 10 min (Wazuh's 60204 correlation threshold of 8/240s is a

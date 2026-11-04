@@ -118,11 +118,13 @@ best-practice shape (time-boxed and self-reversing, not a permanent deny-list).
 
 It fired and it worked: rule **651** "Host Blocked by firewall-drop Active Response"
 recorded the `add` for `192.168.56.10` (acting on event `1793228621.106252`), and
-`iptables -L` showed the live `DROP`. The block **cut the attack off mid-run** —
+`iptables -L` showed the live `DROP`. The block **dropped the attacker's source**
+`192.168.56.10` mid-run (hydra still ran its queue to `1 of 1 completed`, its remaining
+attempts failing against the dropped route) —
 hydra queued 25 guesses, and rule 5710 logged multiple auth-failure events
 (`firedtimes: 13` is the rule's running counter, not a guaranteed per-run total —
 and one invalid-user attempt logs several lines, so distinct password attempts are
-fewer) before the source was dropped. Exactly 300 s later, rule **652** "Host Unblocked"
+fewer) before the source was dropped. ~300 s later (the configured `<timeout>`), rule **652** "Host Unblocked"
 recorded the `delete` — the ban auto-expired as configured.
 
 > **Caveat — why this is scoped, not universal.** Auto-blocking is safe *here*
@@ -180,7 +182,7 @@ attached as an observable (tagged attacker / source).*
   crossed by fewer distinct guesses than the number suggests. Report the rule's
   intent, not a raw count dressed up as "attempts."
 - **Automated containment pays off when the source is trustworthy and the block is
-  reversible.** The `firewall-drop` response stopped the brute force mid-run and
+  reversible.** The `firewall-drop` response blocked the brute-force source mid-run and
   auto-expired after 300 s — but that is only safe because the source is
   non-spoofable and the ban is temporary; a spoofable scan source (Scenario 01) is
   deliberately left alert-only.

@@ -4,7 +4,7 @@
     100002  Mimikatz by PE OriginalFileName (Sysmon EID 1)      [Scenario 05]
     100100  Connection to a phishing IOC on the CDB watchlist   [Scenario 02]
   SSH / RDP brute force and LSASS access are caught by Wazuh's built-in rules
-  (5710/5712, 60122/60115/92657/92653, 92075, 92900) and are not redefined here.
+  (5710/5712, 60122/60204/60115/92657/92653, 92075, 92900) and are not redefined here.
 -->
 
 <group name="sysmon,sysmon_eid1_detections,">
@@ -26,10 +26,10 @@
     Fires when a Suricata HTTP transaction's destination IP is on the phishing CDB
     watchlist. Chains off built-in rule 86602 ("Suricata: HTTP"), NOT the base 86600:
     for each Suricata event type Wazuh has a specific built-in child of 86600
-    (86601 alert / 86602 http / 86603 dns / 86604 tls). 86602 is level 0, and OSSEC
-    evaluates level-0 rules first (a match there ends evaluation) — so an
-    `if_sid 86600 + event_type=http` sibling never fires on http events. Chaining off
-    86602 makes 100100 a child of the http rule, so it is evaluated whenever 86602 matches.
+    (86601 alert / 86602 http / 86603 dns / 86604 tls). An
+    `if_sid 86600 + event_type=http` sibling competes with those built-in event-type
+    children, and `wazuh-logtest` resolved that form to 86602 instead of firing it.
+    Chaining off 86602 makes 100100 a child of the http rule, so it is evaluated whenever 86602 matches.
     http is logged per request, so this fires in near-real-time (~1-2s); and a
     per-packet alert (e.g. an ICMP reply) produces no http event, so it cannot trip
     the rule. address_match_key is the lookup Wazuh requires for IP-address fields.

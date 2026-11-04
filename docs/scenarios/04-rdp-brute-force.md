@@ -16,16 +16,15 @@ access into a confirmed foothold — the foothold the credential-dumping chain i
 | **Detection source** | Wazuh agent → Windows Security event channel |
 | **Rules fired** | 60122 (logon failure, 4625 type 3) · 60204 (brute-force correlation, 8 / 240 s) · 60115 (account lockout, 4740) · 92657 (successful NLA pre-auth, 4624 type 3) · 92653 (interactive RDP session, 4624 type 10) |
 | **Reaches** | Detection → SOAR → **two** TheHive alerts (lockout `60115` + successful logon `92657`) |
-| **Status** | ✅ Validated — single live pass, all five rules (incl. 60204), `2026-11-01 02:22–02:34 UTC` |
+| **Status** | ✅ Validated — the captured `2026-11-01 02:22–02:34 UTC` chain, all five rules (incl. 60204); `firedtimes` counters include earlier dev-time logons that hour (see Scenario 05 §8) |
 
 ---
 
 ## 1. Attack
 
 Remote Desktop (RDP) is one of the most abused Windows services — Sophos' **2025**
-Active Adversary Report found it involved in **84%** of incident-response cases
-(predominantly internal lateral movement), and internet-facing RDP remains a top
-initial-access and brute-force target. The attack targets `Client`, an existing
+Active Adversary Report found it involved in **84%** of MDR and IR cases, and
+internet-facing RDP remains a top initial-access and brute-force target. The attack targets `Client`, an existing
 **local administrator** account on the host — a higher-value target than a
 purpose-made test account, since compromising an admin grants broad control.
 
@@ -49,9 +48,10 @@ designed, and the realistic consequence of a sustained single-account brute forc
 (which is why real attackers spray one password across many accounts to avoid it —
 [T1110.003](https://attack.mitre.org/techniques/T1110/003/)).
 
-> **Detection note — the locked attempts leave no `4625`.** The pre-lockout failures
-> each logged a `4625` (Sub Status `0xC000006A`, bad password) → Wazuh **60122** (nine
-> in this run), and the lockout itself logged a single `4740` → **60115**. The
+> **Detection note — the locked attempts leave no `4625`.** The ten pre-lockout
+> failures each logged a `4625` (Sub Status `0xC000006A`, bad password) — nine surfaced
+> as **60122**, the 8th as the **60204** correlation (itself a `4625`) — and the lockout
+> itself logged a single `4740` → **60115**. The
 > *post-lockout* attempts wrote **no `4625` on the target**: with NLA the locked-account
 > check is rejected during CredSSP pre-auth, before the LSA audit path. Confirmed from
 > the target's Security log — 36 brute-force `4625`s across the dev runs, **all**
@@ -60,10 +60,9 @@ designed, and the realistic consequence of a sustained single-account brute forc
 > Microsoft documents a locked account *can* log `4625/0xC0000234` in the interactive
 > case; this RDP + NLA path does not. Since 60122 matches any `4625`, the absence of
 > further 60122 means those attempts were never audited — not a detection gap.
-> **On the count:** the threshold is 10 but only nine `4625`s precede the lockout —
-> `badPwdCount` is cumulative across the 10-min observation window, so residual
-> failures from the prior burst most likely topped it to 10 (the exact pre-count
-> isn't isolated in this capture).
+> **On the count:** ten `4625`s in all (nine `60122` + the 8th as `60204`), so the
+> account locked on the 10th attempt — exactly the threshold 10. (`60122 firedtimes`
+> is 1 and resets hourly, so there is no prior-hour carry-over.)
 
 The online guessing gained no access. The foothold was a **separate interactive RDP
 session with a valid credential** — in a real intrusion obtained out-of-band
@@ -90,7 +89,7 @@ hands-on credential dump.
 > _Evidence: `evidence/scenario-04-rdp/attack-output.txt` — the brute-force console
 > from this run (no password values echoed; the valid credential is redacted). Its
 > clock (`22:22:04` Kali local = **`02:22 UTC`**) lines up with the manager events
-> below: nine `LOGON_FAILURE` results, then `ACCOUNT_LOCKED_OUT` once the lockout
+> below: ten `LOGON_FAILURE` results, then `ACCOUNT_LOCKED_OUT` once the lockout
 > threshold is crossed._
 
 ---
@@ -103,12 +102,12 @@ views — the brute force (failure burst → correlation → lockout), then the
 valid-credential logon ~12 minutes later — every row a single source
 (`192.168.56.10`, workstation `kali`) against a single account (`Client`):
 
-![Wazuh Discover filtered on rule.id 60122/60204/60115 (every row is targetUserName Client, the only targeted account) — nine failed-logon 4625s from 192.168.56.10, the 60204 brute-force correlation, and the 4740 account lockout, all at 02:22:04 UTC](../../evidence/scenario-04-rdp/wazuh-rdp-bruteforce.png)
-*Phase 1 — brute force (`@timestamp`): nine `60122` failures from `192.168.56.10`
-→ `60204` "Multiple Windows Logon Failures" (8 in 240 s) → `60115` account lockout,
-all on `Client`. Eleven hits, one source, one account.*
+![Wazuh Discover filtered on rule.id 60122/60204/60115 (every row is targetUserName Client, the only targeted account) — ten failed-logon 4625s from 192.168.56.10 (nine shown as 60122, the 8th as the 60204 correlation), and the 4740 account lockout, all at 02:22:04 UTC](../../evidence/scenario-04-rdp/wazuh-rdp-bruteforce.png)
+*Phase 1 — brute force (`@timestamp`): ten failed logons from `192.168.56.10` — nine
+shown as `60122`, the 8th as the `60204` correlation (8 in 240 s) — then `60115`
+account lockout on the 10th, all on `Client`. Eleven rows, one source, one account.*
 
-![Wazuh Discover filtered on rule.id 92657/92653 (every row is targetUserName Client, the only targeted account) — the Type-3 NLA success 0x33f676 and the Type-10 linked pair 0x34af4d/0x34af73, from 192.168.56.10 at 02:34:04](../../evidence/scenario-04-rdp/wazuh-rdp-logon.png)
+![Wazuh Discover filtered on rule.id 92657/92653 (every row is targetUserName Client, the only targeted account) — the Type-3 NLA success 0x33f676 and the Type-10 linked pair 0x34af4d/0x34af73, from 192.168.56.10 — Type-3 at 02:34:04, Type-10 at 02:34:05](../../evidence/scenario-04-rdp/wazuh-rdp-logon.png)
 *Phase 2 — the valid-credential logon ~12 minutes later (after the lockout
 expired): the Type-3 NLA pre-auth (`92657`, `targetLogonId 0x33f676`) and the
 Type-10 linked token pair (`92653`, `0x34af4d` ↔ `0x34af73`), all from
@@ -116,7 +115,8 @@ Type-10 linked token pair (`92653`, `0x34af4d` ↔ `0x34af73`), all from
 after each event's `systemTime`.)*
 
 Five rules carry the story. The first three are the brute force; the last two are
-the single successful RDP login, which — with NLA — records **two** 4624s:
+the single successful RDP login, which records **three** 4624s — the Type-3 NLA
+pre-auth and the Type-10 linked token pair (UAC splits the interactive logon in two):
 
 - **Rule 60122** (level 5) — "Logon Failure - Unknown user or bad password," from
   **Event ID 4625** (`logonType 3`, `NtLmSsp` / NTLM, `status 0xC000006D` generic
@@ -230,14 +230,15 @@ Successful RDP logon (rules 92657 + 92653) to the local administrator account
 `Client` on DESKTOP-T0LOHB5, preceded by a burst of failed logons and an account
 lockout — all from a single source. Timeline (UTC, event `systemTime`): failed
 logons + 60204 correlation + account lockout `02:22:04`, then the successful
-interactive session `02:34:04` (after the ~10-minute lockout expired).
+interactive session `02:34:05` (Type-10; the Type-3 NLA pre-auth opened it at
+`02:34:04`, after the ~10-minute lockout expired).
 
 **Observations**
-- **Source** — `192.168.56.10`, consistent across every 4625, the 4740 lockout, and
-  all three success 4624s (one Type-3, two Type-10). The caller workstation name
-  `kali` appears on the Type-3 event; the Type-10 events carry `DESKTOP-T0LOHB5`. A
-  single source driving all stages is the signature of a targeted brute force, not
-  scattered user error.
+- **Source** — `192.168.56.10`, on every 4625 and all three success 4624s (one
+  Type-3, two Type-10). The 4740 lockout logs no source IP — it names the same
+  caller, `kali` (the workstation name also on the Type-3 4624); the Type-10 4624s
+  carry `DESKTOP-T0LOHB5`. A single source driving all stages is the signature of a
+  targeted brute force, not scattered user error.
 - **Target** — `Client`, a **local administrator** account. High impact if
   compromised.
 - **Volume & timing** — a tight burst of failures inside one second (far faster

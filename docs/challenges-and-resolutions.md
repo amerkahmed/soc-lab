@@ -52,8 +52,9 @@ and watch the manager startup log after every rule change.
 ### 8. SOAR body broke on a field that changes type between sources
 The Shuffle→TheHive JSON body referenced `$exec.text`, which maps from Wazuh's
 **`full_log`** — and `full_log` is not consistently typed. It is **absent/empty**
-for some rules (e.g. the 4740 lockout `60115` and the LSASS-access `92900` carry
-none), a **plain string** only for journald/syslog alerts (sshd — `5712`), and a **JSON
+for rules that set `<options>no_full_log</options>` (e.g. the 4740 lockout `60115`,
+60122, 60204, the LSASS-access `92900`, 92075, 86601 carry none), a **plain string**
+only for journald/syslog alerts (sshd — `5712`), and a **JSON
 object** for JSON-sourced events: Suricata `eve.json` (`100100`) **and** the Windows
 eventchannel `4624` (`92657`/`92653`), which the SOAR parses to a nested
 `win.system`/`win.eventdata` object (`shuffle-rdp-compromise.png`). Inserting the object form shattered the hand-built JSON body
@@ -65,8 +66,8 @@ field can be missing, a string, or a nested object depending on the rule and the
 source. (It's the same mechanism behind the Shuffle `text` reading `NULL` for
 `60115`/`92900` while other alerts carry it.)
 
-**One remaining `text` use (by design).** The phishing body still reads
-`$exec.text.dest_ip` for the IOC observable. It resolves there because rule 100100's
+**Two remaining `text` uses (by design).** The phishing path still reads
+`$exec.text.dest_ip` — for the IOC observable and the VirusTotal lookup. It resolves there because rule 100100's
 `full_log` is the Suricata **http** event (a JSON object), so `dest_ip` is present in
 `text` — evidenced by the live VT lookup on `192.168.56.99` (`thehive-alert-real.png`).
 The SSH and other bodies already use `$exec.all_fields.*`; migrating the phishing body
@@ -86,7 +87,7 @@ the agent→manager link. Confirm with `agent_control -l` showing the agent
 Once Suricata was flowing, a low forwarding threshold (`<level>7</level>`) pushed a
 flood of low-value alerts to Shuffle (~1+/sec), likely exhausting the SaaS
 execution quota so no workflow runs appeared.
-**Fix:** forward only curated rule **groups** instead of a broad level.
+**Fix:** forward only curated rule **groups and specific rule IDs** instead of a broad level.
 **Lesson:** forward signal, not noise — tune what reaches the SOAR layer.
 
 ### 11. Suricata stats noise
@@ -126,8 +127,8 @@ documented blind spot (Scenario 02 §10).
 has its own IP, so the fix is validated deterministically by feeding two labeled
 test events (one `alert`, one `http`) for the IOC: the naive rule fires `100100` on
 the alert event (the false positive) and the scoped rule fires only on the http
-callback. (The naive rule also *misses* the http callback — built-in 86602 pre-empts
-it, see item 16 — so it is both noisy and blind; Scenario 02 §3a.)
+callback. (The naive rule also *misses* the http callback — `wazuh-logtest` resolves
+it to the built-in 86602 instead, see item 16 — so it is both noisy and blind; Scenario 02 §3a.)
 **Lesson:** a rule can fire on the right indicator and still be scoped wrong — scope
 to the event type that represents what you mean, and validate with a deterministic
 test. Evidence: `evidence/scenario-02-phishing/wazuh-100100-FP-synthetic.json`
@@ -153,15 +154,16 @@ spot in Scenario 01 §6).
 (`massdns.cc … Assertion 'new_reqs.empty()' failed`); `-n` (no reverse DNS) avoids
 it without changing the traffic sent to the target.
 
-### 16. Custom http rule never fired — a built-in sibling pre-empted it
+### 16. Custom http rule resolved to a built-in sibling — bind to the specific child
 After switching rule 100100 to match HTTP events, it was written as
 `if_sid 86600` + `<field name="event_type">^http$</field>`. `wazuh-logtest` on a
-synthetic http event showed it matching **86602** ("Suricata: HTTP", level 0) — the
-custom rule never fired. Cause: Wazuh's Suricata ruleset has a specific built-in
-child of base rule 86600 for each event type (86601 alert, 86602 http, 86603 dns,
-86604 tls). Because 86602 is **level 0**, OSSEC evaluates it before higher-level rules
-(a level-0 match ends evaluation), so for an http event a custom rule hung off the same
-parent 86600 is never reached. (The earlier flow-based
+synthetic http event showed the `if_sid 86600 + event_type=http` form resolving to
+the built-in **86602** ("Suricata: HTTP") instead of firing the custom rule. Wazuh has
+a specific built-in child of base rule 86600 for each event type (86601 alert, 86602
+http, 86603 dns, 86604 tls); hanging a custom rule off the generic 86600 makes it
+compete with those siblings. (Wazuh evaluates a parent's children highest-level-first
+and stops at the first match — `analysisd/rules_list.c` sorts siblings by level,
+`rules.c` returns on the first matching child.) (The earlier flow-based
 version worked only because there is **no** built-in flow rule, so the custom rule
 was the sole matching child.)
 **Fix:** chain the custom rule off the specific event-type rule —
@@ -170,8 +172,8 @@ whenever 86602 matches. The redundant `event_type` field is dropped (86602 alrea
 enforces it).
 **Lesson:** when extending Wazuh's built-in decoders, build on the **most specific**
 rule that already matches your event, not the generic base — and confirm with
-`wazuh-logtest` which rule actually fires, since a silent pre-emption looks exactly
-like "my rule is broken." Non-HTTP IOC callbacks would chain off 86604 (tls) / 86603
+`wazuh-logtest` which rule actually fires, since a custom rule silently resolving to a
+built-in sibling looks exactly like "my rule is broken." Non-HTTP IOC callbacks would chain off 86604 (tls) / 86603
 (dns) the same way.
 
 ### 17. Custom Sysmon rule passed logtest but never fired live (parentless rule kept the default SYSLOG category)
@@ -187,7 +189,7 @@ decoded correctly. `wazuh-logtest` applies the **same** category gate (`logtest.
 a logtest pass reflects how the event decoded in that run, not a rule being exempt from
 the live routing.
 **Misdiagnosis corrected:** an earlier write-up blamed a *missing* `sysmon_event1`
-group. That was wrong — built-in rule **61603** decodes Sysmon EID 1 and **does**
+group. That was wrong — built-in rule **61603** matches Sysmon EID 1 and **does**
 assign the `sysmon_event1` group.
 **Fix:** anchor the rule with `<if_group>sysmon_event1</if_group>` so it becomes a
 child of the Sysmon process-creation tree and is evaluated on every EID-1 event.
@@ -200,13 +202,12 @@ or they silently never fire.
 
 ### 18. SOAR → TheHive runs over plaintext HTTP (lab limitation, flagged for hardening)
 The Shuffle HTTP node posts alerts to TheHive at `http://<THEHIVE_IP>:9000/api/v1/alert`
-with an `Authorization: Bearer` header. On the isolated lab backend this is
-functional, but the API key travels **in cleartext** — if the pipeline were exposed
-beyond the host-only segment, the token could be sniffed.
+with an `Authorization: Bearer` header. This is functional, but the API key travels
+**in cleartext**, and because the SOAR runs on Shuffle Cloud the POST already crosses
+the public internet — so the token is exposed on that hop.
 **Status:** accepted as a known lab risk. The SOAR runs on **Shuffle Cloud** (SaaS),
 so the alert POST travels from Shuffle's cloud to the TheHive host across the public
-internet — the bearer token is exposed on that hop, not confined to a host-only
-segment. The key is held in Shuffle's cache (`$shuffle_cache.hive-key.value`), not
+internet — the bearer token is exposed on that hop. The key is held in Shuffle's cache (`$shuffle_cache.hive-key.value`), not
 hardcoded in the exported workflow, so it is not in this repo. **Production hardening** would terminate
 TLS in front of TheHive (a reverse proxy on `:443`) and switch the node to `https://`,
 keeping the token off the wire.

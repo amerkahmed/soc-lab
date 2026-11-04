@@ -267,8 +267,8 @@ sudo jq -c "select(.rule.id==\"60122\" and (.id|tonumber < ($LOCK|tonumber)+2))"
 ```
 
 **Screenshots:**
-- Wazuh Discover, Phase 1 filtered to `rule.id:(60122 or 60204 or 60115)` and
-  `targetUserName: Client` → `evidence/scenario-04-rdp/wazuh-rdp-bruteforce.png`;
+- Wazuh Discover, Phase 1 filtered to `rule.id:(60122 or 60204 or 60115)` (every row is
+  `targetUserName: Client`, the only targeted account, shown as a column) → `evidence/scenario-04-rdp/wazuh-rdp-bruteforce.png`;
   Phase 2 `rule.id:(92657 or 92653)` → `evidence/scenario-04-rdp/wazuh-rdp-logon.png`
 - the Type-10 session event expanded (`logonType 10`, `Negotiate`, `0x34af4d`)
   → `evidence/scenario-04-rdp/wazuh-92653-detail.png`
