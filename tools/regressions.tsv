@@ -1,0 +1,2 @@
+# pattern<TAB>finding<TAB>reason. Patterns target the WRONG claim, never a true fact.
+# Add one line per fix, in the same commit as the fix. Checker strips ` * _ before matching: write _? for an underscore.
