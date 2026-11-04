@@ -140,7 +140,7 @@ sudo grep '"id":"100100"' /var/ossec/logs/alerts/alerts.json | tail -1 | jq . \
 IP; no traffic is sent to it:**
 ```bash
 TS=$(date -u +%Y-%m-%dT%H:%M:%S.000000+0000)
-echo "{\"timestamp\":\"$TS\",\"in_iface\":\"enp0s3\",\"event_type\":\"http\",\"src_ip\":\"192.168.56.20\",\"dest_ip\":\"<known-bad-ip>\",\"dest_port\":80,\"proto\":\"TCP\",\"http\":{\"hostname\":\"<known-bad-ip>\",\"url\":\"/\"},\"lab_note\":\"SYNTHETIC TEST EVENT\"}" \
+echo "{\"timestamp\":\"$TS\",\"in_iface\":\"enp0s3\",\"event_type\":\"http\",\"src_ip\":\"192.168.56.20\",\"dest_ip\":\"<known-bad-ip>\",\"dest_port\":80,\"proto\":\"TCP\",\"http\":{\"hostname\":\"<known-bad-ip>\",\"url\":\"/\"},\"lab_note\":\"SYNTHETIC enrichment demo\"}" \
   | sudo tee -a /var/log/suricata/eve.json
 # (add <known-bad-ip>:phishing_infrastructure to the CDB list + restart manager first)
 ```
@@ -156,9 +156,9 @@ the Shuffle `$exec.id`, and the TheHive `Reference` must all be the **same** eve
 - (optional) the alert in the Wazuh dashboard → `evidence/scenario-02-phishing/wazuh-100100-discover.png`
 
 *Synthetic enrichment demo (the known-bad-IP event — a separate event):*
-- Shuffle run → `evidence/scenario-02-phishing/shuffle-run-synthetic.png`
-- TheHive alert (`VT malicious: 20`) → `evidence/scenario-02-phishing/thehive-alert-synthetic.png`
-- TheHive observable → `evidence/scenario-02-phishing/thehive-observable-synthetic.png`
+- Shuffle run → `evidence/scenario-02-phishing/shuffle-run-enrichment.png`
+- TheHive alert (`VT malicious: 20`) → `evidence/scenario-02-phishing/thehive-alert-enrichment.png`
+- TheHive observable → `evidence/scenario-02-phishing/thehive-observable-enrichment.png`
 - Manual VirusTotal web lookup of the known-bad IP → `evidence/scenario-02-phishing/virustotal-enrichment.png`
 
 ---

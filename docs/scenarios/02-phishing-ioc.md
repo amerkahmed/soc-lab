@@ -168,10 +168,13 @@ labeled test events for the IOC — one a per-packet `alert`, one an `http`
 transaction (the callback) — and compare what each rule version matches:
 
 ```bash
-# Both events target the IOC. SYNTHETIC — no traffic is sent anywhere.
+# Both events target the IOC. SYNTHETIC — no traffic is sent anywhere. The alert event
+# is marked by its "SYNTHETIC test alert" signature (matching the captured
+# wazuh-100100-FP-synthetic.json); the http event has no signature field, so it carries
+# a lab_note marker instead.
 TS=$(date -u +%Y-%m-%dT%H:%M:%S.000000+0000)
 # (1) a per-packet ALERT event to the IOC (what a stray signature/probe looks like)
-echo "{\"timestamp\":\"$TS\",\"in_iface\":\"enp0s3\",\"event_type\":\"alert\",\"src_ip\":\"192.168.56.20\",\"dest_ip\":\"192.168.56.99\",\"proto\":\"ICMP\",\"alert\":{\"signature\":\"SYNTHETIC test alert\",\"signature_id\":9999999},\"lab_note\":\"SYNTHETIC\"}" | sudo tee -a /var/log/suricata/eve.json
+echo "{\"timestamp\":\"$TS\",\"in_iface\":\"enp0s3\",\"event_type\":\"alert\",\"src_ip\":\"192.168.56.20\",\"dest_ip\":\"192.168.56.99\",\"proto\":\"ICMP\",\"alert\":{\"signature\":\"SYNTHETIC test alert\",\"signature_id\":9999999}}" | sudo tee -a /var/log/suricata/eve.json
 # (2) an HTTP transaction event to the IOC (the real callback)
 echo "{\"timestamp\":\"$TS\",\"in_iface\":\"enp0s3\",\"event_type\":\"http\",\"src_ip\":\"192.168.56.20\",\"dest_ip\":\"192.168.56.99\",\"dest_port\":80,\"proto\":\"TCP\",\"http\":{\"hostname\":\"192.168.56.99\",\"url\":\"/paypal/login/verify.php\"},\"lab_note\":\"SYNTHETIC\"}" | sudo tee -a /var/log/suricata/eve.json
 ```
@@ -199,10 +202,13 @@ event type that represents what you actually mean, and validate the fix with a
 deterministic test rather than hoping the false positive recurs. See
 [challenges-and-resolutions.md](../challenges-and-resolutions.md), item 14.
 
-> _Evidence: `wazuh-100100-FP-synthetic.json` (the synthetic reproduction — naive
-> rule over-matching an `alert` event against the current `.99` IOC) vs
-> `wazuh-100100-alert.json` (http-scoped match) — regenerated with the two-event test
-> above. The real historical misfire is `wazuh-100100-FP-original-2026-10-20.json`._
+> _Evidence: `wazuh-100100-FP-synthetic.json` — the synthetic reproduction, the naive
+> rule over-matching an `alert` event against the current `.99` IOC, produced by the
+> deterministic two-event test above. The correct http match is the **real** `.99`
+> callback in `wazuh-100100-alert.json` (event `1793225059.80603`, the same capture as
+> the §4 detection), not a synthetic — the two-event test reproduces the same
+> alert-vs-http behavior on demand, but its http event is not separately saved. The
+> real historical misfire is `wazuh-100100-FP-original-2026-10-20.json`._
 
 ---
 
@@ -268,6 +274,19 @@ in §4.
 
 ### 5b. Enrichment capability — labeled synthetic test
 
+> **Two different synthetic events appear in this scenario — don't conflate them.**
+> They test different things and are injected by different commands:
+>
+> | Synthetic event | Purpose | `event_type` | Synthetic marker | Where |
+> |---|---|---|---|---|
+> | FP reproduction | prove the naive rule over-matches | `alert` | `signature: "SYNTHETIC test alert"` | §3a → `wazuh-100100-FP-synthetic.json` |
+> | Enrichment demo (this section) | show VirusTotal enrichment on a real known-bad IP | `http` | `lab_note: "SYNTHETIC enrichment demo"` | §5b → `*-enrichment.png` |
+>
+> The markers differ by necessity, not inconsistency: an `alert` event has a
+> `signature` field to carry the label, an `http` event does not — so it uses
+> `lab_note`. Neither event sends any real traffic, and the two are **separate events
+> with separate IDs** (the FP one is not produced by the enrichment command below).
+
 To show what VirusTotal enrichment *produces* for genuinely malicious
 infrastructure — without ever sending traffic to a real C2 — a **clearly labeled
 synthetic http event** carrying a real known-bad IP is injected into the pipeline
@@ -276,7 +295,7 @@ and run through the same Wazuh → Shuffle → VirusTotal → TheHive path:
 ```bash
 # SYNTHETIC — no traffic is sent to the IP; this is a pipeline validation test only
 TS=$(date -u +%Y-%m-%dT%H:%M:%S.000000+0000)
-echo "{\"timestamp\":\"$TS\",\"in_iface\":\"enp0s3\",\"event_type\":\"http\",\"src_ip\":\"192.168.56.20\",\"dest_ip\":\"<known-bad-ip>\",\"dest_port\":80,\"proto\":\"TCP\",\"http\":{\"hostname\":\"<known-bad-ip>\",\"url\":\"/\"},\"lab_note\":\"SYNTHETIC TEST EVENT\"}" | sudo tee -a /var/log/suricata/eve.json
+echo "{\"timestamp\":\"$TS\",\"in_iface\":\"enp0s3\",\"event_type\":\"http\",\"src_ip\":\"192.168.56.20\",\"dest_ip\":\"<known-bad-ip>\",\"dest_port\":80,\"proto\":\"TCP\",\"http\":{\"hostname\":\"<known-bad-ip>\",\"url\":\"/\"},\"lab_note\":\"SYNTHETIC enrichment demo\"}" | sudo tee -a /var/log/suricata/eve.json
 ```
 
 The known-bad IP used here (`1.92.135.168`) is a **real abuse.ch
@@ -304,8 +323,8 @@ the IOC's category.)
 
 > _Evidence (synthetic enrichment chain — a **separate**, clearly labeled event
 > `1793219216.47653`, IOC `1.92.135.168`, a ThreatFox-listed Cobalt Strike C2):
-> `threatfox-1.92.135.168.png` (the abuse.ch ThreatFox entry), `shuffle-run-synthetic.png`,
-> `thehive-alert-synthetic.png` (`VT malicious: 20`), `thehive-observable-synthetic.png`,
+> `threatfox-1.92.135.168.png` (the abuse.ch ThreatFox entry), `shuffle-run-enrichment.png`,
+> `thehive-alert-enrichment.png` (`VT malicious: 20`), `thehive-observable-enrichment.png`,
 > `virustotal-enrichment.png` (manual VT lookup corroborating the fields)_
 
 ---
