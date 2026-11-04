@@ -12,15 +12,16 @@ each step is mapped only to the technique its own evidence supports.
 > is real and reachable within the lab, replacing the earlier
 > documentation-IP-plus-attacker-IP stand-in. The pipeline (Wazuh → Shuffle →
 > VirusTotal → TheHive) was re-run end to end against the new design: the http rule
-> fired live (~1.0 s measured, `status 200`), Shuffle enriched a real known-bad IP via
-> VirusTotal (20/92) and attached it as a TheHive observable, and the false-positive
-> tuning exercise was reproduced. Evidence in `evidence/scenario-02-phishing/` is the
+> fired live (~1.0 s measured, `status 200`), VirusTotal returned a non-informative
+> `0/56` for the private `.99` IOC, the enrichment *capability* was re-validated
+> separately with a labeled synthetic known-bad IP (`20/92`, §5b), and the
+> false-positive tuning exercise was reproduced. Evidence in `evidence/scenario-02-phishing/` is the
 > 2026-10-28 recapture.
 
 | | |
 |---|---|
 | **MITRE ATT&CK** | T1566.002 (Spearphishing Link) — represented by the analyzed sample · T1204.001 (User Execution: Malicious Link) — **simulated** via a `curl` "click" · the detection itself observes the resulting outbound connection |
-| **Phishing server (lab IOC)** | `192.168.56.99` — a lab-owned host serving a fake login page (its own IP, separate from the Kali attacker `192.168.56.10`) |
+| **Phishing server (lab IOC)** | `192.168.56.99` — a fake login page served from a dedicated IP alias on the Kali host (distinct from the attacker IP `192.168.56.10`) |
 | **Detection source** | Suricata http event → Wazuh custom rule 100100 (CDB watchlist match) |
 | **Automation** | Wazuh → Shuffle → VirusTotal → TheHive (IOC attached as an observable) |
 | **Status** | ✅ Validated (detection → SOAR → VT enrichment → TheHive alert with observable) |
@@ -54,9 +55,10 @@ The sample carries the classic deception markers an L1 analyst is trained to spo
 - **Credential-harvesting URL on a raw IP over HTTP** —
   `http://192.168.56.99/paypal/login/verify.php`.
 
-**Why authentication results are not the deciding factor.** The sample is crafted
-so SPF/DKIM/DMARC **pass** — because the attacker *owns* the lookalike domain and
-can publish valid records for it. This is the point an L1 analyst has to internalize:
+**Why authentication results are not the deciding factor.** The sample asserts
+SPF/DKIM/DMARC **pass** (illustrative header values — the lab has no MTA, so no verifier
+evaluated them); in a real delivery they *would* pass, because the attacker *owns* the
+lookalike domain and can publish valid records for it. This is the point an L1 analyst has to internalize:
 a DMARC pass authenticates the *sending domain*, not the message's intent, and
 [DMARC does not stop lookalike / "cousin" domains](https://www.m3aawg.org/TechnologySummaries/DMARC).
 The verdict rests on the **typosquat, the Reply-To mismatch, and the raw-IP harvest
@@ -234,7 +236,8 @@ internal host reached infrastructure the team had already flagged. It answers "d
 someone click" with a yes — it does **not** yet prove credentials were submitted
 (see §6).
 
-> _Evidence: `wazuh-100100-alert.json`_
+> _Evidence: `wazuh-100100-alert.json`; `wazuh-100100-discover.png` (the field-level
+> Discover view of the live detection)._
 
 ---
 
@@ -256,8 +259,8 @@ group) to the workflow:
 
 ### 5a. Enrichment on the live run
 
-The real IOC here is a **private lab IP** (`192.168.56.99`), so VirusTotal returns
-**no malicious verdict** (`VT malicious: 0` — it holds no threat intelligence on a
+The real IOC here is a **private lab IP** (`192.168.56.99`), so VirusTotal returns a
+**non-informative** result (**0 malicious / 56 harmless** — no threat intelligence on a
 private address). That is a correct, expected result, not a pipeline failure. On the
 live run the value the pipeline adds is the **attached observable and the
 analyst-ready alert**, not external reputation — the TheHive alert and its IOC
@@ -403,6 +406,7 @@ User reports email  →  analyst analyzes it (T1566.002)  →  IOCs extracted
   could confirm the server's HTTP `200` response to detect a *successful* callback.)
 - **Authentication results don't decide phishing.** SPF/DKIM/DMARC can all pass for
   a lookalike domain the attacker owns; the content indicators are what matter.
-- **Enrich honestly.** A private IOC yields nothing from VirusTotal — say so. Show
+- **Enrich honestly.** A private IOC returns a non-informative VirusTotal result
+  (0 malicious / 56 harmless) — say so. Show
   the enrichment *capability* with a clearly labeled synthetic test, never by
   touching real malicious infrastructure.
